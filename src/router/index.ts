@@ -6,7 +6,6 @@ import Result from "../views/result";
 import {Product} from "../views/modules";
 import TaskDispatch from "../views/ai-security/task-dispatch";
 import ScanResults from "../views/ai-security/scan-results";
-import VulnerabilityTest from "../views/vulnerability-test";
 
 interface IRouteMeta {
   name: string;
@@ -101,15 +100,6 @@ export const routes: IRoute[] = [
         }
       }
     ]
-  },
-  {
-    path: "/vulnerability-test",
-    key: "/vulnerability-test",
-    component: VulnerabilityTest,
-    meta: {
-      name: "漏洞测试",
-      icon: "icon-chakan-copy"
-    }
   },
 ];
 
