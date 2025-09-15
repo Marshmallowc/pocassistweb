@@ -17,7 +17,13 @@ const PrimaryLayout: React.FC = props => {
   const token = getToken();
   const location = useLocation();
 
-  if (!token || location.pathname === "/login") {
+  // 开发模式：绕过登录检查
+  // if (!token || location.pathname === "/login") {
+  //   return <UnAuthLayout />;
+  // }
+  
+  // 如果访问登录页面，仍然显示登录界面
+  if (location.pathname === "/login") {
     return <UnAuthLayout />;
   }
 

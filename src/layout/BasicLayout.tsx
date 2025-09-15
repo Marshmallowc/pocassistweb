@@ -20,7 +20,7 @@ const BasicLayout: React.FC = props => {
             />
           );
         })}
-      <Redirect from="/" to="/login" push={true} />
+      <Redirect from="/" to="/poc" push={true} />
     </Switch>
   );
 };

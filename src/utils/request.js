@@ -46,9 +46,10 @@ service.interceptors.response.use(
       return response;
   },
   async error => {
-    if (error.response?.status === 401) {
-      window.location.href = "/";
-    }
+    // 开发模式：注释401自动跳转
+    // if (error.response?.status === 401) {
+    //   window.location.href = "/";
+    // }
     message.error(error.toString());
     return Promise.reject();
   }
