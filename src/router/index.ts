@@ -4,6 +4,9 @@ import VulRules from "../views/rules";
 import Task from "../views/task";
 import Result from "../views/result";
 import {Product} from "../views/modules";
+import TaskDispatch from "../views/ai-security/task-dispatch";
+import ScanResults from "../views/ai-security/scan-results";
+import VulnerabilityTest from "../views/vulnerability-test";
 
 interface IRouteMeta {
   name: string;
@@ -71,6 +74,41 @@ export const routes: IRoute[] = [
     meta: {
       name: "影响组件",
       icon: "icon-qita"
+    }
+  },
+  {
+    path: "/ai-security",
+    key: "/ai-security",
+    meta: {
+      name: "AI安全评估",
+      icon: "icon-ai226"
+    },
+    subMenu: [
+      {
+        path: "/ai-security/task-dispatch",
+        key: "/ai-security/task-dispatch",
+        component: TaskDispatch,
+        meta: {
+          name: "任务下发"
+        }
+      },
+      {
+        path: "/ai-security/scan-results",
+        key: "/ai-security/scan-results",
+        component: ScanResults,
+        meta: {
+          name: "扫描结果"
+        }
+      }
+    ]
+  },
+  {
+    path: "/vulnerability-test",
+    key: "/vulnerability-test",
+    component: VulnerabilityTest,
+    meta: {
+      name: "漏洞测试",
+      icon: "icon-chakan-copy"
     }
   },
 ];
