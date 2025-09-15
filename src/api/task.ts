@@ -26,6 +26,24 @@ export interface ResultProps {
   detail: any;
 }
 
+// 任务下发请求参数接口
+export interface TaskDispatchParams {
+  taskName: string;
+  targetUrl: string;
+  description?: string;
+  modelType?: string; // 添加模型类型字段
+  apiConfig: {
+    type: "builtin" | "custom";
+    format?: string;
+    apiKey?: string;
+    customHeaders?: string;
+    requestContent?: string;
+    responseContent?: string;
+  };
+  selectedTemplates: string[];
+  customCorpusFile?: string[]; // 修改为数组类型，支持多个自定义模板文件
+}
+
 /**
  * 获取任务列表
  * @param params
@@ -37,7 +55,7 @@ export const getTaskList = (params: {
   search?: string;
 }) => {
   return request({
-    url: "/v1/task/",
+    url: "/task/",
     method: "get",
     params
   });
@@ -50,7 +68,7 @@ export const getTaskList = (params: {
 
 export const deleteTask = (id: string) => {
   return request({
-    url: `/v1/task/${id}/`,
+    url: `/task/${id}/`,
     method: "delete"
   });
 };
@@ -67,7 +85,7 @@ export const getResultList = (params: {
   vulField?: string;
 }) => {
   return request({
-    url: "/v1/result/",
+    url: "/result/",
     method: "get",
     params
   });
@@ -80,7 +98,19 @@ export const getResultList = (params: {
 
 export const deleteResult = (id: string) => {
   return request({
-    url: `/v1/result/${id}/`,
+    url: `/result/${id}/`,
     method: "delete"
+  });
+};
+
+/**
+ * 任务下发
+ * @param data 任务下发参数
+ */
+export const dispatchTask = (data: TaskDispatchParams) => {
+  return request({
+    url: "/task/dispatch/",
+    method: "post",
+    data
   });
 };

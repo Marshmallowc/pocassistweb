@@ -6,7 +6,7 @@ import request from "../utils/request";
  */
 export const login = (data: { username: string; password: string }) => {
   return request({
-    url: "/v1/user/login",
+    url: "/user/login",
     method: "post",
     data
   });
@@ -17,7 +17,7 @@ export const login = (data: { username: string; password: string }) => {
  */
 export const logout = () => {
   return request({
-    url: "/v1/user/logout",
+    url: "/user/logout",
     method: "get"
   });
 };
@@ -31,7 +31,7 @@ export const resetPassword = (data: {
   newpassword: string;
 }) => {
   return request({
-    url: "/v1/user/self/resetpwd/",
+    url: "/user/self/resetpwd/",
     method: "post",
     data
   });
@@ -42,7 +42,7 @@ export const resetPassword = (data: {
  */
 export const getUserInfos = () => {
   return request({
-    url: "/v1/user/info",
+    url: "/user/info",
     method: "get"
   });
 };

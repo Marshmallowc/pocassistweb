@@ -43,7 +43,7 @@ export const getVulList = (params: {
   search_query?: string;
 }) => {
   return request({
-    url: "/v1/vul/",
+    url: "/vul/",
     method: "get",
     params
   });
@@ -54,7 +54,7 @@ export const getVulList = (params: {
  */
 export const getVulBasic = () => {
   return request({
-    url: "/v1/vul/basic/",
+    url: "/vul/basic/",
     method: "get"
   });
 };
@@ -64,7 +64,7 @@ export const getVulBasic = () => {
  */
 export const createVul = (data: VulDataProps) => {
   return request({
-    url: "/v1/vul/",
+    url: "/vul/",
     method: "post",
     data
   });

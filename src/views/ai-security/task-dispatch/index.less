@@ -1,16 +1,402 @@
 .task-dispatch-wrap {
   padding: 20px;
+  background: #f5f5f5;
+  min-height: 100vh;
 
-  .task-dispatch-table {
+  .task-sections {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-card {
+    margin-bottom: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: none;
+
+    .ant-card-head {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px 12px 0 0;
+      border: none;
+    }
+
+    .ant-card-head-title {
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .ant-card-body {
+      padding: 24px;
+    }
+  }
+
+  // 表单样式
+  .form-input {
+    border-radius: 8px;
+    border: 2px solid #e1e5e9;
+    transition: all 0.3s ease;
+
+    &:focus,
+    &.ant-input-focused {
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    }
+  }
+
+  .form-textarea {
+    border-radius: 8px;
+    border: 2px solid #e1e5e9;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    transition: all 0.3s ease;
+
+    &:focus,
+    &.ant-input-focused {
+      border-color: #667eea;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+    }
+  }
+
+  .form-select {
+    .ant-select-selector {
+      border-radius: 8px !important;
+      border: 2px solid #e1e5e9 !important;
+      transition: all 0.3s ease;
+    }
+
+    &.ant-select-focused .ant-select-selector {
+      border-color: #667eea !important;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+    }
+  }
+
+  // API格式配置
+  .api-format-section {
+    margin-bottom: 20px;
+  }
+
+  .format-select {
+    .ant-select-selector {
+      border-radius: 8px !important;
+      border: 2px solid #e1e5e9 !important;
+    }
+
+    &.ant-select-focused .ant-select-selector {
+      border-color: #667eea !important;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2) !important;
+    }
+  }
+
+  .builtin-config {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 16px;
+
+    .config-item {
+      margin-bottom: 16px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .header-textarea {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      border-radius: 8px;
+      border: 2px solid #e1e5e9;
+
+      &:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+      }
+    }
+  }
+
+  .custom-format-section {
     margin-top: 16px;
   }
 
-  .ant-card-head {
-    background: linear-gradient(90deg, #f0f9ff, #e0f2fe);
+  .format-upload-section {
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+
+      .file-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #666;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #f5f5f5;
+          
+          .ant-btn {
+            opacity: 1;
+          }
+        }
+
+        .anticon {
+          color: #1890ff;
+        }
+
+        span {
+          flex: 1;
+          max-width: 200px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .ant-btn {
+          opacity: 0.6;
+          transition: opacity 0.2s;
+          
+          &:hover {
+            opacity: 1;
+            transform: scale(1.1);
+          }
+        }
+      }
+    }
+
+    .format-textarea {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      border-radius: 8px;
+      border: 2px solid #e1e5e9;
+      margin-bottom: 12px;
+
+      &:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+      }
+    }
+
+    .upload-area {
+      border: 2px dashed #d9d9d9;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      background: #fafafa;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: #667eea;
+        background: #f0f2ff;
+      }
+
+      .upload-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+
+        .upload-icon {
+          font-size: 24px;
+          color: #bfbfbf;
+        }
+      }
+    }
   }
 
-  .ant-card-head-title {
-    color: #1890ff;
-    font-weight: 600;
+  .api-test-section {
+    padding-top: 16px;
+  }
+
+  // 模板选择
+  .template-card {
+    .ant-card-head {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+  }
+
+  .template-grid {
+    margin-top: 16px;
+  }
+
+  .template-item {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer;
+    min-height: 120px;
+
+    &.selected {
+      border: 2px solid #667eea;
+      background: linear-gradient(135deg, #f0f2ff 0%, #e6f0ff 100%);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    &.custom-template {
+      border: 2px dashed #d9d9d9;
+      background: #fafafa;
+
+      &:hover {
+        border-color: #667eea;
+        background: #f0f2ff;
+      }
+
+      .custom-icon {
+        font-size: 24px;
+        color: #bfbfbf;
+        margin-bottom: 8px;
+      }
+    }
+
+    &:hover:not(.custom-template) {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .template-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      color: #667eea;
+      font-size: 16px;
+      background: white;
+      border-radius: 50%;
+      padding: 2px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .template-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 16px 8px;
+
+      .template-desc {
+        margin-bottom: 0;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .selected-templates {
+    margin-top: 24px;
+
+    .templates-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+
+      .selected-tags {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .submit-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 8px;
+        height: auto;
+        padding: 12px 24px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+      }
+    }
+  }
+
+  // 模态框样式
+  .custom-dialog-content {
+    .dialog-section {
+      margin-bottom: 16px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      font-size: 12px;
+
+      .anticon {
+        color: #1890ff;
+      }
+
+      span {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .upload-area {
+      border: 2px dashed #d9d9d9;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      background: #fafafa;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: #667eea;
+        background: #f0f2ff;
+      }
+
+      .upload-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+
+        .upload-icon {
+          font-size: 32px;
+          color: #bfbfbf;
+        }
+      }
+    }
+  }
+
+  // 响应式设计
+  @media (max-width: 768px) {
+    padding: 12px;
+
+    .custom-format-section {
+      .ant-col {
+        margin-bottom: 16px;
+      }
+    }
+
+    .template-grid {
+      .ant-col {
+        margin-bottom: 12px;
+      }
+    }
+
+    .templates-summary {
+      flex-direction: column;
+      align-items: stretch !important;
+
+      .submit-button {
+        margin-top: 16px;
+      }
+    }
   }
 }
