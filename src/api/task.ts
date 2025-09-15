@@ -45,6 +45,16 @@ export interface TaskDispatchParams {
   customCorpusFile?: string[]; // 修改为数组类型，支持多个自定义模板文件
 }
 
+// API连通性测试请求参数接口
+export interface ApiTestParams {
+  type: "builtin" | "custom";
+  format?: string; // 当type为builtin时，表示内置格式类型（如openai、claude等）
+  apiKey?: string;
+  customHeaders?: string;
+  requestContent?: string;
+  responseContent?: string;
+}
+
 /**
  * 获取任务列表
  * @param params
@@ -127,6 +137,68 @@ export const dispatchTask = (data: TaskDispatchParams) => {
   console.log("🌐 使用真实API处理任务下发请求");
   return request({
     url: "/task/dispatch/",
+    method: "post",
+    data
+  });
+};
+
+/**
+ * API连通性测试 - Mock实现
+ * @param data API测试参数
+ */
+const mockTestApiConnectivity = (data: ApiTestParams) => {
+  console.log("🔧 使用Mock服务测试API连通性", data);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // 模拟成功率为80%
+      const isSuccess = Math.random() > 0.2;
+      
+      if (isSuccess) {
+        resolve({
+          data: {
+            code: 200,
+            message: "API连接测试成功",
+            success: true,
+            data: {
+              status: "success",
+              response_time: Math.floor(Math.random() * 2000) + 500,
+              api_version: "v1"
+            }
+          },
+          status: 200
+        });
+      } else {
+        resolve({
+          data: {
+            code: 400,
+            message: "API连接测试失败: 连接超时",
+            success: false,
+            data: {
+              status: "failed",
+              error_type: "connection_timeout",
+              error_details: "Request timeout after 5000ms"
+            }
+          },
+          status: 400
+        });
+      }
+    }, 1000 + Math.random() * 1000); // 1-2秒随机延迟
+  });
+};
+
+/**
+ * API连通性测试
+ * @param data API测试参数
+ */
+export const testApiConnectivity = (data: ApiTestParams) => {
+  if (USE_MOCK) {
+    return mockTestApiConnectivity(data);
+  }
+  
+  console.log("🌐 使用真实API测试连通性", data);
+  return request({
+    url: "/api/test-connectivity/",
     method: "post",
     data
   });

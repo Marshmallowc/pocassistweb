@@ -27,7 +27,7 @@ import {
   WifiOutlined,
   SettingOutlined
 } from "@ant-design/icons";
-import { dispatchTask, TaskDispatchParams } from "../../../api/task";
+import { dispatchTask, TaskDispatchParams, testApiConnectivity, ApiTestParams } from "../../../api/task";
 import "./index.less";
 
 const { Title, Text, Paragraph } = Typography;
@@ -162,15 +162,47 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     setApiTestResult(null);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const success = Math.random() > 0.3;
-      setApiTestResult(success ? "success" : "failed");
-      message[success ? "success" : "error"](
-        success ? "API连接测试成功" : "API连接测试失败"
-      );
+      // 构建API测试参数
+      const testParams: ApiTestParams = {
+        type: apiFormatType as "builtin" | "custom",
+      };
+
+      // 根据API格式类型添加相应参数
+      if (apiFormatType === "builtin") {
+        testParams.format = selectedBuiltinFormat;
+        testParams.apiKey = apiKey;
+        testParams.customHeaders = customHeaders; // builtin类型也支持自定义请求头
+      } else if (apiFormatType === "custom") {
+        testParams.requestContent = requestContent;
+        testParams.responseContent = responseContent;
+        testParams.customHeaders = customHeaders;
+      }
+
+      console.log("🔌 发送API连通性测试请求:", testParams);
+      
+      // 调用API测试接口
+      const response = await testApiConnectivity(testParams) as any;
+      
+      if (response.data?.code === 200 || response.data?.success || response.status === 200) {
+        setApiTestResult("success");
+        message.success("API连接测试成功");
+      } else {
+        setApiTestResult("failed");
+        message.error(`API连接测试失败: ${response.data?.message || "未知错误"}`);
+      }
     } catch (error) {
+      console.error("API连通性测试失败:", error);
       setApiTestResult("failed");
-      message.error("API连接测试失败");
+      
+      let errorMessage = "API连接测试失败";
+      const err = error as any;
+      if (err?.response?.data?.message) {
+        errorMessage += `: ${err.response.data.message}`;
+      } else if (err?.message) {
+        errorMessage += `: ${err.message}`;
+      }
+      
+      message.error(errorMessage);
     } finally {
       setIsTestingApi(false);
     }
