@@ -1,4 +1,5 @@
 import request from "../utils/request";
+import { mockDispatchTask, printMockStatus } from "./mockTaskDispatch";
 
 export interface ParamsProps {
   page: number;
@@ -103,11 +104,27 @@ export const deleteResult = (id: string) => {
   });
 };
 
+// Mock开关 - 开发环境下可以设置为true来使用mock数据
+const USE_MOCK = true; // 设置为false使用真实API
+
 /**
  * 任务下发
  * @param data 任务下发参数
  */
 export const dispatchTask = (data: TaskDispatchParams) => {
+  if (USE_MOCK) {
+    // 打印Mock服务状态（仅第一次调用时）
+    if (!(window as any).__mockStatusPrinted) {
+      printMockStatus();
+      (window as any).__mockStatusPrinted = true;
+    }
+    
+    console.log("🔧 使用Mock服务处理任务下发请求");
+    return mockDispatchTask(data);
+  }
+  
+  // 真实API调用
+  console.log("🌐 使用真实API处理任务下发请求");
   return request({
     url: "/task/dispatch/",
     method: "post",

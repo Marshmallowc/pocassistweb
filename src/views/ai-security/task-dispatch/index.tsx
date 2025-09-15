@@ -238,8 +238,31 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       const response = await dispatchTask(taskParams);
       
       // 成功处理
-      message.success("任务下发成功！");
-      console.log("任务下发响应:", response);
+      if (response?.data?.taskId) {
+        message.success(`任务下发成功！任务ID: ${response.data.taskId}`);
+        console.log("✅ 任务下发成功:", response);
+        
+        // 显示详细的成功信息
+        Modal.success({
+          title: '任务创建成功',
+          content: (
+            <div>
+              <p><strong>任务ID:</strong> {response.data.taskId}</p>
+              <p><strong>任务名称:</strong> {response.data.taskName}</p>
+              <p><strong>目标URL:</strong> {response.data.targetUrl}</p>
+              <p><strong>预估时长:</strong> {Math.floor(response.data.estimatedDuration / 60)}分{response.data.estimatedDuration % 60}秒</p>
+              <p><strong>模板数量:</strong> {response.data.templateCount}个</p>
+              {response.data.customFileCount > 0 && (
+                <p><strong>自定义文件:</strong> {response.data.customFileCount}个</p>
+              )}
+            </div>
+          ),
+          width: 500,
+        });
+      } else {
+        message.success("任务下发成功！");
+        console.log("✅ 任务下发响应:", response);
+      }
       
       // 可选：重置表单或跳转页面
       // form.resetFields();
@@ -269,6 +292,21 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
 
   return (
     <div className="task-dispatch-wrap">
+      {/* Mock状态指示器 */}
+      <div style={{
+        position: 'fixed',
+        top: 10,
+        right: 10,
+        zIndex: 1000,
+        background: '#722ed1',
+        color: 'white',
+        padding: '4px 12px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+      }}>
+        🔧 Mock模式
+      </div>
       <div className="task-sections">
         {/* 基本信息 */}
         <Card className="section-card">
