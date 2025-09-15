@@ -29,8 +29,8 @@
     "typescript": "~3.7.2"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
+    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider craco start",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
   },
@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@craco/craco": "^5.6.4",
+    "cross-env": "^10.0.0",
     "prettier": "1.19.x",
     "terser-webpack-plugin": "^3.1.0"
   }
