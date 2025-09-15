@@ -31,49 +31,54 @@ export const routes: IRoute[] = [
     hidden: true
   },
   {
-    path: "/poc",
-    key: "/poc",
-    component: VulRules,
+    path: "/vulnerability-testing",
+    key: "/vulnerability-testing",
     meta: {
-      name: "漏洞规则",
-      icon: "icon--_xitongrizhi"
-    }
-  },
-  {
-    path: "/vul",
-    key: "/vul",
-    component: VulManage,
-    meta: {
-      name: "漏洞描述",
-      icon: "icon-chakan-copy"
-    }
-  },
-  {
-    path: "/task",
-    key: "/task",
-    component: Task,
-    meta: {
-      name: "任务列表",
-      icon: "icon-ai226"
-    }
-  },
-  {
-    path: "/result",
-    key: "/result",
-    component: Result,
-    meta: {
-      name: "扫描结果",
+      name: "漏洞测试",
       icon: "icon-xinxi1"
-    }
-  },
-  {
-    path: "/product",
-    key: "/product",
-    component: Product,
-    meta: {
-      name: "影响组件",
-      icon: "icon-qita"
-    }
+    },
+    subMenu: [
+      {
+        path: "/poc",
+        key: "/poc",
+        component: VulRules,
+        meta: {
+          name: "漏洞规则"
+        }
+      },
+      {
+        path: "/vul",
+        key: "/vul",
+        component: VulManage,
+        meta: {
+          name: "漏洞描述"
+        }
+      },
+      {
+        path: "/task",
+        key: "/task",
+        component: Task,
+        meta: {
+          name: "任务列表"
+        }
+      },
+      {
+        path: "/result",
+        key: "/result",
+        component: Result,
+        meta: {
+          name: "扫描结果"
+        }
+      },
+      {
+        path: "/product",
+        key: "/product",
+        component: Product,
+        meta: {
+          name: "影响组件"
+        }
+      }
+    ]
   },
   {
     path: "/ai-security",
