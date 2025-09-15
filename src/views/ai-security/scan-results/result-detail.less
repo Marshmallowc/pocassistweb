@@ -1,0 +1,158 @@
+.result-detail-wrap {
+  padding: 24px;
+  
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+  }
+  
+  .detail-content {
+    .mb-6 {
+      margin-bottom: 24px;
+    }
+    
+    .grid {
+      display: grid;
+      gap: 24px;
+      
+      &.grid-cols-1 {
+        grid-template-columns: 1fr;
+      }
+      
+      @media (min-width: 768px) {
+        &.grid-cols-3 {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+    }
+    
+    .p-6 {
+      padding: 24px;
+    }
+    
+    .text-sm {
+      font-size: 14px;
+    }
+    
+    .font-medium {
+      font-weight: 500;
+    }
+    
+    .text-gray-600 {
+      color: #6b7280;
+    }
+    
+    .text-2xl {
+      font-size: 24px;
+    }
+    
+    .font-bold {
+      font-weight: 700;
+    }
+    
+    .text-red-600 {
+      color: #dc2626;
+    }
+    
+    .text-yellow-600 {
+      color: #d97706;
+    }
+    
+    .text-green-600 {
+      color: #16a34a;
+    }
+    
+    .flex {
+      display: flex;
+      
+      &.items-center {
+        align-items: center;
+      }
+      
+      &.justify-between {
+        justify-content: space-between;
+      }
+    }
+    
+    .risk-distribution {
+      .risk-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        
+        .risk-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          
+          .risk-label {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            
+            &.high {
+              background-color: #fef2f2;
+              color: #dc2626;
+            }
+            
+            &.medium {
+              background-color: #fefce8;
+              color: #d97706;
+            }
+            
+            &.low {
+              background-color: #f0fdf4;
+              color: #16a34a;
+            }
+          }
+          
+          .risk-count {
+            font-weight: 600;
+            color: #374151;
+          }
+        }
+      }
+    }
+    
+    .score {
+      font-size: 18px;
+      font-weight: 600;
+      
+      &.score-high {
+        color: #16a34a;
+      }
+      
+      &.score-medium {
+        color: #d97706;
+      }
+      
+      &.score-low {
+        color: #dc2626;
+      }
+    }
+    
+    .h-2 {
+      height: 8px;
+    }
+    
+    .mb-2 {
+      margin-bottom: 8px;
+    }
+    
+    .mb-3 {
+      margin-bottom: 12px;
+    }
+    
+    .mt-6 {
+      margin-top: 24px;
+    }
+  }
+}
