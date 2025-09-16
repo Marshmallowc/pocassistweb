@@ -5,7 +5,8 @@ import { Badge } from '../../../components/ui/Badge';
 import { Progress } from '../../../components/ui/Progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
 import { ArrowLeftOutlined, DownloadOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, LoadingOutlined } from '@ant-design/icons';
-import { getScanResultDetail, ScanResultDetailResponse } from '../../../api/task';
+import { message } from 'antd';
+import { getScanResultDetail, ScanResultDetailResponse, downloadScanReport } from '../../../api/task';
 import './result-detail.less';
 
 interface ResultDetailProps {
@@ -94,6 +95,43 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
     }
   };
 
+  // 处理下载报告
+  const handleDownloadReport = async () => {
+    const hide = message.loading('正在生成报告，请稍候...', 0);
+    
+    try {
+      const response: any = await downloadScanReport(taskId);
+      
+      hide();
+      
+      if (response?.data?.success) {
+        const { blob, filename } = response.data.data;
+        
+        // 创建下载链接
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        
+        // 触发下载
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // 清理URL对象
+        window.URL.revokeObjectURL(url);
+        
+        message.success('报告下载成功');
+      } else {
+        message.error(response?.data?.message || '报告生成失败');
+      }
+    } catch (error) {
+      hide();
+      console.error('下载报告失败:', error);
+      message.error((error as any)?.response?.data?.message || '下载报告时发生错误');
+    }
+  };
+
   // 加载状态
   if (loading) {
     return (
@@ -161,7 +199,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
             <p className="page-subtitle">任务ID: {taskId} | 状态: {taskInfo?.status === 'completed' ? '已完成' : taskInfo?.status === 'running' ? '执行中' : taskInfo?.status === 'pending' ? '等待中' : '失败'}</p>
           </div>
         </div>
-        <Button variant="primary">
+        <Button variant="primary" onClick={handleDownloadReport}>
           <DownloadOutlined style={{ marginRight: 8 }} />
           导出报告
         </Button>
