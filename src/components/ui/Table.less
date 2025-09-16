@@ -1,0 +1,115 @@
+.custom-table-container {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+
+  .custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    
+    .custom-table-header {
+      .custom-table-row {
+        border-bottom: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        
+        .custom-table-head {
+          padding: 12px 16px;
+          text-align: left;
+          font-weight: 600;
+          font-size: 14px;
+          color: #374151;
+          border-bottom: 1px solid #e5e7eb;
+          
+          &:first-child {
+            border-left: none;
+          }
+          
+          &:last-child {
+            border-right: none;
+          }
+        }
+      }
+    }
+    
+    .custom-table-body {
+      .custom-table-row {
+        border-bottom: 1px solid #e5e7eb;
+        transition: background-color 0.2s ease;
+        
+        &:hover {
+          background-color: #f9fafb;
+        }
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        .custom-table-cell {
+          padding: 12px 16px;
+          vertical-align: top;
+          font-size: 14px;
+          color: #374151;
+          border-bottom: 1px solid #e5e7eb;
+          
+          &:first-child {
+            border-left: none;
+          }
+          
+          &:last-child {
+            border-right: none;
+          }
+          
+          &.w-24 {
+            width: 96px;
+          }
+          
+          .max-w-md {
+            max-width: 28rem;
+          }
+          
+          .max-w-lg {
+            max-width: 32rem;
+          }
+          
+          .max-w-xs {
+            max-width: 20rem;
+          }
+          
+          .text-pretty {
+            text-wrap: pretty;
+            word-wrap: break-word;
+          }
+          
+          .text-sm {
+            font-size: 12px;
+          }
+          
+          .font-medium {
+            font-weight: 500;
+          }
+          
+          .text-muted-foreground {
+            color: #6b7280;
+          }
+          
+          .flex {
+            display: flex;
+            
+            &.items-center {
+              align-items: center;
+            }
+            
+            &.justify-center {
+              justify-content: center;
+            }
+          }
+          
+          .space-y-1 > * + * {
+            margin-top: 4px;
+          }
+        }
+      }
+    }
+  }
+}

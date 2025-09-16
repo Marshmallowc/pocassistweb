@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { Progress } from '../../../components/ui/Progress';
-import { ArrowLeftOutlined, DownloadOutlined, AlertOutlined } from '@ant-design/icons';
-import { Descriptions, Table, Timeline, Divider } from 'antd';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
+import { ArrowLeftOutlined, DownloadOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import './result-detail.less';
 
 interface ResultDetailProps {
@@ -12,263 +12,305 @@ interface ResultDetailProps {
   onBack: () => void;
 }
 
+interface QuestionItem {
+  id: string;
+  question: string;
+  answer: string;
+  isAnswered: boolean;
+  hasIssue: boolean;
+  riskLevel: "high" | "medium" | "low";
+  category: string;
+  timestamp: string;
+  judgment?: string;
+}
+
+interface TaskTemplate {
+  name: string;
+  description: string;
+  version: string;
+  totalQuestions: number;
+}
+
 const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
-  // 模拟详细数据
-  const taskDetail = {
-    id: taskId,
-    name: "电商平台AI推荐系统安全评估",
-    type: "模型安全评估",
-    status: "completed",
-    progress: 100,
-    createTime: "2024-01-15 10:30",
-    completedTime: "2024-01-15 15:45",
-    duration: "5小时15分钟",
-    riskLevel: "medium",
-    vulnerabilities: 12,
-    score: 75,
-    details: { high: 2, medium: 5, low: 5 },
-    model: "推荐系统模型 v2.1",
-    target: "用户行为预测模块",
-    description: "对电商平台AI推荐系统进行全面的安全评估，包括模型鲁棒性、对抗攻击防护、数据隐私保护等方面。"
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [questionStates, setQuestionStates] = useState<Record<string, boolean>>({});
+
+  const taskTemplate: TaskTemplate = {
+    name: "基础安全扫描模板",
+    description: "针对AI模型的基础安全漏洞检测，包括对抗攻击、数据泄露、偏见检测等核心安全问题",
+    version: "v2.1.0",
+    totalQuestions: 45,
   };
 
-  const vulnerabilityData = [
+  const questions: QuestionItem[] = [
     {
-      key: '1',
-      id: 'VUL-001',
-      name: '模型对抗攻击漏洞',
-      level: 'high',
-      category: '模型安全',
-      description: '推荐模型容易受到对抗性样本攻击',
-      suggestion: '增加对抗训练，提升模型鲁棒性'
+      id: "1",
+      question: "模型是否容易受到对抗样本攻击？",
+      answer: "经过测试，模型在面对精心构造的对抗样本时表现出一定的脆弱性，准确率下降约15%。建议增加对抗训练来提高鲁棒性。",
+      isAnswered: true,
+      hasIssue: true,
+      riskLevel: "high",
+      category: "对抗攻击检测",
+      timestamp: "2024-01-15 14:30:22",
+      judgment: "危害国家安全",
     },
     {
-      key: '2', 
-      id: 'VUL-002',
-      name: '用户隐私泄露风险',
-      level: 'high',
-      category: '数据隐私',
-      description: '模型可能通过推荐结果泄露用户敏感信息',
-      suggestion: '实施差分隐私保护机制'
+      id: "2",
+      question: "是否存在训练数据泄露风险？",
+      answer: "通过成员推理攻击测试，发现模型可能泄露部分训练数据信息，泄露率约为8%。",
+      isAnswered: true,
+      hasIssue: true,
+      riskLevel: "medium",
+      category: "隐私泄露检测",
+      timestamp: "2024-01-15 14:32:15",
+      judgment: "色情",
     },
     {
-      key: '3',
-      id: 'VUL-003',
-      name: '模型偏见问题',
-      level: 'medium',
-      category: '公平性',
-      description: '推荐算法存在性别和年龄偏见',
-      suggestion: '优化训练数据，增加公平性约束'
+      id: "3",
+      question: "模型输出是否存在偏见？",
+      answer: "在性别和种族相关的测试用例中，模型表现出轻微的偏见倾向，但在可接受范围内。",
+      isAnswered: true,
+      hasIssue: false,
+      riskLevel: "low",
+      category: "公平性检测",
+      timestamp: "2024-01-15 14:35:08",
+      judgment: "年龄歧视",
     },
     {
-      key: '4',
-      id: 'VUL-004',
-      name: '输入验证不足',
-      level: 'medium',
-      category: '输入安全',
-      description: '缺乏对输入数据的有效验证',
-      suggestion: '增强输入验证和过滤机制'
+      id: "4",
+      question: "是否存在后门攻击漏洞？",
+      answer: "未检测到明显的后门触发器，模型在各种输入下表现一致。",
+      isAnswered: true,
+      hasIssue: false,
+      riskLevel: "low",
+      category: "后门检测",
+      timestamp: "2024-01-15 14:38:45",
+      judgment: "违法内容",
     },
     {
-      key: '5',
-      id: 'VUL-005',
-      name: '模型版本控制问题',
-      level: 'low',
-      category: '版本管理',
-      description: '模型版本管理不规范',
-      suggestion: '建立完善的模型版本控制流程'
-    }
+      id: "5",
+      question: "模型是否容易被提示注入攻击？",
+      answer: "",
+      isAnswered: false,
+      hasIssue: false,
+      riskLevel: "medium",
+      category: "提示安全",
+      timestamp: "",
+      judgment: "",
+    },
   ];
 
-  const columns = [
-    {
-      title: '漏洞ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: 100,
-    },
-    {
-      title: '漏洞名称',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: '风险等级',
-      dataIndex: 'level',
-      key: 'level',
-      render: (level: string) => {
-        const config = {
-          high: { label: '高风险', variant: 'destructive' as const },
-          medium: { label: '中风险', variant: 'default' as const },
-          low: { label: '低风险', variant: 'secondary' as const },
-        };
-        const levelConfig = config[level as keyof typeof config];
-        return <Badge variant={levelConfig.variant}>{levelConfig.label}</Badge>;
-      }
-    },
-    {
-      title: '分类',
-      dataIndex: 'category',
-      key: 'category',
-    },
-    {
-      title: '描述',
-      dataIndex: 'description',
-      key: 'description',
-    },
-    {
-      title: '修复建议',
-      dataIndex: 'suggestion',
-      key: 'suggestion',
-    }
-  ];
+  const categories = Array.from(new Set(questions.map((q) => q.category)));
 
-  const getRiskBadge = (level: string) => {
-    const config = {
-      high: { label: "高风险", variant: "destructive" as const },
-      medium: { label: "中风险", variant: "default" as const },
-      low: { label: "低风险", variant: "secondary" as const },
-    };
-    return config[level as keyof typeof config] || config.low;
+  const toggleCategory = (category: string) => {
+    setExpandedCategories((prev) =>
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+    );
   };
 
-  const riskConfig = getRiskBadge(taskDetail.riskLevel);
+  const toggleQuestionIssue = (questionId: string, originalHasIssue: boolean) => {
+    setQuestionStates((prev) => ({
+      ...prev,
+      [questionId]: prev[questionId] !== undefined ? !prev[questionId] : !originalHasIssue,
+    }));
+  };
+
+  const getQuestionIssueStatus = (question: QuestionItem) => {
+    return questionStates[question.id] !== undefined ? questionStates[question.id] : question.hasIssue;
+  };
+
+  const getRiskBadgeVariant = (risk: string) => {
+    switch (risk) {
+      case "high":
+        return "destructive";
+      case "medium":
+        return "default";
+      case "low":
+        return "secondary";
+      default:
+        return "outline";
+    }
+  };
+
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case "high":
+        return "text-red-600";
+      case "medium":
+        return "text-yellow-600";
+      case "low":
+        return "text-green-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const answeredQuestions = questions.filter((q) => q.isAnswered).length;
+  const issueQuestions = questions.filter((q) => q.isAnswered && getQuestionIssueStatus(q)).length;
+  const completionRate = (answeredQuestions / questions.length) * 100;
 
   return (
     <div className="result-detail-wrap">
+      {/* Header */}
       <div className="detail-header">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeftOutlined style={{ marginRight: 8 }} />
-          返回列表
-        </Button>
-        <div className="header-actions">
-          <Button variant="primary">
-            <DownloadOutlined style={{ marginRight: 8 }} />
-            下载报告
+        <div className="header-left">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeftOutlined style={{ marginRight: 8 }} />
+            返回列表
           </Button>
+          <div className="header-info">
+            <h1 className="page-title">安全评估详细报告</h1>
+            <p className="page-subtitle">任务ID: {taskId}</p>
+          </div>
         </div>
+        <Button variant="primary">
+          <DownloadOutlined style={{ marginRight: 8 }} />
+          导出报告
+        </Button>
       </div>
 
       <div className="detail-content">
-        {/* 任务基本信息 */}
+        {/* Task Template Info */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>任务基本信息</CardTitle>
+            <div className="template-header">
+              <FileTextOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+              <CardTitle>任务模板信息</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <Descriptions column={2} bordered>
-              <Descriptions.Item label="任务ID">{taskDetail.id}</Descriptions.Item>
-              <Descriptions.Item label="任务名称">{taskDetail.name}</Descriptions.Item>
-              <Descriptions.Item label="评估类型">{taskDetail.type}</Descriptions.Item>
-              <Descriptions.Item label="目标模型">{taskDetail.model}</Descriptions.Item>
-              <Descriptions.Item label="评估目标">{taskDetail.target}</Descriptions.Item>
-              <Descriptions.Item label="风险等级">
-                <Badge variant={riskConfig.variant}>{riskConfig.label}</Badge>
-              </Descriptions.Item>
-              <Descriptions.Item label="创建时间">{taskDetail.createTime}</Descriptions.Item>
-              <Descriptions.Item label="完成时间">{taskDetail.completedTime}</Descriptions.Item>
-              <Descriptions.Item label="执行时长">{taskDetail.duration}</Descriptions.Item>
-              <Descriptions.Item label="安全评分">
-                <span className={`score ${taskDetail.score >= 80 ? 'score-high' : taskDetail.score >= 60 ? 'score-medium' : 'score-low'}`}>
-                  {taskDetail.score}/100
-                </span>
-              </Descriptions.Item>
-            </Descriptions>
-            <Divider />
-            <p><strong>任务描述：</strong>{taskDetail.description}</p>
+            <div className="template-info">
+              <div className="info-grid">
+                <div className="info-item">
+                  <p className="info-label">模板名称</p>
+                  <p className="info-value">{taskTemplate.name}</p>
+                </div>
+                <div className="info-item">
+                  <p className="info-label">未通过测试项</p>
+                  <p className="info-value">{issueQuestions}</p>
+                </div>
+                <div className="info-item">
+                  <p className="info-label">总测试项</p>
+                  <p className="info-value">{taskTemplate.totalQuestions}</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* 评估结果概览 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">总漏洞数</p>
-                  <p className="text-2xl font-bold text-red-600">{taskDetail.vulnerabilities}</p>
-                </div>
-                <AlertOutlined className="text-2xl text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="risk-distribution">
-                <p className="text-sm font-medium text-gray-600 mb-3">风险分布</p>
-                <div className="risk-stats">
-                  <div className="risk-item">
-                    <span className="risk-label high">高风险</span>
-                    <span className="risk-count">{taskDetail.details.high}</span>
-                  </div>
-                  <div className="risk-item">
-                    <span className="risk-label medium">中风险</span>
-                    <span className="risk-count">{taskDetail.details.medium}</span>
-                  </div>
-                  <div className="risk-item">
-                    <span className="risk-label low">低风险</span>
-                    <span className="risk-count">{taskDetail.details.low}</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-2">安全评分</p>
-                <p className={`text-2xl font-bold mb-3 ${taskDetail.score >= 80 ? 'text-green-600' : taskDetail.score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
-                  {taskDetail.score}/100
-                </p>
-                <Progress value={taskDetail.score} className="h-2" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 漏洞详情 */}
+        {/* Question Categories */}
         <Card>
           <CardHeader>
-            <CardTitle>漏洞详情</CardTitle>
+            <CardTitle>存在风险测试项详情</CardTitle>
+            <p className="card-description">查看所有安全评估问题和结果</p>
           </CardHeader>
           <CardContent>
-            <Table 
-              columns={columns}
-              dataSource={vulnerabilityData}
-              pagination={false}
-              size="middle"
-            />
-          </CardContent>
-        </Card>
+            <div className="category-stats">
+              <h4 className="stats-title">各分类通过率</h4>
+              <div className="stats-grid">
+                {categories.map((category) => {
+                  const categoryQuestions = questions.filter((q) => q.category === category);
+                  const categoryAnswered = categoryQuestions.filter((q) => q.isAnswered).length;
+                  const categoryPassed = categoryQuestions.filter(
+                    (q) => q.isAnswered && !getQuestionIssueStatus(q),
+                  ).length;
 
-        {/* 执行时间线 */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>执行时间线</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Timeline>
-              <Timeline.Item color="blue">
-                任务创建 - 2024-01-15 10:30
-              </Timeline.Item>
-              <Timeline.Item color="blue">
-                开始模型加载 - 2024-01-15 10:35
-              </Timeline.Item>
-              <Timeline.Item color="blue">
-                数据预处理完成 - 2024-01-15 11:20
-              </Timeline.Item>
-              <Timeline.Item color="blue">
-                安全评估执行中 - 2024-01-15 11:25
-              </Timeline.Item>
-              <Timeline.Item color="red">
-                发现高风险漏洞 - 2024-01-15 13:15
-              </Timeline.Item>
-              <Timeline.Item color="green">
-                评估完成 - 2024-01-15 15:45
-              </Timeline.Item>
-            </Timeline>
+                  return (
+                    <div key={category} className="stats-item">
+                      <div className="stats-category">{category}</div>
+                      <div className="stats-label">通过率</div>
+                      <div className="stats-value">
+                        {categoryPassed}/{categoryAnswered}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="question-table">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>任务模板</TableHead>
+                    <TableHead>问题分类</TableHead>
+                    <TableHead>问题</TableHead>
+                    <TableHead>回答</TableHead>
+                    <TableHead>研判结论</TableHead>
+                    <TableHead className="w-24">是否回答</TableHead>
+                    <TableHead className="w-24">是否存在问题</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {questions.map((question) => {
+                    const currentHasIssue = getQuestionIssueStatus(question);
+
+                    return (
+                      <TableRow key={question.id}>
+                        <TableCell>
+                          <span className="template-name">{taskTemplate.name}</span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="category-badge">
+                            {question.category}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <p className="question-text max-w-md">{question.question}</p>
+                        </TableCell>
+                        <TableCell>
+                          {question.isAnswered ? (
+                            <div className="answer-content max-w-lg">
+                              <p className="answer-text">{question.answer}</p>
+                            </div>
+                          ) : (
+                            <span className="waiting-text">等待评估中...</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {question.isAnswered && question.judgment ? (
+                            <div className="judgment-content max-w-xs">
+                              <p className="judgment-text">{question.judgment}</p>
+                            </div>
+                          ) : (
+                            <span className="empty-text">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            {question.isAnswered ? (
+                              <CheckCircleOutlined className="status-icon answered" />
+                            ) : (
+                              <ClockCircleOutlined className="status-icon waiting" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center">
+                            {question.isAnswered ? (
+                              <Button
+                                variant="ghost"
+                                size="small"
+                                className="issue-toggle-btn"
+                                onClick={() => toggleQuestionIssue(question.id, question.hasIssue)}
+                              >
+                                {currentHasIssue ? (
+                                  <CloseCircleOutlined className="status-icon issue" />
+                                ) : (
+                                  <CheckCircleOutlined className="status-icon no-issue" />
+                                )}
+                              </Button>
+                            ) : (
+                              <span className="empty-text">-</span>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
