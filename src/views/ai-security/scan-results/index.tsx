@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RouteComponentProps } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -6,8 +6,16 @@ import { Badge } from "../../../components/ui/Badge";
 import { Progress } from "../../../components/ui/Progress";
 import { Input } from "../../../components/ui/Input";
 import ResultDetail from "./result-detail";
-import { deleteScanTask, downloadScanReport, startScanTask, pauseScanTask, resumeScanTask } from "../../../api/task";
-import { message, Modal } from "antd";
+import { 
+  deleteScanTask, 
+  downloadScanReport, 
+  startScanTask, 
+  pauseScanTask, 
+  resumeScanTask, 
+  getScanResults,
+  ScanResultItem 
+} from "../../../api/task";
+import { message, Modal, Spin } from "antd";
 import {
   CustomBarChart3,
   CustomAlertTriangle,
@@ -27,92 +35,49 @@ import "./index.less";
 
 const ScanResults: React.FC<RouteComponentProps> = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [taskResults, setTaskResults] = useState([
-    {
-      id: "TASK-001",
-      name: "电商平台AI推荐系统安全评估",
-      type: "模型安全评估",
-      status: "completed",
-      progress: 100,
-      createTime: "2024-01-15 10:30",
-      completedTime: "2024-01-15 15:45",
-      estimatedTime: "2小时30分钟",
-      riskLevel: "medium",
-      vulnerabilities: 12,
-      score: 75,
-      details: { high: 2, medium: 5, low: 5 },
-    },
-    {
-      id: "TASK-002",
-      name: "智能客服对抗攻击测试",
-      type: "对抗攻击测试",
-      status: "completed",
-      progress: 100,
-      createTime: "2024-01-14 14:20",
-      completedTime: "2024-01-14 16:05",
-      estimatedTime: "1小时45分钟",
-      riskLevel: "high",
-      vulnerabilities: 18,
-      score: 45,
-      details: { high: 6, medium: 8, low: 4 },
-    },
-    {
-      id: "TASK-003",
-      name: "图像识别模型隐私检测",
-      type: "数据隐私检测",
-      status: "running",
-      progress: 65,
-      createTime: "2024-01-16 09:15",
-      completedTime: null,
-      estimatedTime: "3小时10分钟",
-      riskLevel: null,
-      vulnerabilities: null,
-      score: null,
-      details: null,
-    },
-    {
-      id: "TASK-004",
-      name: "图像分类模型基础扫描",
-      type: "基础安全扫描",
-      status: "completed",
-      progress: 100,
-      createTime: "2024-01-13 09:20",
-      completedTime: "2024-01-13 11:20",
-      estimatedTime: "2小时",
-      riskLevel: "low",
-      vulnerabilities: 3,
-      score: 92,
-      details: { high: 0, medium: 1, low: 2 },
-    },
-    {
-      id: "TASK-005",
-      name: "语音识别模型安全评估",
-      type: "模型安全评估",
-      status: "pending",
-      progress: 0,
-      createTime: "2024-01-17 14:30",
-      completedTime: null,
-      estimatedTime: "4小时",
-      riskLevel: null,
-      vulnerabilities: null,
-      score: null,
-      details: null,
-    },
-    {
-      id: "TASK-006",
-      name: "自然语言处理模型评估",
-      type: "模型安全评估",
-      status: "paused",
-      progress: 30,
-      createTime: "2024-01-18 10:15",
-      completedTime: null,
-      estimatedTime: "2小时45分钟",
-      riskLevel: null,
-      vulnerabilities: null,
-      score: null,
-      details: null,
-    },
-  ]);
+  const [taskResults, setTaskResults] = useState<ScanResultItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [total, setTotal] = useState<number>(0);
+  const pageSize = 10;
+
+  // 获取扫描结果数据
+  const fetchScanResults = async (page: number = 1, search: string = "") => {
+    try {
+      setLoading(true);
+      const response = await getScanResults({
+        page,
+        pageSize,
+        search: search.trim() || undefined
+      });
+      
+      if (response.code === 200) {
+        setTaskResults(response.data.results);
+        setTotal(response.data.total);
+        setCurrentPage(response.data.page);
+      } else {
+        message.error(response.message || "获取扫描结果失败");
+      }
+    } catch (error) {
+      console.error("获取扫描结果失败:", error);
+      message.error("获取扫描结果时发生错误");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 组件挂载时获取数据
+  useEffect(() => {
+    fetchScanResults(currentPage, searchTerm);
+  }, [currentPage]);
+
+  // 搜索处理
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // 重置到第一页
+    fetchScanResults(1, value);
+  };
 
   const handleViewDetail = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -135,10 +100,8 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
           const response: any = await deleteScanTask(taskId);
           if (response?.data?.success) {
             message.success(response.data.message || '任务删除成功');
-            // 从任务列表中移除已删除的任务
-            setTaskResults(prevTasks => 
-              prevTasks.filter(task => task.id !== taskId)
-            );
+            // 重新获取数据以保持同步
+            fetchScanResults(currentPage, searchTerm);
           } else {
             message.error(response?.data?.message || '删除失败');
           }
@@ -186,15 +149,9 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     }
   };
 
-  // 更新任务状态的辅助函数
-  const updateTaskStatus = (taskId: string, newStatus: string) => {
-    setTaskResults(prevTasks => 
-      prevTasks.map(task => 
-        task.id === taskId 
-          ? { ...task, status: newStatus }
-          : task
-      )
-    );
+  // 刷新任务数据的辅助函数
+  const refreshTaskData = () => {
+    fetchScanResults(currentPage, searchTerm);
   };
 
   // 处理开始任务
@@ -203,7 +160,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       const response: any = await startScanTask(taskId);
       if (response?.data?.success) {
         message.success('任务启动成功');
-        updateTaskStatus(taskId, 'running');
+        refreshTaskData();
       } else {
         message.error(response?.data?.message || '启动失败');
       }
@@ -219,7 +176,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       const response: any = await pauseScanTask(taskId);
       if (response?.data?.success) {
         message.success('任务暂停成功');
-        updateTaskStatus(taskId, 'paused');
+        refreshTaskData();
       } else {
         message.error(response?.data?.message || '暂停失败');
       }
@@ -235,7 +192,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       const response: any = await resumeScanTask(taskId);
       if (response?.data?.success) {
         message.success('任务恢复成功');
-        updateTaskStatus(taskId, 'running');
+        refreshTaskData();
       } else {
         message.error(response?.data?.message || '恢复失败');
       }
@@ -353,13 +310,24 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
           <div className="search-section">
             <div className="search-input-wrapper">
               <SearchOutlined className="search-icon" />
-              <Input placeholder="搜索任务..." className="search-input" />
+              <Input 
+                placeholder="搜索任务..." 
+                className="search-input"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="task-list">
-            {taskResults.map((task) => {
+          <Spin spinning={loading} tip="加载中...">
+            <div className="task-list">
+              {taskResults.length === 0 && !loading ? (
+                <div className="empty-state">
+                  <p>暂无扫描任务数据</p>
+                </div>
+              ) : (
+                taskResults.map((task) => {
               const statusConfig = getStatusBadge(task.status);
               const riskConfig = getRiskBadge(task.riskLevel);
 
@@ -491,8 +459,10 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                   )}
                 </div>
               );
-            })}
-          </div>
+                })
+              )}
+            </div>
+          </Spin>
         </CardContent>
       </Card>
     </div>
