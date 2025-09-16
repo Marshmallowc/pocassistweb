@@ -47,6 +47,25 @@ export interface TaskDispatchParams {
   customCorpusFile?: string[]; // 修改为数组类型，支持多个自定义模板文件
 }
 
+// 保存自定义模板请求参数接口
+export interface SaveCustomTemplateParams {
+  name: string;
+  description?: string;
+  corpusContent: string;
+  corpusFileName: string;
+}
+
+// 保存自定义模板响应接口
+export interface SaveCustomTemplateResponse {
+  code: number;
+  message: string;
+  success: boolean;
+  data: {
+    templateId: string;
+    templateName: string;
+  };
+}
+
 // API连通性测试请求参数接口
 export interface ApiTestParams {
   type: "builtin" | "custom";
@@ -460,6 +479,64 @@ export const testApiConnectivity = (data: ApiTestParams) => {
   
   return request({
     url: "/api/test-connectivity/",
+    method: "post",
+    data
+  });
+};
+
+/**
+ * 保存自定义模板 - Mock实现
+ * @param data 自定义模板数据
+ */
+const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCustomTemplateResponse> => {
+  console.log("🔧 使用Mock服务保存自定义模板", data);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // 模拟成功率为90%
+      const isSuccess = Math.random() > 0.1;
+      
+      if (isSuccess) {
+        const templateId = `TEMPLATE-${Date.now()}`;
+        resolve({
+          code: 200,
+          message: "自定义模板保存成功",
+          success: true,
+          data: {
+            templateId: templateId,
+            templateName: data.name
+          }
+        });
+      } else {
+        resolve({
+          code: 400,
+          message: "保存失败: 模板名称已存在",
+          success: false,
+          data: {
+            templateId: "",
+            templateName: ""
+          }
+        });
+      }
+    }, 800 + Math.random() * 700); // 0.8-1.5秒随机延迟
+  });
+};
+
+/**
+ * 保存自定义模板
+ * @param data 自定义模板数据
+ */
+export const saveCustomTemplate = (data: SaveCustomTemplateParams) => {
+  const useMock = getMockEnabled();
+  logApiSource("保存自定义模板", useMock);
+  
+  if (useMock) {
+    return mockSaveCustomTemplate(data);
+  }
+  
+  // 真实API调用
+  return request({
+    url: "/template/custom/save",
     method: "post",
     data
   });

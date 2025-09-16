@@ -27,7 +27,7 @@ import {
   WifiOutlined,
   SettingOutlined
 } from "@ant-design/icons";
-import { dispatchTask, TaskDispatchParams, testApiConnectivity, ApiTestParams } from "../../../api/task";
+import { dispatchTask, TaskDispatchParams, testApiConnectivity, ApiTestParams, saveCustomTemplate, SaveCustomTemplateParams } from "../../../api/task";
 import "./index.less";
 
 const { Title, Text, Paragraph } = Typography;
@@ -46,10 +46,16 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   // 模板选择相关状态
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
-  const [customCorpusFiles, setCustomCorpusFiles] = useState<string[]>([]);
-  const [customCorpusFileNames, setCustomCorpusFileNames] = useState<string[]>([]);
   const [currentCustomCorpusFile, setCurrentCustomCorpusFile] = useState("");
   const [currentCustomCorpusFileName, setCurrentCustomCorpusFileName] = useState("");
+  const [customTemplateName, setCustomTemplateName] = useState("");
+
+  // 快速任务模板状态
+  const [quickTemplates, setQuickTemplates] = useState([
+    { name: "基础安全扫描", desc: "检测基础TC260内容" },
+    { name: "对抗样本测试", desc: "生成对抗样本进行鲁棒性测试" },
+    { name: "隐私泄露检测", desc: "检测模型是否存在隐私泄露风险" },
+  ]);
   
   // API配置相关状态
   const [apiFormatType, setApiFormatType] = useState<"builtin" | "custom" | "">("");
@@ -263,7 +269,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
           responseContent: apiFormatType === "custom" ? responseContent : undefined,
         },
         selectedTemplates,
-        customCorpusFile: customCorpusFiles.length > 0 ? customCorpusFiles : undefined
+        customCorpusFile: currentCustomCorpusFile ? [currentCustomCorpusFile] : undefined
       };
       
       // 发送任务下发请求
@@ -625,11 +631,7 @@ X-Custom-Header: value`}
            </Paragraph>
 
           <Row gutter={[16, 16]} className="template-grid">
-            {[
-              { name: "基础安全扫描", desc: "检测基础TC260内容" },
-              { name: "对抗样本测试", desc: "生成对抗样本进行鲁棒性测试" },
-              { name: "隐私泄露检测", desc: "检测模型是否存在隐私泄露风险" },
-            ].map((template, index) => (
+            {quickTemplates.map((template, index) => (
               <Col span={6} key={index}>
                 <Card
                   size="small"
@@ -711,15 +713,50 @@ X-Custom-Header: value`}
           <Button
             key="confirm"
             type="primary"
-            disabled={!currentCustomCorpusFileName}
-            onClick={() => {
-              if (currentCustomCorpusFileName) {
-                // 添加新的自定义模板文件到数组
-                setCustomCorpusFiles(prev => [...prev, currentCustomCorpusFile]);
-                setCustomCorpusFileNames(prev => [...prev, currentCustomCorpusFileName]);
-                setSelectedTemplates((prev) => [...prev, "自定义模板"]);
-                message.success("自定义模板配置成功");
-                // 清空当前输入
+            disabled={!customTemplateName.trim() || !currentCustomCorpusFileName}
+            onClick={async () => {
+              if (customTemplateName.trim() && currentCustomCorpusFileName) {
+                try {
+                  // 发送网络请求保存自定义模板到后端
+                  const templateData: SaveCustomTemplateParams = {
+                    name: customTemplateName.trim(),
+                    description: "自定义任务模板",
+                    corpusContent: currentCustomCorpusFile,
+                    corpusFileName: currentCustomCorpusFileName,
+                  };
+
+                  const response = await saveCustomTemplate(templateData) as any;
+                  
+                  if (response.success || response.data?.success) {
+                    // 保存成功，添加到本地状态
+                    const newTemplate = {
+                      name: customTemplateName.trim(),
+                      desc: "自定义任务模板",
+                    };
+                    setQuickTemplates((prev) => [...prev, newTemplate]);
+                    setSelectedTemplates((prev) => [...prev, customTemplateName.trim()]);
+
+                    
+                    const templateName = response.data?.templateName || customTemplateName.trim();
+                    message.success(`自定义模板"${templateName}"保存成功`);
+                    console.log("✅ 自定义模板保存成功:", response);
+                  } else {
+                    message.error(response.message || response.data?.message || "保存自定义模板失败");
+                  }
+                } catch (error) {
+                  console.error("保存自定义模板失败:", error);
+                  const err = error as any;
+                  let errorMessage = "保存自定义模板失败";
+                  if (err?.response?.data?.message) {
+                    errorMessage += `: ${err.response.data.message}`;
+                  } else if (err?.message) {
+                    errorMessage += `: ${err.message}`;
+                  }
+                  message.error(errorMessage);
+                }
+                
+                // 重置自定义模板表单
+                setCustomTemplateName("");
                 setCurrentCustomCorpusFile("");
                 setCurrentCustomCorpusFileName("");
                 if (customCorpusRef.current) customCorpusRef.current.value = "";
@@ -733,6 +770,18 @@ X-Custom-Header: value`}
         width={500}
       >
         <div className="custom-dialog-content">
+          <div className="dialog-section">
+            <Text strong>模板名称</Text>
+            <Input
+              placeholder="请输入自定义模板名称"
+              value={customTemplateName}
+              onChange={(e) => setCustomTemplateName(e.target.value)}
+              style={{ marginTop: 8 }}
+            />
+          </div>
+
+          <Divider />
+
           <div className="dialog-section">
             <Text strong>功能1：下载模板</Text>
             <Button 
@@ -749,72 +798,6 @@ X-Custom-Header: value`}
 
           <div className="dialog-section">
             <Text strong>功能2：上传自定义测试语料</Text>
-            {/* 显示已上传的文件列表 */}
-            {customCorpusFileNames.length > 0 && (
-              <div className="uploaded-files" style={{ marginTop: 8 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text type="secondary">已上传的文件：</Text>
-                  <Button 
-                    type="link" 
-                    size="small" 
-                    danger
-                    icon={<CloseOutlined />}
-                    onClick={() => {
-                      Modal.confirm({
-                        title: '批量删除确认',
-                        content: `确定要删除所有 ${customCorpusFileNames.length} 个文件吗？`,
-                        okText: '全部删除',
-                        cancelText: '取消',
-                        okType: 'danger',
-                        onOk() {
-                          setCustomCorpusFiles([]);
-                          setCustomCorpusFileNames([]);
-                          message.success('所有文件已删除');
-                        },
-                      });
-                    }}
-                    title="删除所有文件"
-                  >
-                    清空全部
-                  </Button>
-                </div>
-                {customCorpusFileNames.map((fileName, index) => (
-                  <div key={index} className="file-info" style={{ marginTop: 4 }}>
-                    <FileTextOutlined />
-                    <span title={fileName}>{fileName}</span>
-                    <Button 
-                      type="text" 
-                      size="small" 
-                      danger
-                      icon={<CloseOutlined />}
-                      onClick={() => {
-                        Modal.confirm({
-                          title: '删除确认',
-                          content: `确定要删除文件 "${fileName}" 吗？`,
-                          okText: '删除',
-                          cancelText: '取消',
-                          okType: 'danger',
-                          onOk() {
-                            const newFiles = customCorpusFiles.filter((_, i) => i !== index);
-                            const newFileNames = customCorpusFileNames.filter((_, i) => i !== index);
-                            setCustomCorpusFiles(newFiles);
-                            setCustomCorpusFileNames(newFileNames);
-                            
-                            // 如果删除后没有文件了，从selectedTemplates中移除"自定义模板"
-                            if (newFiles.length === 0) {
-                              setSelectedTemplates(prev => prev.filter(t => t !== "自定义模板"));
-                            }
-                            
-                            message.success('文件删除成功');
-                          },
-                        });
-                      }}
-                      title="删除此文件"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
             
             {/* 当前选择的文件 */}
             {currentCustomCorpusFileName && (

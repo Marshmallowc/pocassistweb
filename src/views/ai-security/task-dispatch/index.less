@@ -227,7 +227,12 @@
     transition: all 0.3s ease;
     position: relative;
     cursor: pointer;
-    min-height: 120px;
+    height: 120px !important;
+    
+    .ant-card-body {
+      height: 100% !important;
+      padding: 0 !important;
+    }
 
     &.selected {
       border: 2px solid #667eea;
@@ -242,12 +247,14 @@
       &:hover {
         border-color: #667eea;
         background: #f0f2ff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
       }
 
       .custom-icon {
-        font-size: 24px;
+        font-size: 20px;
         color: #bfbfbf;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
       }
     }
 
@@ -273,12 +280,20 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      padding: 16px 8px;
+      padding: 12px 8px;
+      height: 100%;
+      justify-content: center;
+      gap: 4px;
 
       .template-desc {
         margin-bottom: 0;
         font-size: 12px;
-        line-height: 1.4;
+        line-height: 1.2;
+        margin-top: 4px;
+      }
+      
+      .ant-typography {
+        margin-bottom: 0;
       }
     }
   }
