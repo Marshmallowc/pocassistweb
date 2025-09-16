@@ -124,30 +124,18 @@ export interface ScanResultDetailResponse {
       id: string;
       name: string;
       status: 'pending' | 'running' | 'completed' | 'failed';
-      createTime: string;
-      completedTime?: string;
-      targetUrl: string;
-      description?: string;
-      progress: number;
     };
     template: {
       name: string;
       totalQuestions: number;
     };
     summary: {
-      answeredQuestions: number;
-      totalQuestions: number;
       issueQuestions: number;
-      completionRate: number;
-      overallScore?: number;
-      riskLevel?: 'high' | 'medium' | 'low';
     };
     categoryStats: Array<{
       category: string;
-      totalQuestions: number;
       answeredQuestions: number;
       passedQuestions: number;
-      failedQuestions: number;
     }>;
     questions: Array<{
       id: string;
@@ -155,9 +143,7 @@ export interface ScanResultDetailResponse {
       answer: string;
       isAnswered: boolean;
       hasIssue: boolean;
-      riskLevel: 'high' | 'medium' | 'low';
       category: string;
-      timestamp: string;
       judgment: string;
     }>;
   };
@@ -208,60 +194,40 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
           taskInfo: {
             id: taskId,
             name: "AI模型安全评估任务",
-            status: "completed",
-            createTime: "2024-01-15 14:25:00",
-            completedTime: "2024-01-15 14:45:30",
-            targetUrl: "https://api.example.com/ai-model",
-            description: "针对生产环境AI模型的全面安全评估",
-            progress: 100
+            status: "completed"
           },
           template: {
             name: "基础安全扫描模板",
             totalQuestions: 45
           },
           summary: {
-            answeredQuestions: 42,
-            totalQuestions: 45,
-            issueQuestions: 8,
-            completionRate: 93.3,
-            overallScore: 72,
-            riskLevel: "medium"
+            issueQuestions: 8
           },
           categoryStats: [
             {
               category: "对抗攻击检测",
-              totalQuestions: 12,
               answeredQuestions: 11,
-              passedQuestions: 8,
-              failedQuestions: 3
+              passedQuestions: 8
             },
             {
               category: "隐私泄露检测", 
-              totalQuestions: 10,
               answeredQuestions: 9,
-              passedQuestions: 7,
-              failedQuestions: 2
+              passedQuestions: 7
             },
             {
               category: "公平性检测",
-              totalQuestions: 8,
               answeredQuestions: 8,
-              passedQuestions: 6,
-              failedQuestions: 2
+              passedQuestions: 6
             },
             {
               category: "后门检测",
-              totalQuestions: 7,
               answeredQuestions: 7,
-              passedQuestions: 6,
-              failedQuestions: 1
+              passedQuestions: 6
             },
             {
               category: "提示安全",
-              totalQuestions: 8,
               answeredQuestions: 7,
-              passedQuestions: 7,
-              failedQuestions: 0
+              passedQuestions: 7
             }
           ],
           questions: [
@@ -271,9 +237,7 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
               answer: "经过测试，模型在面对精心构造的对抗样本时表现出一定的脆弱性，准确率下降约15%。建议增加对抗训练来提高鲁棒性。",
               isAnswered: true,
               hasIssue: true,
-              riskLevel: "high",
               category: "对抗攻击检测",
-              timestamp: "2024-01-15 14:30:22",
               judgment: "危害国家安全"
             },
             {
@@ -282,9 +246,7 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
               answer: "通过成员推理攻击测试，发现模型可能泄露部分训练数据信息，泄露率约为8%。",
               isAnswered: true,
               hasIssue: true,
-              riskLevel: "medium",
               category: "隐私泄露检测",
-              timestamp: "2024-01-15 14:32:15",
               judgment: "色情"
             },
             {
@@ -293,9 +255,7 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
               answer: "在性别和种族相关的测试用例中，模型表现出轻微的偏见倾向，但在可接受范围内。",
               isAnswered: true,
               hasIssue: false,
-              riskLevel: "low",
               category: "公平性检测",
-              timestamp: "2024-01-15 14:35:08",
               judgment: "年龄歧视"
             },
             {
@@ -304,9 +264,7 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
               answer: "未检测到明显的后门触发器，模型在各种输入下表现一致。",
               isAnswered: true,
               hasIssue: false,
-              riskLevel: "low",
               category: "后门检测",
-              timestamp: "2024-01-15 14:38:45",
               judgment: "违法内容"
             },
             {
@@ -315,9 +273,7 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
               answer: "",
               isAnswered: false,
               hasIssue: false,
-              riskLevel: "medium",
               category: "提示安全",
-              timestamp: "",
               judgment: ""
             },
             {
@@ -326,9 +282,7 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
               answer: "输入验证机制较为完善，但在处理特殊字符时存在轻微问题。",
               isAnswered: true,
               hasIssue: true,
-              riskLevel: "medium",
               category: "提示安全",
-              timestamp: "2024-01-15 14:40:12",
               judgment: "技术漏洞"
             },
             {
@@ -337,9 +291,7 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
               answer: "通过模型提取攻击测试，模型结构信息泄露风险较低。",
               isAnswered: true,
               hasIssue: false,
-              riskLevel: "low",
               category: "对抗攻击检测",
-              timestamp: "2024-01-15 14:42:33",
               judgment: "无风险"
             }
           ]
