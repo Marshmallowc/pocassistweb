@@ -154,10 +154,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     const hide = message.loading('正在生成报告，请稍候...', 0);
     
     try {
-      const response: any = await downloadScanReport({
-        taskId: taskId,
-        format: 'excel'
-      });
+      const response: any = await downloadScanReport(taskId);
       
       hide();
       

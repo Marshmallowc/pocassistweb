@@ -450,10 +450,6 @@ export const testApiConnectivity = (data: ApiTestParams) => {
 };
 
 // 下载扫描报告接口类型定义
-export interface DownloadReportParams {
-  taskId: string;
-  format: 'excel' | 'pdf';
-}
 
 // 任务控制操作类型
 export type TaskControlAction = 'start' | 'pause' | 'resume';
@@ -488,16 +484,16 @@ export type TaskStatus =
 
 /**
  * 下载扫描报告 - Mock实现
- * @param params 下载参数
+ * @param taskId 任务ID
  */
-const mockDownloadScanReport = (params: DownloadReportParams) => {
-  console.log("🔧 使用Mock服务下载扫描报告", params);
+const mockDownloadScanReport = (taskId: string) => {
+  console.log("🔧 使用Mock服务下载扫描报告", taskId);
   
   return new Promise((resolve) => {
     setTimeout(() => {
       // 动态导入mock数据生成器
       import('./mockReportData.js').then(({ generateExcelBlob }) => {
-        const blob = generateExcelBlob(params.taskId);
+        const blob = generateExcelBlob(taskId);
         
         resolve({
           data: {
@@ -506,16 +502,15 @@ const mockDownloadScanReport = (params: DownloadReportParams) => {
             success: true,
             data: {
               blob: blob,
-              filename: `扫描报告_${params.taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
+              filename: `扫描报告_${taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
               size: blob.size,
-              format: params.format
             }
           },
           status: 200
         });
       }).catch(() => {
         // 如果导入失败，使用简单的mock数据
-        const simpleContent = `扫描报告\n任务ID: ${params.taskId}\n生成时间: ${new Date().toLocaleString('zh-CN')}\n\n这是一个模拟的扫描报告文件。`;
+        const simpleContent = `扫描报告\n任务ID: ${taskId}\n生成时间: ${new Date().toLocaleString('zh-CN')}\n\n这是一个模拟的扫描报告文件。`;
         const blob = new Blob(['\uFEFF' + simpleContent], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
@@ -527,9 +522,8 @@ const mockDownloadScanReport = (params: DownloadReportParams) => {
             success: true,
             data: {
               blob: blob,
-              filename: `扫描报告_${params.taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
+              filename: `扫描报告_${taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
               size: blob.size,
-              format: params.format
             }
           },
           status: 200
@@ -541,23 +535,20 @@ const mockDownloadScanReport = (params: DownloadReportParams) => {
 
 /**
  * 下载扫描报告
- * @param params 下载参数
+ * @param taskId 任务ID
  */
-export const downloadScanReport = (params: DownloadReportParams) => {
+export const downloadScanReport = (taskId: string) => {
   const useMock = getMockEnabled();
   logApiSource("下载扫描报告", useMock);
   
   if (useMock) {
-    return mockDownloadScanReport(params);
+    return mockDownloadScanReport(taskId);
   }
   
   // 真实API调用 - 返回文件流
   return request({
-    url: `/scan-report/download/${params.taskId}`,
+    url: `/scan-report/download/${taskId}`,
     method: "get",
-    params: {
-      format: params.format
-    },
     responseType: 'blob' // 指定响应类型为blob，用于处理文件下载
   });
 };
