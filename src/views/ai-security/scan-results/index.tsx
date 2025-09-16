@@ -98,12 +98,12 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       onOk: async () => {
         try {
           const response: any = await deleteScanTask(taskId);
-          if (response?.data?.success) {
-            message.success(response.data.message || '任务删除成功');
+          if (response?.success) {
+            message.success(response.message || '任务删除成功');
             // 重新获取数据以保持同步
             fetchScanResults(currentPage, searchTerm);
           } else {
-            message.error(response?.data?.message || '删除失败');
+            message.error(response?.message || '删除失败');
           }
         } catch (error) {
           console.error('删除任务失败:', error);
@@ -121,8 +121,8 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       
       hide();
       
-      if (response?.data?.success) {
-        const { blob, filename } = response.data.data;
+      if (response?.success) {
+        const { blob, filename } = response.data;
         
         // 创建下载链接
         const url = window.URL.createObjectURL(blob);
@@ -140,7 +140,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         
         message.success('报告下载成功');
       } else {
-        message.error(response?.data?.message || '报告生成失败');
+        message.error(response?.message || '报告生成失败');
       }
     } catch (error) {
       hide();
@@ -158,11 +158,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handleStartTask = async (taskId: string) => {
     try {
       const response: any = await startScanTask(taskId);
-      if (response?.data?.success) {
+      if (response?.success) {
         message.success('任务启动成功');
         refreshTaskData();
       } else {
-        message.error(response?.data?.message || '启动失败');
+        message.error(response?.message || '启动失败');
       }
     } catch (error) {
       console.error('启动任务失败:', error);
@@ -174,11 +174,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handlePauseTask = async (taskId: string) => {
     try {
       const response: any = await pauseScanTask(taskId);
-      if (response?.data?.success) {
+      if (response?.success) {
         message.success('任务暂停成功');
         refreshTaskData();
       } else {
-        message.error(response?.data?.message || '暂停失败');
+        message.error(response?.message || '暂停失败');
       }
     } catch (error) {
       console.error('暂停任务失败:', error);
@@ -190,11 +190,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handleResumeTask = async (taskId: string) => {
     try {
       const response: any = await resumeScanTask(taskId);
-      if (response?.data?.success) {
+      if (response?.success) {
         message.success('任务恢复成功');
         refreshTaskData();
       } else {
-        message.error(response?.data?.message || '恢复失败');
+        message.error(response?.message || '恢复失败');
       }
     } catch (error) {
       console.error('恢复任务失败:', error);

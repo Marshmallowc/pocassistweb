@@ -159,8 +159,8 @@ export interface QuestionReviewParams {
 export interface QuestionReviewResponse {
   code: number;
   message: string;
+  success: boolean;               // 审核是否成功
   data: {
-    success: boolean;               // 审核是否成功
     isModified?: boolean;           // 可选：是否修改了原始结论（用于日志）
   };
 }
@@ -917,8 +917,8 @@ const mockReviewQuestion = (questionId: string, reviewData: QuestionReviewParams
         const mockResponse: QuestionReviewResponse = {
           code: 200,
           message: "审核结果保存成功",
+          success: true,
           data: {
-            success: true,
             isModified: originalHasIssue !== reviewData.hasIssue
           }
         };
@@ -928,9 +928,8 @@ const mockReviewQuestion = (questionId: string, reviewData: QuestionReviewParams
         resolve({
           code: 400,
           message: "保存审核结果失败: 网络异常",
-          data: {
-            success: false
-          }
+          success: false,
+          data: {}
         } as QuestionReviewResponse);
       }
     }, 300 + Math.random() * 500); // 0.3-0.8秒随机延迟

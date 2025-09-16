@@ -78,7 +78,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
 
       const response = await reviewQuestion(questionId, reviewData);
       
-      if (response.code === 200 && response.data.success) {
+      if (response.code === 200 && response.success) {
         message.success(`审核结果已保存：${newHasIssue ? '存在问题' : '不存在问题'}`);
         
         // 可选：记录是否修改了AI的原始判断
@@ -143,8 +143,8 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
       
       hide();
       
-      if (response?.data?.success) {
-        const { blob, filename } = response.data.data;
+      if (response?.success) {
+        const { blob, filename } = response.data;
         
         // 创建下载链接
         const url = window.URL.createObjectURL(blob);
@@ -162,7 +162,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
         
         message.success('报告下载成功');
       } else {
-        message.error(response?.data?.message || '报告生成失败');
+        message.error(response?.message || '报告生成失败');
       }
     } catch (error) {
       hide();
