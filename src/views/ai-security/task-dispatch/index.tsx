@@ -147,7 +147,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const handleDownloadTemplate = () => {
     const templateContent = `{
   "task_name": "自定义任务模板",
-  "description": "请填写任务描述",
   "target_url": "https://example.com/api",
   "model_type": "请选择模型类型",
   "test_cases": [
@@ -270,7 +269,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       const taskParams: TaskDispatchParams = {
         taskName: values.taskName,
         targetUrl: values.targetUrl,
-        description: values.description,
         modelType: values.modelType, // 添加模型类型字段
         apiConfig: {
           type: apiFormatType as "builtin" | "custom", // 类型断言，因为已经通过验证
@@ -362,17 +360,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
               />
             </Form.Item>
 
-            <Form.Item
-              label="任务描述"
-              name="description"
-              rules={[{ required: true, message: "请输入任务描述" }]}
-            >
-              <TextArea
-                placeholder="请输入任务描述"
-                rows={3}
-                className="form-textarea"
-              />
-            </Form.Item>
           </Form>
         </Card>
 
@@ -732,7 +719,6 @@ X-Custom-Header: value`}
                   // 发送网络请求保存自定义模板到后端
                   const templateData: SaveCustomTemplateParams = {
                     name: customTemplateName.trim(),
-                    description: "自定义任务模板",
                     corpusContent: currentCustomCorpusFile,
                     corpusFileName: currentCustomCorpusFileName,
                   };

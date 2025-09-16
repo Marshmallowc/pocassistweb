@@ -86,7 +86,6 @@ export const generateDetailedMockTask = (data) => {
     taskId: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     taskName: data.taskName,
     targetUrl: data.targetUrl,
-    description: data.description || "无描述",
     
     // 状态信息
     status: "pending", // pending, running, completed, failed

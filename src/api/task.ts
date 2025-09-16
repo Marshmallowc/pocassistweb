@@ -33,7 +33,6 @@ export interface ResultProps {
 export interface TaskDispatchParams {
   taskName: string;
   targetUrl: string;
-  description?: string;
   modelType?: string; // 添加模型类型字段
   apiConfig: {
     type: "builtin" | "custom";
@@ -50,7 +49,6 @@ export interface TaskDispatchParams {
 // 保存自定义模板请求参数接口
 export interface SaveCustomTemplateParams {
   name: string;
-  description?: string;
   corpusContent: string;
   corpusFileName: string;
 }
