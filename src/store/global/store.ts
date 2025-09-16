@@ -7,7 +7,8 @@ export interface ContextProps<T = any, S = any> {
 }
 
 export const defaultVale: GlobalStateProps = {
-  collapsed: false
+  collapsed: false,
+  mockEnabled: JSON.parse(localStorage.getItem("mockEnabled") || "true") // 默认开启mock
 };
 
 const GlobalContext: Context<ContextProps<

@@ -7,7 +7,9 @@ import {
   Layout,
   Menu,
   message,
-  Modal
+  Modal,
+  Switch,
+  Tooltip
 } from "antd";
 import avatar from "@/assets/images/avatar.png";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
@@ -45,6 +47,11 @@ const PrimaryHeader: React.FC = props => {
     });
   };
 
+  const handleMockToggle = (checked: boolean) => {
+    dispatch({ type: "SET_MOCK", payload: checked });
+    message.success(`已${checked ? '开启' : '关闭'}Mock模式`);
+  };
+
   const menu = (
     <Menu>
       <Menu.Item onClick={() => setShow(true)}>修改密码</Menu.Item>
@@ -60,6 +67,18 @@ const PrimaryHeader: React.FC = props => {
         </div>
       </div>
       <div className="header-right">
+        <div style={{ marginRight: 16, display: 'flex', alignItems: 'center' }}>
+          <Tooltip title={state.mockEnabled ? "当前使用模拟数据，关闭后将发送真实网络请求" : "当前发送真实网络请求，开启后将使用模拟数据"}>
+            <div style={{ display: 'flex', alignItems: 'center', color: '#fff' }}>
+              <span style={{ marginRight: 8, fontSize: 14 }}>Mock模式</span>
+              <Switch
+                checked={state.mockEnabled}
+                onChange={handleMockToggle}
+                size="small"
+              />
+            </div>
+          </Tooltip>
+        </div>
         <Avatar size={32} src={avatar} />
         <Dropdown
           overlayStyle={{ width: "180px", zIndex: 2000 }}

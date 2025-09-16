@@ -1,5 +1,6 @@
 import request from "../utils/request";
 import { mockDispatchTask, printMockStatus } from "./mockTaskDispatch";
+import { getMockStatus, logApiSource } from "../utils/mockControl";
 
 export interface ParamsProps {
   page: number;
@@ -162,27 +163,28 @@ export interface ScanResultDetailResponse {
   };
 }
 
-// Mock开关 - 开发环境下可以设置为true来使用mock数据
-const USE_MOCK = true; // 设置为false使用真实API
+// Mock开关 - 动态从全局状态获取
+const getMockEnabled = () => getMockStatus();
 
 /**
  * 任务下发
  * @param data 任务下发参数
  */
 export const dispatchTask = (data: TaskDispatchParams) => {
-  if (USE_MOCK) {
+  const useMock = getMockEnabled();
+  logApiSource("任务下发", useMock);
+  
+  if (useMock) {
     // 打印Mock服务状态（仅第一次调用时）
     if (!(window as any).__mockStatusPrinted) {
       printMockStatus();
       (window as any).__mockStatusPrinted = true;
     }
     
-    console.log("🔧 使用Mock服务处理任务下发请求");
     return mockDispatchTask(data);
   }
   
   // 真实API调用
-  console.log("🌐 使用真实API处理任务下发请求");
   return request({
     url: "/task/dispatch/",
     method: "post",
@@ -399,11 +401,13 @@ const mockTestApiConnectivity = (data: ApiTestParams) => {
  * @param taskId 任务ID
  */
 export const getScanResultDetail = async (taskId: string): Promise<ScanResultDetailResponse> => {
-  if (USE_MOCK) {
+  const useMock = getMockEnabled();
+  logApiSource("获取扫描结果详情", useMock);
+  
+  if (useMock) {
     return mockGetScanResultDetail(taskId);
   }
   
-  console.log("🌐 使用真实API获取扫描结果详情", taskId);
   const response = await request({
     url: `/scan-result/detail/${taskId}`,
     method: "get"
@@ -416,11 +420,13 @@ export const getScanResultDetail = async (taskId: string): Promise<ScanResultDet
  * @param data API测试参数
  */
 export const testApiConnectivity = (data: ApiTestParams) => {
-  if (USE_MOCK) {
+  const useMock = getMockEnabled();
+  logApiSource("API连通性测试", useMock);
+  
+  if (useMock) {
     return mockTestApiConnectivity(data);
   }
   
-  console.log("🌐 使用真实API测试连通性", data);
   return request({
     url: "/api/test-connectivity/",
     method: "post",

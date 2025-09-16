@@ -324,21 +324,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
 
   return (
     <div className="task-dispatch-wrap">
-      {/* Mock状态指示器 */}
-      <div style={{
-        position: 'fixed',
-        top: 10,
-        right: 10,
-        zIndex: 1000,
-        background: '#722ed1',
-        color: 'white',
-        padding: '4px 12px',
-        borderRadius: '4px',
-        fontSize: '12px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-      }}>
-        🔧 Mock模式
-      </div>
       <div className="task-sections">
         {/* 基本信息 */}
         <Card className="section-card">
