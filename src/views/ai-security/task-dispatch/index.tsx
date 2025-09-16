@@ -73,21 +73,27 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   // 文件上传处理
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: "request" | "response") => {
     const file = event.target.files?.[0];
-    if (file && file.type === "text/plain") {
+    if (file && file.type === "application/json") {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
-        if (type === "request") {
-          setRequestContent(content);
-          setRequestFileName(file.name);
-        } else {
-          setResponseContent(content);
-          setResponseFileName(file.name);
+        try {
+          // 验证JSON格式
+          JSON.parse(content);
+          if (type === "request") {
+            setRequestContent(content);
+            setRequestFileName(file.name);
+          } else {
+            setResponseContent(content);
+            setResponseFileName(file.name);
+          }
+        } catch (error) {
+          message.error("JSON文件格式不正确，请检查文件内容");
         }
       };
       reader.readAsText(file);
     } else {
-      message.error("请选择txt格式的文件");
+      message.error("请选择json格式的文件");
     }
   };
 
@@ -118,16 +124,22 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   // 自定义语料上传
   const handleCustomCorpusUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type === "text/plain") {
+    if (file && file.type === "application/json") {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
-        setCurrentCustomCorpusFile(content);
-        setCurrentCustomCorpusFileName(file.name);
+        try {
+          // 验证JSON格式
+          JSON.parse(content);
+          setCurrentCustomCorpusFile(content);
+          setCurrentCustomCorpusFileName(file.name);
+        } catch (error) {
+          message.error("JSON文件格式不正确，请检查文件内容");
+        }
       };
       reader.readAsText(file);
     } else {
-      message.error("请选择txt格式的文件");
+      message.error("请选择json格式的文件");
     }
   };
 
@@ -514,7 +526,7 @@ X-Custom-Header: value`}
                     <input
                       ref={requestFileRef}
                       type="file"
-                      accept=".txt"
+                      accept=".json"
                       onChange={(e) => handleFileUpload(e, "request")}
                       style={{ display: "none" }}
                     />
@@ -526,7 +538,7 @@ X-Custom-Header: value`}
                         size="small" 
                         onClick={() => requestFileRef.current?.click()}
                       >
-                        选择txt文件
+                        选择json文件
                       </Button>
                     </div>
                   </div>
@@ -570,7 +582,7 @@ X-Custom-Header: value`}
                     <input
                       ref={responseFileRef}
                       type="file"
-                      accept=".txt"
+                      accept=".json"
                       onChange={(e) => handleFileUpload(e, "response")}
                       style={{ display: "none" }}
                     />
@@ -582,7 +594,7 @@ X-Custom-Header: value`}
                         size="small" 
                         onClick={() => responseFileRef.current?.click()}
                       >
-                        选择txt文件
+                        选择json文件
                       </Button>
                     </div>
                   </div>
@@ -833,7 +845,7 @@ X-Custom-Header: value`}
               <input
                 ref={customCorpusRef}
                 type="file"
-                accept=".txt"
+                accept=".json"
                 onChange={handleCustomCorpusUpload}
                 style={{ display: "none" }}
               />
@@ -845,7 +857,7 @@ X-Custom-Header: value`}
                   size="small" 
                   onClick={() => customCorpusRef.current?.click()}
                 >
-                  选择txt文件
+                  选择json文件
                 </Button>
               </div>
             </div>
