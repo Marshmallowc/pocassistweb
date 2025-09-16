@@ -448,3 +448,85 @@ export const testApiConnectivity = (data: ApiTestParams) => {
     data
   });
 };
+
+// 下载扫描报告接口类型定义
+export interface DownloadReportParams {
+  taskId: string;
+  format: 'excel' | 'pdf';
+}
+
+/**
+ * 下载扫描报告 - Mock实现
+ * @param params 下载参数
+ */
+const mockDownloadScanReport = (params: DownloadReportParams) => {
+  console.log("🔧 使用Mock服务下载扫描报告", params);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // 动态导入mock数据生成器
+      import('./mockReportData.js').then(({ generateExcelBlob }) => {
+        const blob = generateExcelBlob(params.taskId);
+        
+        resolve({
+          data: {
+            code: 200,
+            message: "报告生成成功",
+            success: true,
+            data: {
+              blob: blob,
+              filename: `扫描报告_${params.taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
+              size: blob.size,
+              format: params.format
+            }
+          },
+          status: 200
+        });
+      }).catch(() => {
+        // 如果导入失败，使用简单的mock数据
+        const simpleContent = `扫描报告\n任务ID: ${params.taskId}\n生成时间: ${new Date().toLocaleString('zh-CN')}\n\n这是一个模拟的扫描报告文件。`;
+        const blob = new Blob(['\uFEFF' + simpleContent], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        
+        resolve({
+          data: {
+            code: 200,
+            message: "报告生成成功",
+            success: true,
+            data: {
+              blob: blob,
+              filename: `扫描报告_${params.taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
+              size: blob.size,
+              format: params.format
+            }
+          },
+          status: 200
+        });
+      });
+    }, 1500 + Math.random() * 1000); // 1.5-2.5秒随机延迟，模拟报告生成时间
+  });
+};
+
+/**
+ * 下载扫描报告
+ * @param params 下载参数
+ */
+export const downloadScanReport = (params: DownloadReportParams) => {
+  const useMock = getMockEnabled();
+  logApiSource("下载扫描报告", useMock);
+  
+  if (useMock) {
+    return mockDownloadScanReport(params);
+  }
+  
+  // 真实API调用 - 返回文件流
+  return request({
+    url: `/scan-report/download/${params.taskId}`,
+    method: "get",
+    params: {
+      format: params.format
+    },
+    responseType: 'blob' // 指定响应类型为blob，用于处理文件下载
+  });
+};

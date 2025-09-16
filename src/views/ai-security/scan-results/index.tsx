@@ -6,7 +6,7 @@ import { Badge } from "../../../components/ui/Badge";
 import { Progress } from "../../../components/ui/Progress";
 import { Input } from "../../../components/ui/Input";
 import ResultDetail from "./result-detail";
-import { deleteScanTask } from "../../../api/task";
+import { deleteScanTask, downloadScanReport } from "../../../api/task";
 import { message, Modal } from "antd";
 import {
   CustomBarChart3,
@@ -134,6 +134,45 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         }
       },
     });
+  };
+
+  const handleDownloadReport = async (taskId: string) => {
+    const hide = message.loading('正在生成报告，请稍候...', 0);
+    
+    try {
+      const response: any = await downloadScanReport({
+        taskId: taskId,
+        format: 'excel'
+      });
+      
+      hide();
+      
+      if (response?.data?.success) {
+        const { blob, filename } = response.data.data;
+        
+        // 创建下载链接
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        
+        // 触发下载
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // 清理URL对象
+        window.URL.revokeObjectURL(url);
+        
+        message.success('报告下载成功');
+      } else {
+        message.error(response?.data?.message || '报告生成失败');
+      }
+    } catch (error) {
+      hide();
+      console.error('下载报告失败:', error);
+      message.error((error as any)?.response?.data?.message || '下载报告时发生错误');
+    }
   };
 
   if (selectedTaskId) {
@@ -268,7 +307,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                             <EyeOutlined style={{ marginRight: 4 }} />
                             查看详情
                           </Button>
-                          <Button variant="ghost" size="small">
+                          <Button variant="ghost" size="small" onClick={() => handleDownloadReport(task.id)}>
                             <DownloadOutlined style={{ marginRight: 4 }} />
                             下载报告
                           </Button>
