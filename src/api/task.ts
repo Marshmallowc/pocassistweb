@@ -455,6 +455,37 @@ export interface DownloadReportParams {
   format: 'excel' | 'pdf';
 }
 
+// 任务控制操作类型
+export type TaskControlAction = 'start' | 'pause' | 'resume';
+
+// 任务控制请求参数
+export interface TaskControlParams {
+  taskId: string;
+  action: TaskControlAction;
+}
+
+// 任务控制响应
+export interface TaskControlResponse {
+  code: number;
+  message: string;
+  success: boolean;
+  data: {
+    taskId: string;
+    previousStatus: string;
+    currentStatus: string;
+    timestamp: string;
+    estimatedTime?: string; // 预计剩余时间
+  };
+}
+
+// 扩展任务状态类型
+export type TaskStatus = 
+  | 'pending'    // 等待开始
+  | 'running'    // 运行中
+  | 'paused'     // 已暂停
+  | 'completed'  // 已完成
+  | 'failed';    // 失败
+
 /**
  * 下载扫描报告 - Mock实现
  * @param params 下载参数
@@ -528,5 +559,119 @@ export const downloadScanReport = (params: DownloadReportParams) => {
       format: params.format
     },
     responseType: 'blob' // 指定响应类型为blob，用于处理文件下载
+  });
+};
+
+/**
+ * 任务控制 - Mock实现
+ * @param taskId 任务ID
+ * @param action 控制动作
+ */
+const mockTaskControl = (taskId: string, action: TaskControlAction) => {
+  console.log(`🔧 使用Mock服务${action}扫描任务`, taskId);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const statusMap = {
+        start: { from: 'pending', to: 'running' },
+        pause: { from: 'running', to: 'paused' },
+        resume: { from: 'paused', to: 'running' }
+      };
+      
+      const statusChange = statusMap[action];
+      const isSuccess = Math.random() > 0.1; // 90% 成功率
+      
+      const actionNameMap = {
+        start: '启动',
+        pause: '暂停', 
+        resume: '恢复'
+      };
+      
+      if (isSuccess) {
+        resolve({
+          data: {
+            code: 200,
+            message: `任务${actionNameMap[action]}成功`,
+            success: true,
+            data: {
+              taskId: taskId,
+              previousStatus: statusChange.from,
+              currentStatus: statusChange.to,
+              timestamp: new Date().toISOString(),
+              estimatedTime: action === 'start' ? '预计2小时30分钟' : undefined
+            }
+          },
+          status: 200
+        });
+      } else {
+        resolve({
+          data: {
+            code: 400,
+            message: `任务${actionNameMap[action]}失败: 当前状态不允许此操作`,
+            success: false,
+            data: {
+              taskId: taskId,
+              error_type: "invalid_status_transition",
+              error_details: `Cannot ${action} task in current state`
+            }
+          },
+          status: 400
+        });
+      }
+    }, 800 + Math.random() * 700); // 0.8-1.5秒随机延迟
+  });
+};
+
+/**
+ * 开始/启动扫描任务
+ * @param taskId 任务ID
+ */
+export const startScanTask = (taskId: string) => {
+  const useMock = getMockEnabled();
+  logApiSource("开始扫描任务", useMock);
+  
+  if (useMock) {
+    return mockTaskControl(taskId, 'start');
+  }
+  
+  return request({
+    url: `/scan-task/${taskId}/start`,
+    method: "post"
+  });
+};
+
+/**
+ * 暂停扫描任务
+ * @param taskId 任务ID
+ */
+export const pauseScanTask = (taskId: string) => {
+  const useMock = getMockEnabled();
+  logApiSource("暂停扫描任务", useMock);
+  
+  if (useMock) {
+    return mockTaskControl(taskId, 'pause');
+  }
+  
+  return request({
+    url: `/scan-task/${taskId}/pause`,
+    method: "post"
+  });
+};
+
+/**
+ * 恢复扫描任务（从暂停状态恢复）
+ * @param taskId 任务ID
+ */
+export const resumeScanTask = (taskId: string) => {
+  const useMock = getMockEnabled();
+  logApiSource("恢复扫描任务", useMock);
+  
+  if (useMock) {
+    return mockTaskControl(taskId, 'resume');
+  }
+  
+  return request({
+    url: `/scan-task/${taskId}/resume`,
+    method: "post"
   });
 };

@@ -6,7 +6,7 @@ import { Badge } from "../../../components/ui/Badge";
 import { Progress } from "../../../components/ui/Progress";
 import { Input } from "../../../components/ui/Input";
 import ResultDetail from "./result-detail";
-import { deleteScanTask, downloadScanReport } from "../../../api/task";
+import { deleteScanTask, downloadScanReport, startScanTask, pauseScanTask, resumeScanTask } from "../../../api/task";
 import { message, Modal } from "antd";
 import {
   CustomBarChart3,
@@ -98,6 +98,20 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       score: null,
       details: null,
     },
+    {
+      id: "TASK-006",
+      name: "自然语言处理模型评估",
+      type: "模型安全评估",
+      status: "paused",
+      progress: 30,
+      createTime: "2024-01-18 10:15",
+      completedTime: null,
+      estimatedTime: "2小时45分钟",
+      riskLevel: null,
+      vulnerabilities: null,
+      score: null,
+      details: null,
+    },
   ]);
 
   const handleViewDetail = (taskId: string) => {
@@ -175,6 +189,65 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     }
   };
 
+  // 更新任务状态的辅助函数
+  const updateTaskStatus = (taskId: string, newStatus: string) => {
+    setTaskResults(prevTasks => 
+      prevTasks.map(task => 
+        task.id === taskId 
+          ? { ...task, status: newStatus }
+          : task
+      )
+    );
+  };
+
+  // 处理开始任务
+  const handleStartTask = async (taskId: string) => {
+    try {
+      const response: any = await startScanTask(taskId);
+      if (response?.data?.success) {
+        message.success('任务启动成功');
+        updateTaskStatus(taskId, 'running');
+      } else {
+        message.error(response?.data?.message || '启动失败');
+      }
+    } catch (error) {
+      console.error('启动任务失败:', error);
+      message.error((error as any)?.response?.data?.message || '启动任务时发生错误');
+    }
+  };
+
+  // 处理暂停任务
+  const handlePauseTask = async (taskId: string) => {
+    try {
+      const response: any = await pauseScanTask(taskId);
+      if (response?.data?.success) {
+        message.success('任务暂停成功');
+        updateTaskStatus(taskId, 'paused');
+      } else {
+        message.error(response?.data?.message || '暂停失败');
+      }
+    } catch (error) {
+      console.error('暂停任务失败:', error);
+      message.error((error as any)?.response?.data?.message || '暂停任务时发生错误');
+    }
+  };
+
+  // 处理恢复任务
+  const handleResumeTask = async (taskId: string) => {
+    try {
+      const response: any = await resumeScanTask(taskId);
+      if (response?.data?.success) {
+        message.success('任务恢复成功');
+        updateTaskStatus(taskId, 'running');
+      } else {
+        message.error(response?.data?.message || '恢复失败');
+      }
+    } catch (error) {
+      console.error('恢复任务失败:', error);
+      message.error((error as any)?.response?.data?.message || '恢复任务时发生错误');
+    }
+  };
+
   if (selectedTaskId) {
     return <ResultDetail taskId={selectedTaskId} onBack={handleBackToList} />;
   }
@@ -201,6 +274,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       running: { label: "运行中", variant: "default" as const },
       completed: { label: "已完成", variant: "secondary" as const },
       pending: { label: "等待中", variant: "outline" as const },
+      paused: { label: "已暂停", variant: "outline" as const },
       failed: { label: "失败", variant: "destructive" as const },
     };
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -314,14 +388,19 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                         </>
                       )}
                       {task.status === "running" ? (
-                        <Button variant="ghost" size="small">
+                        <Button variant="ghost" size="small" onClick={() => handlePauseTask(task.id)}>
                           <PauseCircleOutlined style={{ marginRight: 4 }} />
                           暂停
                         </Button>
                       ) : task.status === "pending" ? (
-                        <Button variant="ghost" size="small">
+                        <Button variant="ghost" size="small" onClick={() => handleStartTask(task.id)}>
                           <PlayCircleOutlined style={{ marginRight: 4 }} />
                           开始
+                        </Button>
+                      ) : task.status === "paused" ? (
+                        <Button variant="ghost" size="small" onClick={() => handleResumeTask(task.id)}>
+                          <PlayCircleOutlined style={{ marginRight: 4 }} />
+                          恢复
                         </Button>
                       ) : null}
                       <Button 
@@ -377,7 +456,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                     ) : (
                       <div className="detail-item">
                         <p className="detail-label">状态</p>
-                        <p className="detail-value">{task.status === "running" ? "执行中..." : "等待执行"}</p>
+                        <p className="detail-value">
+                          {task.status === "running" ? "执行中..." : 
+                           task.status === "paused" ? "已暂停" : 
+                           "等待执行"}
+                        </p>
                       </div>
                     )}
                   </div>
