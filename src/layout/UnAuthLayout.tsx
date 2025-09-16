@@ -8,10 +8,10 @@ import "./layout.less";
 const UnAuthLayout: React.FC<{}> = props => {
   const location = useLocation();
 
-  // 开发模式：只在访问登录页面时显示登录界面，不强制重定向
-  // if (location.pathname !== "/login") {
-  //   return <Redirect to="/login" push={true} />;
-  // }
+  // 如果不是访问登录页面，重定向到登录页面
+  if (location.pathname !== "/login") {
+    return <Redirect to="/login" push={true} />;
+  }
 
   return (
     <ReactRoute>

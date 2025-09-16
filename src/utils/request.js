@@ -46,10 +46,10 @@ service.interceptors.response.use(
       return response;
   },
   async error => {
-    // 开发模式：注释401自动跳转
-    // if (error.response?.status === 401) {
-    //   window.location.href = "/";
-    // }
+    // 401未授权，自动跳转到登录页面
+    if (error.response?.status === 401) {
+      window.location.href = "/#/login";
+    }
     message.error(error.toString());
     return Promise.reject();
   }
