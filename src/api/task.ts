@@ -368,6 +368,69 @@ export const getScanResultDetail = async (taskId: string): Promise<ScanResultDet
 };
 
 /**
+ * 删除扫描任务 - Mock实现
+ * @param taskId 任务ID
+ */
+const mockDeleteScanTask = (taskId: string) => {
+  console.log("🔧 使用Mock服务删除扫描任务", taskId);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // 模拟成功率为95%
+      const isSuccess = Math.random() > 0.05;
+      
+      if (isSuccess) {
+        resolve({
+          data: {
+            code: 200,
+            message: "任务删除成功",
+            success: true,
+            data: {
+              deletedTaskId: taskId,
+              timestamp: new Date().toISOString()
+            }
+          },
+          status: 200
+        });
+      } else {
+        resolve({
+          data: {
+            code: 400,
+            message: "删除失败: 任务正在执行中，无法删除",
+            success: false,
+            data: {
+              taskId: taskId,
+              error_type: "task_running",
+              error_details: "Cannot delete running task"
+            }
+          },
+          status: 400
+        });
+      }
+    }, 500 + Math.random() * 800); // 0.5-1.3秒随机延迟
+  });
+};
+
+/**
+ * 删除扫描任务
+ * @param taskId 任务ID
+ */
+export const deleteScanTask = (taskId: string) => {
+  const useMock = getMockEnabled();
+  logApiSource("删除扫描任务", useMock);
+  
+  if (useMock) {
+    return mockDeleteScanTask(taskId);
+  }
+  
+  // 真实API调用
+  return request({
+    url: `/scan-task/${taskId}`,
+    method: "delete"
+  });
+};
+
+/**
  * API连通性测试
  * @param data API测试参数
  */

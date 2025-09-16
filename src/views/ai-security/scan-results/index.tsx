@@ -6,6 +6,8 @@ import { Badge } from "../../../components/ui/Badge";
 import { Progress } from "../../../components/ui/Progress";
 import { Input } from "../../../components/ui/Input";
 import ResultDetail from "./result-detail";
+import { deleteScanTask } from "../../../api/task";
+import { message, Modal } from "antd";
 import {
   CustomBarChart3,
   CustomAlertTriangle,
@@ -19,25 +21,13 @@ import {
   PlayCircleOutlined,
   PauseCircleOutlined,
   DeleteOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import "./index.less";
 
 const ScanResults: React.FC<RouteComponentProps> = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-
-  const handleViewDetail = (taskId: string) => {
-    setSelectedTaskId(taskId);
-  };
-
-  const handleBackToList = () => {
-    setSelectedTaskId(null);
-  };
-
-  if (selectedTaskId) {
-    return <ResultDetail taskId={selectedTaskId} onBack={handleBackToList} />;
-  }
-
-  const taskResults = [
+  const [taskResults, setTaskResults] = useState([
     {
       id: "TASK-001",
       name: "电商平台AI推荐系统安全评估",
@@ -108,7 +98,47 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       score: null,
       details: null,
     },
-  ];
+  ]);
+
+  const handleViewDetail = (taskId: string) => {
+    setSelectedTaskId(taskId);
+  };
+
+  const handleBackToList = () => {
+    setSelectedTaskId(null);
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    Modal.confirm({
+      title: '确认删除任务',
+      icon: <ExclamationCircleOutlined />,
+      content: `确定要删除任务 ${taskId} 吗？此操作不可撤销。`,
+      okText: '确认删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          const response: any = await deleteScanTask(taskId);
+          if (response?.data?.success) {
+            message.success(response.data.message || '任务删除成功');
+            // 从任务列表中移除已删除的任务
+            setTaskResults(prevTasks => 
+              prevTasks.filter(task => task.id !== taskId)
+            );
+          } else {
+            message.error(response?.data?.message || '删除失败');
+          }
+        } catch (error) {
+          console.error('删除任务失败:', error);
+          message.error((error as any)?.response?.data?.message || '删除任务时发生错误');
+        }
+      },
+    });
+  };
+
+  if (selectedTaskId) {
+    return <ResultDetail taskId={selectedTaskId} onBack={handleBackToList} />;
+  }
 
   const getRiskBadge = (level: string | null) => {
     if (!level) return null;
@@ -255,7 +285,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                           开始
                         </Button>
                       ) : null}
-                      <Button variant="ghost" size="small">
+                      <Button 
+                        variant="ghost" 
+                        size="small"
+                        onClick={() => handleDeleteTask(task.id)}
+                      >
                         <DeleteOutlined />
                       </Button>
                     </div>
