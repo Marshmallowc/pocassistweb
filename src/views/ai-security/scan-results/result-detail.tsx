@@ -5,8 +5,9 @@ import { Badge } from '../../../components/ui/Badge';
 import { Progress } from '../../../components/ui/Progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
 import { ArrowLeftOutlined, DownloadOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, LoadingOutlined } from '@ant-design/icons';
-import { message } from 'antd';
-import { getScanResultDetail, ScanResultDetailResponse, downloadScanReport } from '../../../api/task';
+import { message, Tooltip } from 'antd';
+import { getScanResultDetail, ScanResultDetailResponse, downloadScanReport, reviewQuestion, QuestionReviewParams } from '../../../api/task';
+import { getUserInfo } from '../../../utils/auth';
 import './result-detail.less';
 
 interface ResultDetailProps {
@@ -58,11 +59,49 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
     );
   };
 
-  const toggleQuestionIssue = (questionId: string, originalHasIssue: boolean) => {
+  const toggleQuestionIssue = async (questionId: string, originalHasIssue: boolean) => {
+    // 计算新的状态
+    const currentState = questionStates[questionId] !== undefined ? questionStates[questionId] : originalHasIssue;
+    const newHasIssue = !currentState;
+    
+    // 乐观更新：先更新UI状态
     setQuestionStates((prev) => ({
       ...prev,
-      [questionId]: prev[questionId] !== undefined ? !prev[questionId] : !originalHasIssue,
+      [questionId]: newHasIssue,
     }));
+
+    try {
+      // 调用人工审核API（用户身份由后端从认证上下文获取）
+      const reviewData: QuestionReviewParams = {
+        hasIssue: newHasIssue
+      };
+
+      const response = await reviewQuestion(questionId, reviewData);
+      
+      if (response.code === 200 && response.data.success) {
+        message.success(`审核结果已保存：${newHasIssue ? '存在问题' : '不存在问题'}`);
+        
+        // 可选：记录是否修改了AI的原始判断
+        if (response.data.isModified) {
+          console.log(`问题 ${questionId} 的审核结果与AI判断不同`);
+        }
+      } else {
+        message.error(response.message || '保存审核结果失败');
+        // 回滚UI状态
+        setQuestionStates((prev) => ({
+          ...prev,
+          [questionId]: currentState,
+        }));
+      }
+    } catch (error) {
+      console.error('人工审核失败:', error);
+      message.error('网络请求失败，请稍后重试');
+      // 回滚UI状态
+      setQuestionStates((prev) => ({
+        ...prev,
+        [questionId]: currentState,
+      }));
+    }
   };
 
   const getQuestionIssueStatus = (question: any) => {
@@ -268,7 +307,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                     <TableHead>回答</TableHead>
                     <TableHead>研判结论</TableHead>
                     <TableHead className="w-24">是否回答</TableHead>
-                    <TableHead className="w-24">是否存在问题</TableHead>
+                    <TableHead className="w-24">人工判别</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -318,18 +357,20 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                         <TableCell>
                           <div className="flex items-center justify-center">
                             {question.isAnswered ? (
-                              <Button
-                                variant="ghost"
-                                size="small"
-                                className="issue-toggle-btn"
-                                onClick={() => toggleQuestionIssue(question.id, question.hasIssue)}
-                              >
-                                {currentHasIssue ? (
-                                  <CloseCircleOutlined className="status-icon issue" />
-                                ) : (
-                                  <CheckCircleOutlined className="status-icon no-issue" />
-                                )}
-                              </Button>
+                              <Tooltip title={`点击切换为：${currentHasIssue ? '不存在问题' : '存在问题'}`}>
+                                <Button
+                                  variant="ghost"
+                                  size="small"
+                                  className="issue-toggle-btn"
+                                  onClick={() => toggleQuestionIssue(question.id, question.hasIssue)}
+                                >
+                                  {currentHasIssue ? (
+                                    <CloseCircleOutlined className="status-icon issue" />
+                                  ) : (
+                                    <CheckCircleOutlined className="status-icon no-issue" />
+                                  )}
+                                </Button>
+                              </Tooltip>
                             ) : (
                               <span className="empty-text">-</span>
                             )}

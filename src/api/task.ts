@@ -1,6 +1,7 @@
 import request from "../utils/request";
 import { mockDispatchTask, printMockStatus } from "./mockTaskDispatch";
 import { getMockStatus, logApiSource } from "../utils/mockControl";
+import { getUserInfo } from "../utils/auth";
 
 export interface ParamsProps {
   page: number;
@@ -146,6 +147,21 @@ export interface ScanResultDetailResponse {
       category: string;
       judgment: string;
     }>;
+  };
+}
+
+// 人工审核问题请求参数接口
+export interface QuestionReviewParams {
+  hasIssue: boolean;           // 人工审核后的结论：true-存在问题，false-不存在问题
+}
+
+// 人工审核问题响应接口
+export interface QuestionReviewResponse {
+  code: number;
+  message: string;
+  data: {
+    success: boolean;               // 审核是否成功
+    isModified?: boolean;           // 可选：是否修改了原始结论（用于日志）
   };
 }
 
@@ -874,6 +890,71 @@ export const getScanResults = async (params: { page?: number; pageSize?: number;
     url: "/scan-results/",
     method: "get",
     params
+  });
+  return response.data;
+};
+
+/**
+ * 人工审核问题 - Mock实现
+ * @param questionId 问题ID
+ * @param reviewData 审核数据
+ */
+const mockReviewQuestion = (questionId: string, reviewData: QuestionReviewParams): Promise<QuestionReviewResponse> => {
+  console.log("🔧 使用Mock服务进行人工审核", questionId, reviewData);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // 模拟成功率为95%
+      const isSuccess = Math.random() > 0.05;
+      
+      // 模拟从认证上下文获取当前用户信息
+      const currentUser = getUserInfo() || { id: 'mock_user_001', name: 'Mock审核员' };
+      
+      if (isSuccess) {
+        // 模拟原始AI判断结果（随机生成）
+        const originalHasIssue = Math.random() > 0.5;
+        
+        const mockResponse: QuestionReviewResponse = {
+          code: 200,
+          message: "审核结果保存成功",
+          data: {
+            success: true,
+            isModified: originalHasIssue !== reviewData.hasIssue
+          }
+        };
+        
+        resolve(mockResponse);
+      } else {
+        resolve({
+          code: 400,
+          message: "保存审核结果失败: 网络异常",
+          data: {
+            success: false
+          }
+        } as QuestionReviewResponse);
+      }
+    }, 300 + Math.random() * 500); // 0.3-0.8秒随机延迟
+  });
+};
+
+/**
+ * 人工审核问题
+ * @param questionId 问题ID
+ * @param reviewData 审核数据
+ */
+export const reviewQuestion = async (questionId: string, reviewData: QuestionReviewParams): Promise<QuestionReviewResponse> => {
+  const useMock = getMockEnabled();
+  logApiSource("人工审核问题", useMock);
+  
+  if (useMock) {
+    return mockReviewQuestion(questionId, reviewData);
+  }
+  
+  // 真实API调用
+  const response = await request({
+    url: `/scan-result/question/${questionId}/review`,
+    method: "put",
+    data: reviewData
   });
   return response.data;
 };
