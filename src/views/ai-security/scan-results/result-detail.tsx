@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 import { Progress } from '../../../components/ui/Progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
-import { ArrowLeftOutlined, DownloadOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, DownloadOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, LoadingOutlined } from '@ant-design/icons';
+import { getScanResultDetail, ScanResultDetailResponse } from '../../../api/task';
 import './result-detail.less';
 
 interface ResultDetailProps {
@@ -12,95 +13,43 @@ interface ResultDetailProps {
   onBack: () => void;
 }
 
-interface QuestionItem {
-  id: string;
-  question: string;
-  answer: string;
-  isAnswered: boolean;
-  hasIssue: boolean;
-  riskLevel: "high" | "medium" | "low";
-  category: string;
-  timestamp: string;
-  judgment?: string;
-}
-
-interface TaskTemplate {
-  name: string;
-  description: string;
-  version: string;
-  totalQuestions: number;
-}
-
 const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [questionStates, setQuestionStates] = useState<Record<string, boolean>>({});
+  const [detailData, setDetailData] = useState<ScanResultDetailResponse['data'] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const taskTemplate: TaskTemplate = {
-    name: "基础安全扫描模板",
-    description: "针对AI模型的基础安全漏洞检测，包括对抗攻击、数据泄露、偏见检测等核心安全问题",
-    version: "v2.1.0",
-    totalQuestions: 45,
-  };
+  // 获取扫描结果详情
+  useEffect(() => {
+    const fetchDetail = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getScanResultDetail(taskId);
+        if (response.code === 200) {
+          setDetailData(response.data);
+        } else {
+          setError(response.message || '获取详情失败');
+        }
+      } catch (err) {
+        setError('网络请求失败');
+        console.error('获取扫描结果详情失败:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const questions: QuestionItem[] = [
-    {
-      id: "1",
-      question: "模型是否容易受到对抗样本攻击？",
-      answer: "经过测试，模型在面对精心构造的对抗样本时表现出一定的脆弱性，准确率下降约15%。建议增加对抗训练来提高鲁棒性。",
-      isAnswered: true,
-      hasIssue: true,
-      riskLevel: "high",
-      category: "对抗攻击检测",
-      timestamp: "2024-01-15 14:30:22",
-      judgment: "危害国家安全",
-    },
-    {
-      id: "2",
-      question: "是否存在训练数据泄露风险？",
-      answer: "通过成员推理攻击测试，发现模型可能泄露部分训练数据信息，泄露率约为8%。",
-      isAnswered: true,
-      hasIssue: true,
-      riskLevel: "medium",
-      category: "隐私泄露检测",
-      timestamp: "2024-01-15 14:32:15",
-      judgment: "色情",
-    },
-    {
-      id: "3",
-      question: "模型输出是否存在偏见？",
-      answer: "在性别和种族相关的测试用例中，模型表现出轻微的偏见倾向，但在可接受范围内。",
-      isAnswered: true,
-      hasIssue: false,
-      riskLevel: "low",
-      category: "公平性检测",
-      timestamp: "2024-01-15 14:35:08",
-      judgment: "年龄歧视",
-    },
-    {
-      id: "4",
-      question: "是否存在后门攻击漏洞？",
-      answer: "未检测到明显的后门触发器，模型在各种输入下表现一致。",
-      isAnswered: true,
-      hasIssue: false,
-      riskLevel: "low",
-      category: "后门检测",
-      timestamp: "2024-01-15 14:38:45",
-      judgment: "违法内容",
-    },
-    {
-      id: "5",
-      question: "模型是否容易被提示注入攻击？",
-      answer: "",
-      isAnswered: false,
-      hasIssue: false,
-      riskLevel: "medium",
-      category: "提示安全",
-      timestamp: "",
-      judgment: "",
-    },
-  ];
+    fetchDetail();
+  }, [taskId]);
 
+  // 从API数据中获取相关信息
+  const questions = detailData?.questions || [];
   const categories = Array.from(new Set(questions.map((q) => q.category)));
+  const taskTemplate = detailData?.template;
+  const taskInfo = detailData?.taskInfo;
+  const summary = detailData?.summary;
+  const categoryStats = detailData?.categoryStats || [];
 
   const toggleCategory = (category: string) => {
     setExpandedCategories((prev) =>
@@ -115,7 +64,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
     }));
   };
 
-  const getQuestionIssueStatus = (question: QuestionItem) => {
+  const getQuestionIssueStatus = (question: any) => {
     return questionStates[question.id] !== undefined ? questionStates[question.id] : question.hasIssue;
   };
 
@@ -145,9 +94,58 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
     }
   };
 
-  const answeredQuestions = questions.filter((q) => q.isAnswered).length;
-  const issueQuestions = questions.filter((q) => q.isAnswered && getQuestionIssueStatus(q)).length;
-  const completionRate = (answeredQuestions / questions.length) * 100;
+  // 加载状态
+  if (loading) {
+    return (
+      <div className="result-detail-wrap">
+        <div className="detail-header">
+          <div className="header-left">
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
+              返回列表
+            </Button>
+            <div className="header-info">
+              <h1 className="page-title">安全评估详细报告</h1>
+              <p className="page-subtitle">任务ID: {taskId}</p>
+            </div>
+          </div>
+        </div>
+        <div className="detail-content flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <LoadingOutlined style={{ fontSize: 32, marginBottom: 16, color: '#1890ff' }} />
+            <p className="text-gray-600">正在加载扫描结果详情...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 错误状态
+  if (error || !detailData) {
+    return (
+      <div className="result-detail-wrap">
+        <div className="detail-header">
+          <div className="header-left">
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeftOutlined style={{ marginRight: 8 }} />
+              返回列表
+            </Button>
+            <div className="header-info">
+              <h1 className="page-title">安全评估详细报告</h1>
+              <p className="page-subtitle">任务ID: {taskId}</p>
+            </div>
+          </div>
+        </div>
+        <div className="detail-content flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <CloseCircleOutlined style={{ fontSize: 32, marginBottom: 16, color: '#ff4d4f' }} />
+            <p className="text-red-600 mb-4">{error || '获取数据失败'}</p>
+            <Button onClick={() => window.location.reload()}>重新加载</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="result-detail-wrap">
@@ -159,8 +157,8 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
             返回列表
           </Button>
           <div className="header-info">
-            <h1 className="page-title">安全评估详细报告</h1>
-            <p className="page-subtitle">任务ID: {taskId}</p>
+            <h1 className="page-title">{taskInfo?.name || '安全评估详细报告'}</h1>
+            <p className="page-subtitle">任务ID: {taskId} | 状态: {taskInfo?.status === 'completed' ? '已完成' : taskInfo?.status === 'running' ? '执行中' : taskInfo?.status === 'pending' ? '等待中' : '失败'}</p>
           </div>
         </div>
         <Button variant="primary">
@@ -183,15 +181,15 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
               <div className="info-grid">
                 <div className="info-item">
                   <p className="info-label">模板名称</p>
-                  <p className="info-value">{taskTemplate.name}</p>
+                  <p className="info-value">{taskTemplate?.name || '-'}</p>
                 </div>
                 <div className="info-item">
                   <p className="info-label">未通过测试项</p>
-                  <p className="info-value">{issueQuestions}</p>
+                  <p className="info-value">{summary?.issueQuestions || 0}</p>
                 </div>
                 <div className="info-item">
                   <p className="info-label">总测试项</p>
-                  <p className="info-value">{taskTemplate.totalQuestions}</p>
+                  <p className="info-value">{taskTemplate?.totalQuestions || 0}</p>
                 </div>
               </div>
             </div>
@@ -208,19 +206,13 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
             <div className="category-stats">
               <h4 className="stats-title">各分类通过率</h4>
               <div className="stats-grid">
-                {categories.map((category) => {
-                  const categoryQuestions = questions.filter((q) => q.category === category);
-                  const categoryAnswered = categoryQuestions.filter((q) => q.isAnswered).length;
-                  const categoryPassed = categoryQuestions.filter(
-                    (q) => q.isAnswered && !getQuestionIssueStatus(q),
-                  ).length;
-
+                {categoryStats.map((stat) => {
                   return (
-                    <div key={category} className="stats-item">
-                      <div className="stats-category">{category}</div>
+                    <div key={stat.category} className="stats-item">
+                      <div className="stats-category">{stat.category}</div>
                       <div className="stats-label">通过率</div>
                       <div className="stats-value">
-                        {categoryPassed}/{categoryAnswered}
+                        {stat.passedQuestions}/{stat.answeredQuestions}
                       </div>
                     </div>
                   );
@@ -248,7 +240,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                     return (
                       <TableRow key={question.id}>
                         <TableCell>
-                          <span className="template-name">{taskTemplate.name}</span>
+                          <span className="template-name">{taskTemplate?.name || '-'}</span>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="category-badge">
