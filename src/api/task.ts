@@ -623,7 +623,7 @@ export type TaskStatus =
 export interface ScanResultItem {
   id: string;
   name: string;
-  type: string;
+  type: string[]; // 修改为数组类型，支持多个类型
   status: TaskStatus;
   progress: number;
   createTime: string;
@@ -656,7 +656,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: "TASK-001",
     name: "电商平台AI推荐系统安全评估",
-    type: "模型安全评估",
+    type: ["模型安全评估", "隐私检测", "公平性测试"],
     status: "completed",
     progress: 100,
     createTime: "2024-01-15 10:30",
@@ -670,7 +670,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: "TASK-002",
     name: "智能客服对抗攻击测试",
-    type: "对抗攻击测试",
+    type: ["对抗攻击测试", "鲁棒性检测"],
     status: "completed",
     progress: 100,
     createTime: "2024-01-14 14:20",
@@ -684,7 +684,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: "TASK-003",
     name: "图像识别模型隐私检测",
-    type: "数据隐私检测",
+    type: ["数据隐私检测", "成员推理攻击"],
     status: "running",
     progress: 65,
     createTime: "2024-01-16 09:15",
@@ -698,7 +698,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: "TASK-004",
     name: "图像分类模型基础扫描",
-    type: "基础安全扫描",
+    type: ["基础安全扫描"],
     status: "completed",
     progress: 100,
     createTime: "2024-01-13 09:20",
@@ -712,7 +712,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: "TASK-005",
     name: "语音识别模型安全评估",
-    type: "模型安全评估",
+    type: ["模型安全评估", "后门检测", "提示注入测试"],
     status: "completed",
     progress: 100,
     createTime: "2024-01-12 16:30",
@@ -726,7 +726,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: "TASK-006",
     name: "自然语言处理模型检测",
-    type: "基础安全扫描",
+    type: ["基础安全扫描", "文本对抗攻击"],
     status: "paused",
     progress: 30,
     createTime: "2024-01-16 11:00",
@@ -740,7 +740,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: "TASK-007",
     name: "计算机视觉模型评估",
-    type: "对抗攻击测试",
+    type: ["对抗攻击测试", "模型窃取检测"],
     status: "failed",
     progress: 0,
     createTime: "2024-01-11 14:00",
@@ -754,7 +754,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: "TASK-008",
     name: "多模态AI模型安全检测",
-    type: "数据隐私检测",
+    type: ["数据隐私检测", "跨模态攻击阿萨尔贡哈根黑啊和我", "模型安全评估"],
     status: "completed",
     progress: 100,
     createTime: "2024-01-10 09:30",
@@ -785,7 +785,7 @@ const mockGetScanResults = (params: { page?: number; pageSize?: number; search?:
         const searchTerm = params.search.toLowerCase();
         filteredResults = mockResults.filter(item => 
           item.name.toLowerCase().includes(searchTerm) ||
-          item.type.toLowerCase().includes(searchTerm) ||
+          item.type.some(type => type.toLowerCase().includes(searchTerm)) ||
           item.id.toLowerCase().includes(searchTerm)
         );
       }

@@ -154,6 +154,50 @@
               font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
               font-size: 13px;
             }
+          }
+        }
+
+        .type-tags-container {
+          cursor: pointer;
+          
+          .type-tags {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 4px;
+            overflow: hidden;
+            
+            .type-badge {
+              font-size: 12px;
+              padding: 2px 8px;
+              border-radius: 12px;
+              background-color: #f0f8ff;
+              border: 1px solid #1890ff;
+              color: #1890ff;
+              font-weight: 500;
+              white-space: nowrap;
+              flex-shrink: 0;
+              
+              &:hover {
+                background-color: #e6f7ff;
+                border-color: #40a9ff;
+              }
+              
+              &.type-badge-more {
+                background-color: #f0f8ff;
+                border: 1px solid #1890ff;
+                color: #1890ff;
+                
+                &:hover {
+                  background-color: #e6f7ff;
+                  border-color: #40a9ff;
+                }
+              }
+            }
+          }
+        }
+
+        .detail-item {
+          .detail-value {
 
             &.score-value {
               font-size: 18px;

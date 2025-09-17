@@ -15,7 +15,7 @@ import {
   getScanResults,
   ScanResultItem 
 } from "../../../api/task";
-import { message, Modal, Spin } from "antd";
+import { message, Modal, Spin, Tooltip } from "antd";
 import {
   CustomBarChart3,
   CustomAlertTriangle,
@@ -31,6 +31,94 @@ import {
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import "./index.less";
+
+// 智能类型标签显示组件
+const TypeTagsDisplay: React.FC<{ types: string[] }> = ({ types }) => {
+  const [visibleTypes, setVisibleTypes] = React.useState<string[]>([]);
+  const [hiddenCount, setHiddenCount] = React.useState<number>(0);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!types || types.length === 0) return;
+
+    // 创建临时容器来测量标签宽度
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.visibility = 'hidden';
+    tempContainer.style.display = 'flex';
+    tempContainer.style.gap = '8px';
+    tempContainer.style.fontSize = '12px';
+    tempContainer.style.fontFamily = getComputedStyle(document.body).fontFamily;
+    document.body.appendChild(tempContainer);
+
+    const maxWidth = 200; // 容器最大宽度
+    let totalWidth = 0;
+    let visibleCount = 0;
+    const moreTagWidth = 40; // +N标签的预估宽度
+
+    for (let i = 0; i < types.length; i++) {
+      // 创建临时标签元素来测量宽度
+      const tempTag = document.createElement('span');
+      tempTag.style.padding = '2px 8px';
+      tempTag.style.border = '1px solid #1890ff';
+      tempTag.style.borderRadius = '4px';
+      tempTag.style.whiteSpace = 'nowrap';
+      tempTag.textContent = types[i];
+      tempContainer.appendChild(tempTag);
+
+      const tagWidth = tempTag.offsetWidth + 8; // 加上间距
+
+      // 如果还有更多标签，需要为+N标签预留空间
+      const needMoreTag = i < types.length - 1;
+      const requiredWidth = totalWidth + tagWidth + (needMoreTag ? moreTagWidth : 0);
+
+      if (requiredWidth <= maxWidth) {
+        totalWidth += tagWidth;
+        visibleCount++;
+      } else {
+        break;
+      }
+    }
+
+    // 清理临时容器
+    document.body.removeChild(tempContainer);
+
+    setVisibleTypes(types.slice(0, visibleCount));
+    setHiddenCount(types.length - visibleCount);
+  }, [types]);
+
+  if (!types || types.length === 0) return null;
+
+  return (
+    <Tooltip 
+      title={
+        <div>
+          {types.map((typeItem, index) => (
+            <div key={index} style={{ marginBottom: index < types.length - 1 ? 4 : 0 }}>
+              {typeItem}
+            </div>
+          ))}
+        </div>
+      }
+      placement="topLeft"
+    >
+      <div className="type-tags-container" ref={containerRef}>
+        <div className="type-tags">
+          {visibleTypes.map((typeItem, index) => (
+            <Badge key={index} variant="outline" className="type-badge">
+              {typeItem}
+            </Badge>
+          ))}
+          {hiddenCount > 0 && (
+            <Badge variant="outline" className="type-badge type-badge-more">
+              +{hiddenCount}
+            </Badge>
+          )}
+        </div>
+      </div>
+    </Tooltip>
+  );
+};
 
 const ScanResults: React.FC<RouteComponentProps> = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -384,7 +472,9 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                     </div>
                     <div className="detail-item">
                       <p className="detail-label">类型</p>
-                      <p className="detail-value">{task.type}</p>
+                      <div className="detail-value">
+                        <TypeTagsDisplay types={task.type} />
+                      </div>
                     </div>
                     <div className="detail-item">
                       <p className="detail-label">创建时间</p>
