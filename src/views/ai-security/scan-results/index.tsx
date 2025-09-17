@@ -521,7 +521,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                           <span className="summary-label">安全评分</span>
                           <span className="progress-value">{task.score}/100</span>
                         </div>
-                        <Progress value={task.score || 0} className="progress-bar" />
+                        <Progress value={task.score || 0} className="progress-bar" strokeColor="#4a4a4a" />
                       </div>
                     </div>
                   ) : (
@@ -530,7 +530,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                         <span className="summary-label">执行进度</span>
                         <span className="progress-value">{task.progress}%</span>
                       </div>
-                      <Progress value={task.progress} className="progress-bar" />
+                      <Progress value={task.progress} className="progress-bar" strokeColor="#4a4a4a" />
                     </div>
                   )}
                 </div>
