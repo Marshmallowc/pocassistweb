@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { RouteComponentProps, useHistory } from "react-router-dom";
 import { 
   Button, 
@@ -27,7 +27,7 @@ import {
   WifiOutlined,
   SettingOutlined
 } from "@ant-design/icons";
-import { dispatchTask, TaskDispatchParams, testApiConnectivity, ApiTestParams, saveCustomTemplate, SaveCustomTemplateParams } from "../../../api/task";
+import { dispatchTask, TaskDispatchParams, testApiConnectivity, ApiTestParams, saveCustomTemplate, SaveCustomTemplateParams, getTaskTemplates, TaskTemplate } from "../../../api/task";
 import "./index.less";
 
 const { Title, Text, Paragraph } = Typography;
@@ -52,11 +52,8 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const [customTemplateName, setCustomTemplateName] = useState("");
 
   // 快速任务模板状态
-  const [quickTemplates, setQuickTemplates] = useState([
-    { name: "基础安全扫描", desc: "检测基础TC260内容" },
-    { name: "对抗样本测试", desc: "生成对抗样本进行鲁棒性测试" },
-    { name: "隐私泄露检测", desc: "检测模型是否存在隐私泄露风险" },
-  ]);
+  const [quickTemplates, setQuickTemplates] = useState<TaskTemplate[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
   
   // API配置相关状态
   const [apiFormatType, setApiFormatType] = useState<"builtin" | "custom" | "">("");
@@ -70,6 +67,37 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const requestFileRef = useRef<HTMLInputElement>(null);
   const responseFileRef = useRef<HTMLInputElement>(null);
   const customCorpusRef = useRef<HTMLInputElement>(null);
+
+  // 获取模板列表
+  const fetchTemplates = async () => {
+    setTemplatesLoading(true);
+    try {
+      const response = await getTaskTemplates();
+      if (response.success && response.data) {
+        setQuickTemplates(response.data.templates);
+        console.log("✅ 获取任务模板列表成功:", response.data.templates);
+      } else {
+        message.error(response.message || "获取模板列表失败");
+      }
+    } catch (error) {
+      console.error("获取模板列表失败:", error);
+      const err = error as any;
+      let errorMessage = "获取模板列表失败";
+      if (err?.response?.data?.message) {
+        errorMessage += `: ${err.response.data.message}`;
+      } else if (err?.message) {
+        errorMessage += `: ${err.message}`;
+      }
+      message.error(errorMessage);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  };
+
+  // 组件加载时获取模板列表
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
 
   // 文件上传处理
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: "request" | "response") => {
@@ -631,28 +659,37 @@ X-Custom-Header: value`}
            </Paragraph>
 
           <Row gutter={[16, 16]} className="template-grid">
-            {quickTemplates.map((template, index) => (
-              <Col span={6} key={index}>
-                <Card
-                  size="small"
-                  className={`template-item ${
-                    selectedTemplates.includes(template.name) ? "selected" : ""
-                  }`}
-                  onClick={() => handleTemplateSelect(template.name)}
-                  hoverable
-                >
-                  {selectedTemplates.includes(template.name) && (
-                    <CheckOutlined className="template-check" />
-                  )}
-                  <div className="template-content">
-                    <Text strong>{template.name}</Text>
-                    <Paragraph type="secondary" className="template-desc">
-                      {template.desc}
-                    </Paragraph>
-                  </div>
-                </Card>
+            {templatesLoading ? (
+              <Col span={24}>
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                  <Spin />
+                  <Text style={{ marginLeft: '8px' }}>加载模板中...</Text>
+                </div>
               </Col>
-            ))}
+            ) : (
+              quickTemplates.map((template, index) => (
+                <Col span={6} key={template.id}>
+                  <Card
+                    size="small"
+                    className={`template-item ${
+                      selectedTemplates.includes(template.name) ? "selected" : ""
+                    }`}
+                    onClick={() => handleTemplateSelect(template.name)}
+                    hoverable
+                  >
+                    {selectedTemplates.includes(template.name) && (
+                      <CheckOutlined className="template-check" />
+                    )}
+                    <div className="template-content">
+                      <Text strong>{template.name}</Text>
+                      <Paragraph type="secondary" className="template-desc">
+                        {template.description}
+                      </Paragraph>
+                    </div>
+                  </Card>
+                </Col>
+              ))
+            )}
 
             <Col span={6}>
               <Card
@@ -727,18 +764,16 @@ X-Custom-Header: value`}
                   const response = await saveCustomTemplate(templateData) as any;
                   
                   if (response.success || response.data?.success) {
-                    // 保存成功，添加到本地状态
-                    const newTemplate = {
-                      name: customTemplateName.trim(),
-                      desc: "自定义任务模板",
-                    };
-                    setQuickTemplates((prev) => [...prev, newTemplate]);
-                    setSelectedTemplates((prev) => [...prev, customTemplateName.trim()]);
-
-                    
+                    // 保存成功，重新获取模板列表
                     const templateName = response.data?.templateName || customTemplateName.trim();
                     message.success(`自定义模板"${templateName}"保存成功`);
                     console.log("✅ 自定义模板保存成功:", response);
+                    
+                    // 重新获取模板列表以显示最新数据
+                    await fetchTemplates();
+                    
+                    // 自动选择新创建的模板
+                    setSelectedTemplates((prev) => [...prev, customTemplateName.trim()]);
                   } else {
                     message.error(response.message || response.data?.message || "保存自定义模板失败");
                   }

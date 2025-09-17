@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { RouteComponentProps } from "react-router-dom";
 import { 
   Button, 
@@ -23,36 +23,18 @@ import {
   FileTextOutlined,
   CloseOutlined
 } from "@ant-design/icons";
-import { saveCustomTemplate, SaveCustomTemplateParams } from "../../api/task";
+import { saveCustomTemplate, SaveCustomTemplateParams, getTaskTemplates, TaskTemplate } from "../../api/task";
 import "./index.less";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-interface TemplateItem {
-  id: string;
-  name: string;
-  description: string;
-  createTime: string;
-  corpusFileName?: string;
-  corpusContent?: string;
-}
+// 使用API中定义的TaskTemplate接口
+type TemplateItem = TaskTemplate;
 
 const TemplateManagement: React.FC<RouteComponentProps> = () => {
-  const [templates, setTemplates] = useState<TemplateItem[]>([
-    {
-      id: "1",
-      name: "基础安全扫描模板",
-      description: "用于检测基础TC260内容的模板",
-      createTime: "2024-01-15 10:30:00"
-    },
-    {
-      id: "2", 
-      name: "对抗样本测试模板",
-      description: "生成对抗样本进行鲁棒性测试的模板",
-      createTime: "2024-01-14 15:20:00"
-    }
-  ]);
+  const [templates, setTemplates] = useState<TemplateItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -66,6 +48,37 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   const [currentCustomCorpusFileName, setCurrentCustomCorpusFileName] = useState("");
   
   const customCorpusRef = useRef<HTMLInputElement>(null);
+
+  // 获取模板列表
+  const fetchTemplates = async () => {
+    setLoading(true);
+    try {
+      const response = await getTaskTemplates();
+      if (response.success && response.data) {
+        setTemplates(response.data.templates);
+        console.log("✅ 获取模板列表成功:", response.data.templates);
+      } else {
+        message.error(response.message || "获取模板列表失败");
+      }
+    } catch (error) {
+      console.error("获取模板列表失败:", error);
+      const err = error as any;
+      let errorMessage = "获取模板列表失败";
+      if (err?.response?.data?.message) {
+        errorMessage += `: ${err.response.data.message}`;
+      } else if (err?.message) {
+        errorMessage += `: ${err.message}`;
+      }
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 组件加载时获取模板列表
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
 
   // 表格列定义
   const columns = [
@@ -199,21 +212,13 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       const response = await saveCustomTemplate(templateData) as any;
       
       if (response.success || response.data?.success) {
-        // 保存成功，添加到本地状态
-        const newTemplate: TemplateItem = {
-          id: Date.now().toString(),
-          name: customTemplateName.trim(),
-          description: templateDescription.trim(),
-          createTime: new Date().toLocaleString(),
-          corpusFileName: currentCustomCorpusFileName,
-          corpusContent: currentCustomCorpusFile
-        };
-        
-        setTemplates((prev) => [...prev, newTemplate]);
-        
+        // 保存成功，重新获取模板列表
         const templateName = response.data?.templateName || customTemplateName.trim();
         message.success(`自定义模板"${templateName}"创建成功`);
         console.log("✅ 自定义模板保存成功:", response);
+        
+        // 重新获取模板列表以显示最新数据
+        await fetchTemplates();
       } else {
         message.error(response.message || response.data?.message || "创建自定义模板失败");
       }
@@ -324,6 +329,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
           columns={columns}
           dataSource={templates}
           rowKey="id"
+          loading={loading}
           pagination={{
             showSizeChanger: true,
             showQuickJumper: true,

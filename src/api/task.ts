@@ -64,6 +64,28 @@ export interface SaveCustomTemplateResponse {
   };
 }
 
+// 任务模板接口定义
+export interface TaskTemplate {
+  id: string;
+  name: string;
+  description: string;
+  createTime: string;
+  type: 'builtin' | 'custom'; // 内置模板或自定义模板
+  corpusFileName?: string;
+  corpusContent?: string;
+}
+
+// 获取任务模板响应接口
+export interface GetTaskTemplatesResponse {
+  code: number;
+  message: string;
+  success: boolean;
+  data: {
+    templates: TaskTemplate[];
+    total: number;
+  };
+}
+
 // API连通性测试请求参数接口
 export interface ApiTestParams {
   type: "builtin" | "custom";
@@ -542,6 +564,22 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
       
       if (isSuccess) {
         const templateId = `TEMPLATE-${Date.now()}`;
+        
+        // 将新模板添加到全局数据中
+        const newTemplate: TaskTemplate = {
+          id: templateId,
+          name: data.name,
+          description: "自定义模板",
+          createTime: new Date().toLocaleString(),
+          type: 'custom',
+          corpusFileName: data.corpusFileName,
+          corpusContent: data.corpusContent
+        };
+        
+        mockTaskTemplatesData.push(newTemplate);
+        console.log(`✅ Mock保存成功: 已添加自定义模板 ${data.name} (${templateId})`);
+        console.log(`📊 当前模板总数: ${mockTaskTemplatesData.length}`);
+        
         resolve({
           code: 200,
           message: "自定义模板保存成功",
@@ -650,6 +688,31 @@ export interface ScanResultsResponse {
     pageSize: number;
   };
 }
+
+// Mock 任务模板数据存储
+let mockTaskTemplatesData: TaskTemplate[] = [
+  {
+    id: "1",
+    name: "基础安全扫描模板",
+    description: "用于检测基础TC260内容的模板",
+    createTime: "2024-01-15 10:30:00",
+    type: 'builtin'
+  },
+  {
+    id: "2", 
+    name: "对抗样本测试模板",
+    description: "生成对抗样本进行鲁棒性测试的模板",
+    createTime: "2024-01-14 15:20:00",
+    type: 'builtin'
+  },
+  {
+    id: "3",
+    name: "隐私泄露检测模板",
+    description: "检测模型是否存在隐私泄露风险的模板",
+    createTime: "2024-01-13 09:15:00",
+    type: 'builtin'
+  }
+];
 
 // Mock 数据存储 - 使用全局变量来模拟数据库
 let mockScanResultsData: ScanResultItem[] = [
@@ -766,6 +829,50 @@ let mockScanResultsData: ScanResultItem[] = [
     details: { high: 4, medium: 7, low: 4 },
   }
 ];
+
+/**
+ * 获取任务模板列表 - Mock实现
+ * @param params 查询参数
+ */
+const mockGetTaskTemplates = (params: { page?: number; pageSize?: number; search?: string } = {}): Promise<GetTaskTemplatesResponse> => {
+  console.log("🔧 使用Mock服务获取任务模板列表", params);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // 使用全局模板数据
+      let filteredTemplates = mockTaskTemplatesData;
+      
+      // 应用搜索过滤
+      if (params.search) {
+        const searchTerm = params.search.toLowerCase();
+        filteredTemplates = mockTaskTemplatesData.filter(template => 
+          template.name.toLowerCase().includes(searchTerm) ||
+          template.description.toLowerCase().includes(searchTerm) ||
+          template.id.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      // 应用分页
+      const page = params.page || 1;
+      const pageSize = params.pageSize || 10;
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedTemplates = filteredTemplates.slice(startIndex, endIndex);
+
+      const mockResponse: GetTaskTemplatesResponse = {
+        code: 200,
+        message: "获取任务模板列表成功",
+        success: true,
+        data: {
+          templates: paginatedTemplates,
+          total: filteredTemplates.length,
+        }
+      };
+      
+      resolve(mockResponse);
+    }, 300 + Math.random() * 500); // 0.3-0.8秒随机延迟
+  });
+};
 
 /**
  * 获取扫描结果列表 - Mock实现
@@ -1079,6 +1186,27 @@ export const reviewQuestion = async (questionId: string, reviewData: QuestionRev
     url: `/scan-result/question/${questionId}/review`,
     method: "put",
     data: reviewData
+  });
+  return response.data;
+};
+
+/**
+ * 获取任务模板列表
+ * @param params 查询参数
+ */
+export const getTaskTemplates = async (params: { page?: number; pageSize?: number; search?: string } = {}): Promise<GetTaskTemplatesResponse> => {
+  const useMock = getMockEnabled();
+  logApiSource("获取任务模板列表", useMock);
+  
+  if (useMock) {
+    return mockGetTaskTemplates(params);
+  }
+  
+  // 真实API调用
+  const response = await request({
+    url: "/templates/",
+    method: "get",
+    params
   });
   return response.data;
 };
