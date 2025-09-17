@@ -38,6 +38,13 @@ type TemplateItem = TaskTemplate;
 const TemplateManagement: React.FC<RouteComponentProps> = () => {
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // 分页状态管理
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -52,13 +59,26 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   
   const customCorpusRef = useRef<HTMLInputElement>(null);
 
+  // 分页回调函数
+  const handlePageChange = (page: number, pageSize: number | undefined) => {
+    setPagination(prev => ({
+      ...prev,
+      current: page,
+      pageSize: pageSize || prev.pageSize
+    }));
+  };
+
   // 获取模板列表
-  const fetchTemplates = async () => {
+  const fetchTemplates = async (page: number = pagination.current, pageSize: number = pagination.pageSize) => {
     setLoading(true);
     try {
-      const response = await getTaskTemplates();
+      const response = await getTaskTemplates({ page, pageSize });
       if (response.success && response.data) {
         setTemplates(response.data.templates);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data.total
+        }));
         console.log("✅ 获取模板列表成功:", response.data.templates);
       } else {
         message.error(response.message || "获取模板列表失败");
@@ -78,10 +98,10 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
     }
   };
 
-  // 组件加载时获取模板列表
+  // 分页参数变化时重新获取数据
   useEffect(() => {
-    fetchTemplates();
-  }, []);
+    fetchTemplates(pagination.current, pagination.pageSize);
+  }, [pagination.current, pagination.pageSize]);
 
   // 表格列定义
   const columns = [
@@ -222,7 +242,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
         console.log("✅ 自定义模板保存成功:", response);
         
         // 重新获取模板列表以显示最新数据
-        await fetchTemplates();
+        await fetchTemplates(pagination.current, pagination.pageSize);
       } else {
         message.error(response.message || response.data?.message || "创建自定义模板失败");
       }
@@ -301,7 +321,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
         console.log("✅ 模板编辑成功:", response);
         
         // 重新获取模板列表以显示最新数据
-        await fetchTemplates();
+        await fetchTemplates(pagination.current, pagination.pageSize);
       } else {
         message.error(response.message || response.data?.message || "编辑模板失败");
       }
@@ -340,7 +360,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
             console.log("✅ 模板删除成功:", response);
             
             // 重新获取模板列表以显示最新数据
-            await fetchTemplates();
+            await fetchTemplates(pagination.current, pagination.pageSize);
           } else {
             message.error(response.message || response.data?.message || "删除模板失败");
           }
@@ -378,10 +398,14 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
           rowKey="id"
           loading={loading}
           pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
               `第 ${range[0]}-${range[1]} 条/共 ${total} 条`,
+            onChange: handlePageChange,
           }}
         />
       </Card>
