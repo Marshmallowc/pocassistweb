@@ -15,7 +15,7 @@ import {
   getScanResults,
   ScanResultItem 
 } from "../../../api/task";
-import { message, Modal, Spin, Tooltip } from "antd";
+import { message, Modal, Spin, Tooltip, Pagination } from "antd";
 import {
   DownloadOutlined,
   EyeOutlined,
@@ -155,12 +155,25 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [taskResults, setTaskResults] = useState<ScanResultItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [total, setTotal] = useState<number>(0);
-  const pageSize = 10;
+  
+  // 分页状态管理
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
+
+  // 分页回调函数
+  const handlePageChange = (page: number, pageSize: number | undefined) => {
+    setPagination(prev => ({
+      ...prev,
+      current: page,
+      pageSize: pageSize || prev.pageSize
+    }));
+  };
 
   // 获取扫描结果数据
-  const fetchScanResults = async (page: number = 1) => {
+  const fetchScanResults = async (page: number = pagination.current, pageSize: number = pagination.pageSize) => {
     try {
       setLoading(true);
       const response = await getScanResults({
@@ -170,8 +183,10 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       
       if (response.code === 200) {
         setTaskResults(response.data.results);
-        setTotal(response.data.total);
-        setCurrentPage(response.data.page);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data.total
+        }));
       } else {
         message.error(response.message || "获取扫描结果失败");
       }
@@ -183,10 +198,10 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     }
   };
 
-  // 组件挂载时获取数据
+  // 分页参数变化时重新获取数据
   useEffect(() => {
-    fetchScanResults(currentPage);
-  }, [currentPage]);
+    fetchScanResults(pagination.current, pagination.pageSize);
+  }, [pagination.current, pagination.pageSize]);
 
   const handleViewDetail = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -214,7 +229,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
           if (isSuccess) {
             message.success(responseMessage || '任务删除成功');
             // 重新获取数据以保持同步
-            fetchScanResults(currentPage);
+            fetchScanResults(pagination.current, pagination.pageSize);
           } else {
             message.error(responseMessage || '删除失败');
           }
@@ -268,7 +283,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
 
   // 刷新任务数据的辅助函数
   const refreshTaskData = () => {
-    fetchScanResults(currentPage);
+    fetchScanResults(pagination.current, pagination.pageSize);
   };
 
   // 处理开始任务
@@ -524,6 +539,23 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
               )}
             </div>
           </Spin>
+          
+          {/* 分页组件 */}
+          {taskResults.length > 0 && (
+            <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+              <Pagination
+                current={pagination.current}
+                pageSize={pagination.pageSize}
+                total={pagination.total}
+                showSizeChanger={true}
+                showQuickJumper={true}
+                showTotal={(total, range) =>
+                  `第 ${range[0]}-${range[1]} 条/共 ${total} 条`
+                }
+                onChange={handlePageChange}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
