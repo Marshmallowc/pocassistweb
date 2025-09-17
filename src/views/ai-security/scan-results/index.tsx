@@ -17,12 +17,6 @@ import {
 } from "../../../api/task";
 import { message, Modal, Spin, Tooltip } from "antd";
 import {
-  CustomBarChart3,
-  CustomAlertTriangle,
-  CustomCheckCircle,
-  CustomTrendingUp,
-} from "../../../components/Icons";
-import {
   DownloadOutlined,
   EyeOutlined,
   PlayCircleOutlined,
@@ -369,16 +363,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
   };
 
-  const completedTasks = taskResults.filter((task) => task.status === "completed");
-  const totalVulnerabilities = completedTasks.reduce((sum, task) => sum + (task.vulnerabilities || 0), 0);
-  const averageScore =
-    completedTasks.length > 0
-      ? Math.round(completedTasks.reduce((sum, task) => sum + (task.score || 0), 0) / completedTasks.length)
-      : 0;
-  const passRate =
-    completedTasks.length > 0
-      ? Math.round((completedTasks.filter((task) => (task.score || 0) >= 70).length / completedTasks.length) * 100)
-      : 0;
 
   return (
     <div className="scan-results-container">
@@ -389,55 +373,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         </div>
       </div>
 
-      <div className="stats-grid">
-        <Card>
-          <CardContent className="stats-card-content">
-            <div className="stats-item">
-              <div>
-                <p className="stats-label">总任务数</p>
-                <p className="stats-value">{taskResults.length}</p>
-              </div>
-              <CustomBarChart3 className="stats-icon text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="stats-card-content">
-            <div className="stats-item">
-              <div>
-                <p className="stats-label">发现漏洞</p>
-                <p className="stats-value text-red-600">{totalVulnerabilities}</p>
-              </div>
-              <CustomAlertTriangle className="stats-icon text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="stats-card-content">
-            <div className="stats-item">
-              <div>
-                <p className="stats-label">平均安全分</p>
-                <p className="stats-value text-yellow-600">{averageScore}</p>
-              </div>
-              <CustomTrendingUp className="stats-icon text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="stats-card-content">
-            <div className="stats-item">
-              <div>
-                <p className="stats-label">通过率</p>
-                <p className="stats-value text-green-600">{passRate}%</p>
-              </div>
-              <CustomCheckCircle className="stats-icon text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       <Card>
         <CardHeader>
