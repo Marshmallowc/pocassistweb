@@ -465,7 +465,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                     )}
                     {task.vulnerabilities !== null ? (
                       <div className="detail-item">
-                        <p className="detail-label">发现漏洞</p>
+                        <p className="detail-label">未通过测试项</p>
                         <p className="detail-value">{task.vulnerabilities} 个</p>
                       </div>
                     ) : (
