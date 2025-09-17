@@ -25,7 +25,6 @@ import {
 import {
   DownloadOutlined,
   EyeOutlined,
-  SearchOutlined,
   PlayCircleOutlined,
   PauseCircleOutlined,
   DeleteOutlined,
@@ -37,19 +36,17 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [taskResults, setTaskResults] = useState<ScanResultItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [total, setTotal] = useState<number>(0);
   const pageSize = 10;
 
   // 获取扫描结果数据
-  const fetchScanResults = async (page: number = 1, search: string = "") => {
+  const fetchScanResults = async (page: number = 1) => {
     try {
       setLoading(true);
       const response = await getScanResults({
         page,
-        pageSize,
-        search: search.trim() || undefined
+        pageSize
       });
       
       if (response.code === 200) {
@@ -69,15 +66,8 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
 
   // 组件挂载时获取数据
   useEffect(() => {
-    fetchScanResults(currentPage, searchTerm);
+    fetchScanResults(currentPage);
   }, [currentPage]);
-
-  // 搜索处理
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1); // 重置到第一页
-    fetchScanResults(1, value);
-  };
 
   const handleViewDetail = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -105,7 +95,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
           if (isSuccess) {
             message.success(responseMessage || '任务删除成功');
             // 重新获取数据以保持同步
-            fetchScanResults(currentPage, searchTerm);
+            fetchScanResults(currentPage);
           } else {
             message.error(responseMessage || '删除失败');
           }
@@ -159,7 +149,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
 
   // 刷新任务数据的辅助函数
   const refreshTaskData = () => {
-    fetchScanResults(currentPage, searchTerm);
+    fetchScanResults(currentPage);
   };
 
   // 处理开始任务
@@ -327,17 +317,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       <Card>
         <CardHeader>
           <CardTitle>任务列表与扫描结果</CardTitle>
-          <div className="search-section">
-            <div className="search-input-wrapper">
-              <SearchOutlined className="search-icon" />
-              <Input 
-                placeholder="搜索任务..." 
-                className="search-input"
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-          </div>
         </CardHeader>
         <CardContent>
           <Spin spinning={loading} tip="加载中...">
