@@ -32,14 +32,18 @@ import {
 } from "@ant-design/icons";
 import "./index.less";
 
-// 智能类型标签显示组件
+// 智能自适应类型标签显示组件
 const TypeTagsDisplay: React.FC<{ types: string[] }> = ({ types }) => {
   const [visibleTypes, setVisibleTypes] = React.useState<string[]>([]);
   const [hiddenCount, setHiddenCount] = React.useState<number>(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    if (!types || types.length === 0) return;
+  const calculateVisibleTags = React.useCallback(() => {
+    if (!types || types.length === 0 || !containerRef.current) return;
+
+    // 获取容器的实际可用宽度
+    const containerWidth = containerRef.current.offsetWidth;
+    if (containerWidth === 0) return; // 容器还未渲染
 
     // 创建临时容器来测量标签宽度
     const tempContainer = document.createElement('div');
@@ -51,7 +55,8 @@ const TypeTagsDisplay: React.FC<{ types: string[] }> = ({ types }) => {
     tempContainer.style.fontFamily = getComputedStyle(document.body).fontFamily;
     document.body.appendChild(tempContainer);
 
-    const maxWidth = 200; // 容器最大宽度
+    // 使用容器实际宽度减去一些边距
+    const maxWidth = containerWidth - 20; // 预留20px边距
     let totalWidth = 0;
     let visibleCount = 0;
     const moreTagWidth = 40; // +N标签的预估宽度
@@ -86,6 +91,38 @@ const TypeTagsDisplay: React.FC<{ types: string[] }> = ({ types }) => {
     setVisibleTypes(types.slice(0, visibleCount));
     setHiddenCount(types.length - visibleCount);
   }, [types]);
+
+  React.useEffect(() => {
+    calculateVisibleTags();
+  }, [calculateVisibleTags]);
+
+  // 监听窗口大小变化和容器大小变化
+  React.useEffect(() => {
+    // 使用 any 类型避免 TypeScript 错误
+    const ResizeObserverClass = (window as any).ResizeObserver || (global as any).ResizeObserver;
+    const resizeObserver = ResizeObserverClass 
+      ? new ResizeObserverClass(() => {
+          calculateVisibleTags();
+        })
+      : null;
+
+    const handleWindowResize = () => {
+      setTimeout(calculateVisibleTags, 100); // 延迟执行，确保布局稳定
+    };
+
+    if (containerRef.current && resizeObserver) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    window.addEventListener('resize', handleWindowResize);
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      window.removeEventListener('resize', handleWindowResize);
+    };
+  }, [calculateVisibleTags]);
 
   if (!types || types.length === 0) return null;
 
