@@ -409,23 +409,29 @@ const mockDeleteScanTask = (taskId: string) => {
   
   return new Promise((resolve) => {
     setTimeout(() => {
-      // 模拟成功率为95%
-      const isSuccess = Math.random() > 0.05;
+      // 检查任务是否存在
+      const taskIndex = mockScanResultsData.findIndex(task => task.id === taskId);
       
-      if (isSuccess) {
+      if (taskIndex === -1) {
         resolve({
           data: {
-            code: 200,
-            message: "任务删除成功",
-            success: true,
+            code: 404,
+            message: "删除失败: 任务不存在",
+            success: false,
             data: {
-              deletedTaskId: taskId,
-              timestamp: new Date().toISOString()
+              taskId: taskId,
+              error_type: "task_not_found",
+              error_details: "Task not found"
             }
           },
-          status: 200
+          status: 404
         });
-      } else {
+        return;
+      }
+      
+      // 检查任务状态 - 正在运行的任务不能删除
+      const task = mockScanResultsData[taskIndex];
+      if (task.status === 'running') {
         resolve({
           data: {
             code: 400,
@@ -438,6 +444,46 @@ const mockDeleteScanTask = (taskId: string) => {
             }
           },
           status: 400
+        });
+        return;
+      }
+      
+      // 模拟成功率为95% (只对非运行状态的任务)
+      const isSuccess = Math.random() > 0.05;
+      
+      if (isSuccess) {
+        // 真正从数组中删除任务
+        const deletedTask = mockScanResultsData.splice(taskIndex, 1)[0];
+        console.log(`✅ Mock删除成功: 已删除任务 ${taskId} (${deletedTask.name})`);
+        console.log(`📊 当前剩余任务数量: ${mockScanResultsData.length}`);
+        
+        resolve({
+          data: {
+            code: 200,
+            message: "任务删除成功",
+            success: true,
+            data: {
+              deletedTaskId: taskId,
+              deletedTaskName: deletedTask.name,
+              remainingCount: mockScanResultsData.length,
+              timestamp: new Date().toISOString()
+            }
+          },
+          status: 200
+        });
+      } else {
+        resolve({
+          data: {
+            code: 500,
+            message: "删除失败: 服务器内部错误",
+            success: false,
+            data: {
+              taskId: taskId,
+              error_type: "server_error",
+              error_details: "Internal server error during deletion"
+            }
+          },
+          status: 500
         });
       }
     }, 500 + Math.random() * 800); // 0.5-1.3秒随机延迟
@@ -605,6 +651,122 @@ export interface ScanResultsResponse {
   };
 }
 
+// Mock 数据存储 - 使用全局变量来模拟数据库
+let mockScanResultsData: ScanResultItem[] = [
+  {
+    id: "TASK-001",
+    name: "电商平台AI推荐系统安全评估",
+    type: "模型安全评估",
+    status: "completed",
+    progress: 100,
+    createTime: "2024-01-15 10:30",
+    completedTime: "2024-01-15 15:45",
+    estimatedTime: "2小时30分钟",
+    riskLevel: "medium",
+    vulnerabilities: 12,
+    score: 75,
+    details: { high: 2, medium: 5, low: 5 },
+  },
+  {
+    id: "TASK-002",
+    name: "智能客服对抗攻击测试",
+    type: "对抗攻击测试",
+    status: "completed",
+    progress: 100,
+    createTime: "2024-01-14 14:20",
+    completedTime: "2024-01-14 16:05",
+    estimatedTime: "1小时45分钟",
+    riskLevel: "high",
+    vulnerabilities: 18,
+    score: 45,
+    details: { high: 6, medium: 8, low: 4 },
+  },
+  {
+    id: "TASK-003",
+    name: "图像识别模型隐私检测",
+    type: "数据隐私检测",
+    status: "running",
+    progress: 65,
+    createTime: "2024-01-16 09:15",
+    completedTime: null,
+    estimatedTime: "3小时10分钟",
+    riskLevel: null,
+    vulnerabilities: null,
+    score: null,
+    details: null,
+  },
+  {
+    id: "TASK-004",
+    name: "图像分类模型基础扫描",
+    type: "基础安全扫描",
+    status: "completed",
+    progress: 100,
+    createTime: "2024-01-13 09:20",
+    completedTime: "2024-01-13 11:20",
+    estimatedTime: "2小时",
+    riskLevel: "low",
+    vulnerabilities: 3,
+    score: 92,
+    details: { high: 0, medium: 1, low: 2 },
+  },
+  {
+    id: "TASK-005",
+    name: "语音识别模型安全评估",
+    type: "模型安全评估",
+    status: "completed",
+    progress: 100,
+    createTime: "2024-01-12 16:30",
+    completedTime: "2024-01-12 19:15",
+    estimatedTime: "2小时45分钟",
+    riskLevel: "medium",
+    vulnerabilities: 8,
+    score: 82,
+    details: { high: 1, medium: 4, low: 3 },
+  },
+  {
+    id: "TASK-006",
+    name: "自然语言处理模型检测",
+    type: "基础安全扫描",
+    status: "paused",
+    progress: 30,
+    createTime: "2024-01-16 11:00",
+    completedTime: null,
+    estimatedTime: "4小时",
+    riskLevel: null,
+    vulnerabilities: null,
+    score: null,
+    details: null,
+  },
+  {
+    id: "TASK-007",
+    name: "计算机视觉模型评估",
+    type: "对抗攻击测试",
+    status: "failed",
+    progress: 0,
+    createTime: "2024-01-11 14:00",
+    completedTime: null,
+    estimatedTime: "3小时30分钟",
+    riskLevel: null,
+    vulnerabilities: null,
+    score: null,
+    details: null,
+  },
+  {
+    id: "TASK-008",
+    name: "多模态AI模型安全检测",
+    type: "数据隐私检测",
+    status: "completed",
+    progress: 100,
+    createTime: "2024-01-10 09:30",
+    completedTime: "2024-01-10 13:45",
+    estimatedTime: "4小时15分钟",
+    riskLevel: "high",
+    vulnerabilities: 15,
+    score: 58,
+    details: { high: 4, medium: 7, low: 4 },
+  }
+];
+
 /**
  * 获取扫描结果列表 - Mock实现
  * @param params 查询参数
@@ -614,120 +776,8 @@ const mockGetScanResults = (params: { page?: number; pageSize?: number; search?:
   
   return new Promise((resolve) => {
     setTimeout(() => {
-      const mockResults: ScanResultItem[] = [
-        {
-          id: "TASK-001",
-          name: "电商平台AI推荐系统安全评估",
-          type: "模型安全评估",
-          status: "completed",
-          progress: 100,
-          createTime: "2024-01-15 10:30",
-          completedTime: "2024-01-15 15:45",
-          estimatedTime: "2小时30分钟",
-          riskLevel: "medium",
-          vulnerabilities: 12,
-          score: 75,
-          details: { high: 2, medium: 5, low: 5 },
-        },
-        {
-          id: "TASK-002",
-          name: "智能客服对抗攻击测试",
-          type: "对抗攻击测试",
-          status: "completed",
-          progress: 100,
-          createTime: "2024-01-14 14:20",
-          completedTime: "2024-01-14 16:05",
-          estimatedTime: "1小时45分钟",
-          riskLevel: "high",
-          vulnerabilities: 18,
-          score: 45,
-          details: { high: 6, medium: 8, low: 4 },
-        },
-        {
-          id: "TASK-003",
-          name: "图像识别模型隐私检测",
-          type: "数据隐私检测",
-          status: "running",
-          progress: 65,
-          createTime: "2024-01-16 09:15",
-          completedTime: null,
-          estimatedTime: "3小时10分钟",
-          riskLevel: null,
-          vulnerabilities: null,
-          score: null,
-          details: null,
-        },
-        {
-          id: "TASK-004",
-          name: "图像分类模型基础扫描",
-          type: "基础安全扫描",
-          status: "completed",
-          progress: 100,
-          createTime: "2024-01-13 09:20",
-          completedTime: "2024-01-13 11:20",
-          estimatedTime: "2小时",
-          riskLevel: "low",
-          vulnerabilities: 3,
-          score: 92,
-          details: { high: 0, medium: 1, low: 2 },
-        },
-        {
-          id: "TASK-005",
-          name: "语音识别模型安全评估",
-          type: "模型安全评估",
-          status: "completed",
-          progress: 100,
-          createTime: "2024-01-12 16:30",
-          completedTime: "2024-01-12 19:15",
-          estimatedTime: "2小时45分钟",
-          riskLevel: "medium",
-          vulnerabilities: 8,
-          score: 82,
-          details: { high: 1, medium: 4, low: 3 },
-        },
-        {
-          id: "TASK-006",
-          name: "自然语言处理模型检测",
-          type: "基础安全扫描",
-          status: "paused",
-          progress: 30,
-          createTime: "2024-01-16 11:00",
-          completedTime: null,
-          estimatedTime: "4小时",
-          riskLevel: null,
-          vulnerabilities: null,
-          score: null,
-          details: null,
-        },
-        {
-          id: "TASK-007",
-          name: "计算机视觉模型评估",
-          type: "对抗攻击测试",
-          status: "failed",
-          progress: 0,
-          createTime: "2024-01-11 14:00",
-          completedTime: null,
-          estimatedTime: "3小时30分钟",
-          riskLevel: null,
-          vulnerabilities: null,
-          score: null,
-          details: null,
-        },
-        {
-          id: "TASK-008",
-          name: "多模态AI模型安全检测",
-          type: "数据隐私检测",
-          status: "completed",
-          progress: 100,
-          createTime: "2024-01-10 09:30",
-          completedTime: "2024-01-10 13:45",
-          estimatedTime: "4小时15分钟",
-          riskLevel: "high",
-          vulnerabilities: 15,
-          score: 58,
-          details: { high: 4, medium: 7, low: 4 },
-        }
-      ];
+      // 使用全局数据而不是固定的本地数据
+      const mockResults = mockScanResultsData;
 
       // 应用搜索过滤
       let filteredResults = mockResults;
