@@ -17,9 +17,13 @@ const PrimaryLayout: React.FC = props => {
   const token = getToken();
   const location = useLocation();
 
-  // DEBUG: 跳过登录验证，直接显示主布局
   // 如果访问登录页面，显示未认证布局
   if (location.pathname === "/login") {
+    return <UnAuthLayout />;
+  }
+
+  // 如果没有token，显示未认证布局（重定向到登录页）
+  if (!token) {
     return <UnAuthLayout />;
   }
 
