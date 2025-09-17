@@ -11,7 +11,8 @@ import {
   Input,
   Upload,
   Form,
-  Divider
+  Divider,
+  Tabs
 } from "antd";
 import { 
   PlusOutlined, 
@@ -21,13 +22,15 @@ import {
   UploadOutlined,
   DownloadOutlined,
   FileTextOutlined,
-  CloseOutlined
+  CloseOutlined,
+  CopyOutlined
 } from "@ant-design/icons";
-import { saveCustomTemplate, SaveCustomTemplateParams, getTaskTemplates, TaskTemplate } from "../../api/task";
+import { saveCustomTemplate, SaveCustomTemplateParams, getTaskTemplates, TaskTemplate, editTemplate, EditTemplateParams, deleteTemplate } from "../../api/task";
 import "./index.less";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
+const { TabPane } = Tabs;
 
 // 使用API中定义的TaskTemplate接口
 type TemplateItem = TaskTemplate;
@@ -266,7 +269,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   };
 
   // 保存编辑
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!customTemplateName.trim()) {
       message.error("请输入模板名称");
       return;
@@ -276,21 +279,42 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       return;
     }
 
-    if (currentTemplate) {
-      setTemplates(prev => 
-        prev.map(item => 
-          item.id === currentTemplate.id 
-            ? {
-                ...item,
-                name: customTemplateName.trim(),
-                description: templateDescription.trim(),
-                corpusFileName: currentCustomCorpusFileName,
-                corpusContent: currentCustomCorpusFile
-              }
-            : item
-        )
-      );
-      message.success("模板编辑成功");
+    if (!currentTemplate) {
+      message.error("未找到要编辑的模板");
+      return;
+    }
+
+    try {
+      // 发送网络请求编辑模板
+      const editData: EditTemplateParams = {
+        templateId: currentTemplate.id,
+        name: customTemplateName.trim(),
+        description: templateDescription.trim(),
+        corpusContent: currentCustomCorpusFile || currentTemplate.corpusContent,
+        corpusFileName: currentCustomCorpusFileName || currentTemplate.corpusFileName,
+      };
+
+      const response = await editTemplate(editData) as any;
+      
+      if (response.success || response.data?.success) {
+        message.success("模板编辑成功");
+        console.log("✅ 模板编辑成功:", response);
+        
+        // 重新获取模板列表以显示最新数据
+        await fetchTemplates();
+      } else {
+        message.error(response.message || response.data?.message || "编辑模板失败");
+      }
+    } catch (error) {
+      console.error("编辑模板失败:", error);
+      const err = error as any;
+      let errorMessage = "编辑模板失败";
+      if (err?.response?.data?.message) {
+        errorMessage += `: ${err.response.data.message}`;
+      } else if (err?.message) {
+        errorMessage += `: ${err.message}`;
+      }
+      message.error(errorMessage);
     }
 
     resetCreateForm();
@@ -306,9 +330,31 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       okText: "删除",
       cancelText: "取消",
       okType: "danger",
-      onOk() {
-        setTemplates(prev => prev.filter(item => item.id !== record.id));
-        message.success("模板删除成功");
+      onOk: async () => {
+        try {
+          // 发送网络请求删除模板
+          const response = await deleteTemplate(record.id) as any;
+          
+          if (response.success || response.data?.success) {
+            message.success("模板删除成功");
+            console.log("✅ 模板删除成功:", response);
+            
+            // 重新获取模板列表以显示最新数据
+            await fetchTemplates();
+          } else {
+            message.error(response.message || response.data?.message || "删除模板失败");
+          }
+        } catch (error) {
+          console.error("删除模板失败:", error);
+          const err = error as any;
+          let errorMessage = "删除模板失败";
+          if (err?.response?.data?.message) {
+            errorMessage += `: ${err.response.data.message}`;
+          } else if (err?.message) {
+            errorMessage += `: ${err.message}`;
+          }
+          message.error(errorMessage);
+        }
       },
     });
   };
@@ -460,29 +506,74 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
             关闭
           </Button>
         ]}
-        width={500}
+        width={700}
       >
         {currentTemplate && (
-          <div className="template-detail">
-            <div className="detail-item">
-              <Text strong>模板名称：</Text>
-              <Text>{currentTemplate.name}</Text>
-            </div>
-            <div className="detail-item">
-              <Text strong>模板描述：</Text>
-              <Text>{currentTemplate.description}</Text>
-            </div>
-            <div className="detail-item">
-              <Text strong>创建时间：</Text>
-              <Text>{currentTemplate.createTime}</Text>
-            </div>
-            {currentTemplate.corpusFileName && (
-              <div className="detail-item">
-                <Text strong>语料文件：</Text>
-                <Text>{currentTemplate.corpusFileName}</Text>
+          <Tabs defaultActiveKey="basic" type="card">
+            <TabPane tab="基本信息" key="basic">
+              <div className="template-detail">
+                <div className="detail-item">
+                  <Text strong>模板名称：</Text>
+                  <Text>{currentTemplate.name}</Text>
+                </div>
+                <div className="detail-item">
+                  <Text strong>模板描述：</Text>
+                  <Text>{currentTemplate.description}</Text>
+                </div>
+                <div className="detail-item">
+                  <Text strong>模板类型：</Text>
+                  <Text>{currentTemplate.type === 'builtin' ? '内置模板' : '自定义模板'}</Text>
+                </div>
+                <div className="detail-item">
+                  <Text strong>创建时间：</Text>
+                  <Text>{currentTemplate.createTime}</Text>
+                </div>
+                {currentTemplate.corpusFileName && (
+                  <div className="detail-item">
+                    <Text strong>语料文件：</Text>
+                    <Text>{currentTemplate.corpusFileName}</Text>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </TabPane>
+            
+            {/* JSON内容标签页 */}
+            <TabPane tab="JSON内容" key="json">
+              <div className="json-content-section">
+                {currentTemplate.corpusContent ? (
+                  <>
+                    <div className="json-header">
+                      <Text strong>模板JSON内容：</Text>
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<CopyOutlined />}
+                        onClick={() => {
+                          navigator.clipboard.writeText(currentTemplate.corpusContent!);
+                          message.success('JSON内容已复制到剪贴板');
+                        }}
+                      >
+                        复制内容
+                      </Button>
+                    </div>
+                    <div className="json-viewer">
+                      <pre className="json-content">
+                        {JSON.stringify(JSON.parse(currentTemplate.corpusContent), null, 2)}
+                      </pre>
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-json-content">
+                    <Text type="secondary">
+                      {currentTemplate.type === 'builtin' 
+                        ? '内置模板的JSON内容由系统管理，无法查看' 
+                        : '该模板暂无JSON内容'}
+                    </Text>
+                  </div>
+                )}
+              </div>
+            </TabPane>
+          </Tabs>
         )}
       </Modal>
 

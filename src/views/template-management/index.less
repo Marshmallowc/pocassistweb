@@ -89,6 +89,42 @@
     }
   }
   
+  // JSON内容查看样式
+  .json-content-section {
+    .json-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .json-viewer {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #d9d9d9;
+      border-radius: 6px;
+      background: #fafafa;
+      
+      .json-content {
+        margin: 0;
+        padding: 16px;
+        font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #333;
+        background: transparent;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+    }
+    
+    .no-json-content {
+      text-align: center;
+      padding: 40px 20px;
+      color: #8c8c8c;
+    }
+  }
+
   // 表格操作按钮样式
   .ant-table {
     .ant-btn-link {

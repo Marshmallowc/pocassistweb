@@ -65,6 +65,39 @@ export interface SaveCustomTemplateResponse {
   };
 }
 
+// 编辑模板请求参数接口
+export interface EditTemplateParams {
+  templateId: string;
+  name: string;
+  description: string;
+  corpusContent?: string;
+  corpusFileName?: string;
+}
+
+// 编辑模板响应接口
+export interface EditTemplateResponse {
+  code: number;
+  message: string;
+  success: boolean;
+  data: {
+    templateId: string;
+    templateName: string;
+    isModified: boolean;
+  };
+}
+
+// 删除模板响应接口
+export interface DeleteTemplateResponse {
+  code: number;
+  message: string;
+  success: boolean;
+  data: {
+    deletedTemplateId: string;
+    deletedTemplateName: string;
+    remainingCount: number;
+  };
+}
+
 // 任务模板接口定义
 export interface TaskTemplate {
   id: string;
@@ -606,6 +639,176 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
 };
 
 /**
+ * 编辑模板 - Mock实现
+ * @param data 编辑模板数据
+ */
+const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateResponse> => {
+  console.log("🔧 使用Mock服务编辑模板", data);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // 查找要编辑的模板
+      const templateIndex = mockTaskTemplatesData.findIndex(template => template.id === data.templateId);
+      
+      if (templateIndex === -1) {
+        resolve({
+          code: 404,
+          message: "编辑失败: 模板不存在",
+          success: false,
+          data: {
+            templateId: data.templateId,
+            templateName: "",
+            isModified: false
+          }
+        });
+        return;
+      }
+      
+      const existingTemplate = mockTaskTemplatesData[templateIndex];
+      
+      // 检查是否为内置模板
+      if (existingTemplate.type === 'builtin') {
+        resolve({
+          code: 403,
+          message: "编辑失败: 内置模板不允许编辑",
+          success: false,
+          data: {
+            templateId: data.templateId,
+            templateName: existingTemplate.name,
+            isModified: false
+          }
+        });
+        return;
+      }
+      
+      // 模拟成功率为95%
+      const isSuccess = Math.random() > 0.05;
+      
+      if (isSuccess) {
+        // 检查是否有修改
+        const isModified = existingTemplate.name !== data.name || 
+                          existingTemplate.description !== data.description ||
+                          existingTemplate.corpusContent !== data.corpusContent ||
+                          existingTemplate.corpusFileName !== data.corpusFileName;
+        
+        // 更新模板数据
+        mockTaskTemplatesData[templateIndex] = {
+          ...existingTemplate,
+          name: data.name,
+          description: data.description,
+          corpusContent: data.corpusContent || existingTemplate.corpusContent,
+          corpusFileName: data.corpusFileName || existingTemplate.corpusFileName
+        };
+        
+        console.log(`✅ Mock编辑成功: 已更新模板 ${data.name} (${data.templateId})`);
+        console.log(`📊 是否有修改: ${isModified}`);
+        
+        resolve({
+          code: 200,
+          message: "模板编辑成功",
+          success: true,
+          data: {
+            templateId: data.templateId,
+            templateName: data.name,
+            isModified: isModified
+          }
+        });
+      } else {
+        resolve({
+          code: 500,
+          message: "编辑失败: 服务器内部错误",
+          success: false,
+          data: {
+            templateId: data.templateId,
+            templateName: existingTemplate.name,
+            isModified: false
+          }
+        });
+      }
+    }, 600 + Math.random() * 600); // 0.6-1.2秒随机延迟
+  });
+};
+
+/**
+ * 删除模板 - Mock实现
+ * @param templateId 模板ID
+ */
+const mockDeleteTemplate = (templateId: string): Promise<DeleteTemplateResponse> => {
+  console.log("🔧 使用Mock服务删除模板", templateId);
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // 查找要删除的模板
+      const templateIndex = mockTaskTemplatesData.findIndex(template => template.id === templateId);
+      
+      if (templateIndex === -1) {
+        resolve({
+          code: 404,
+          message: "删除失败: 模板不存在",
+          success: false,
+          data: {
+            deletedTemplateId: templateId,
+            deletedTemplateName: "",
+            remainingCount: mockTaskTemplatesData.length
+          }
+        });
+        return;
+      }
+      
+      const templateToDelete = mockTaskTemplatesData[templateIndex];
+      
+      // 检查是否为内置模板
+      if (templateToDelete.type === 'builtin') {
+        resolve({
+          code: 403,
+          message: "删除失败: 内置模板不允许删除",
+          success: false,
+          data: {
+            deletedTemplateId: templateId,
+            deletedTemplateName: templateToDelete.name,
+            remainingCount: mockTaskTemplatesData.length
+          }
+        });
+        return;
+      }
+      
+      // 模拟成功率为95%
+      const isSuccess = Math.random() > 0.05;
+      
+      if (isSuccess) {
+        // 从数组中删除模板
+        const deletedTemplate = mockTaskTemplatesData.splice(templateIndex, 1)[0];
+        
+        console.log(`✅ Mock删除成功: 已删除模板 ${deletedTemplate.name} (${templateId})`);
+        console.log(`📊 当前剩余模板数量: ${mockTaskTemplatesData.length}`);
+        
+        resolve({
+          code: 200,
+          message: "模板删除成功",
+          success: true,
+          data: {
+            deletedTemplateId: templateId,
+            deletedTemplateName: deletedTemplate.name,
+            remainingCount: mockTaskTemplatesData.length
+          }
+        });
+      } else {
+        resolve({
+          code: 500,
+          message: "删除失败: 服务器内部错误",
+          success: false,
+          data: {
+            deletedTemplateId: templateId,
+            deletedTemplateName: templateToDelete.name,
+            remainingCount: mockTaskTemplatesData.length
+          }
+        });
+      }
+    }, 500 + Math.random() * 800); // 0.5-1.3秒随机延迟
+  });
+};
+
+/**
  * 保存自定义模板
  * @param data 自定义模板数据
  */
@@ -622,6 +825,51 @@ export const saveCustomTemplate = (data: SaveCustomTemplateParams) => {
     url: "/template/custom/save",
     method: "post",
     data
+  });
+};
+
+/**
+ * 编辑模板
+ * @param data 编辑模板数据
+ */
+export const editTemplate = (data: EditTemplateParams) => {
+  const useMock = getMockEnabled();
+  logApiSource("编辑模板", useMock);
+  
+  if (useMock) {
+    return mockEditTemplate(data);
+  }
+  
+  // 真实API调用 - 将templateId包含在请求体中
+  return request({
+    url: "/template/edit",
+    method: "put",
+    data: {
+      templateId: data.templateId,
+      name: data.name,
+      description: data.description,
+      corpusContent: data.corpusContent,
+      corpusFileName: data.corpusFileName
+    }
+  });
+};
+
+/**
+ * 删除模板
+ * @param templateId 模板ID
+ */
+export const deleteTemplate = (templateId: string) => {
+  const useMock = getMockEnabled();
+  logApiSource("删除模板", useMock);
+  
+  if (useMock) {
+    return mockDeleteTemplate(templateId);
+  }
+  
+  // 真实API调用
+  return request({
+    url: `/template/${templateId}`,
+    method: "delete"
   });
 };
 
@@ -835,7 +1083,7 @@ let mockScanResultsData: ScanResultItem[] = [
  * 获取任务模板列表 - Mock实现
  * @param params 查询参数
  */
-const mockGetTaskTemplates = (params: { page?: number; pageSize?: number; search?: string } = {}): Promise<GetTaskTemplatesResponse> => {
+const mockGetTaskTemplates = (params: { page?: number; pageSize?: number } = {}): Promise<GetTaskTemplatesResponse> => {
   console.log("🔧 使用Mock服务获取任务模板列表", params);
   
   return new Promise((resolve) => {
@@ -843,15 +1091,6 @@ const mockGetTaskTemplates = (params: { page?: number; pageSize?: number; search
       // 使用全局模板数据
       let filteredTemplates = mockTaskTemplatesData;
       
-      // 应用搜索过滤
-      if (params.search) {
-        const searchTerm = params.search.toLowerCase();
-        filteredTemplates = mockTaskTemplatesData.filter(template => 
-          template.name.toLowerCase().includes(searchTerm) ||
-          template.description.toLowerCase().includes(searchTerm) ||
-          template.id.toLowerCase().includes(searchTerm)
-        );
-      }
 
       // 应用分页
       const page = params.page || 1;
@@ -1195,7 +1434,7 @@ export const reviewQuestion = async (questionId: string, reviewData: QuestionRev
  * 获取任务模板列表
  * @param params 查询参数
  */
-export const getTaskTemplates = async (params: { page?: number; pageSize?: number; search?: string } = {}): Promise<GetTaskTemplatesResponse> => {
+export const getTaskTemplates = async (params: { page?: number; pageSize?: number } = {}): Promise<GetTaskTemplatesResponse> => {
   const useMock = getMockEnabled();
   logApiSource("获取任务模板列表", useMock);
   
