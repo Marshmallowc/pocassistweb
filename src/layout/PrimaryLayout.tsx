@@ -25,7 +25,7 @@ const PrimaryLayout: React.FC = props => {
 
   return (
     <GlobalContext.Provider value={{ state, dispatch }}>
-      <Layout>
+      <Layout className={state.collapsed ? 'layout-collapsed' : ''}>
         <PrimarySider />
         <Layout className="main-wrap">
           <PrimaryHeader />

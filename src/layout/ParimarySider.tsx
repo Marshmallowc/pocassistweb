@@ -64,6 +64,7 @@ const PrimarySider: React.FC = props => {
       collapsible
       collapsed={state.collapsed}
       width={210}
+      collapsedWidth={80}
       style={{
        height: "100vh",
        left: 0,

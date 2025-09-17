@@ -4,11 +4,23 @@
   background: #fff;
 }
 
+/* CSS 变量定义 */
+:root {
+  --sider-width: 210px;
+  --sider-collapsed-width: 80px;
+}
+
 .main-wrap {
   display: flex;
   background-color: #f6f8fa;
   flex-direction: column;
-  margin-left: 210px;
+  margin-left: var(--sider-width);
+  transition: margin-left 0.3s ease;
+}
+
+/* 收缩状态下的样式 */
+.layout-collapsed .main-wrap {
+  margin-left: var(--sider-collapsed-width);
 }
 
 .main-content {
