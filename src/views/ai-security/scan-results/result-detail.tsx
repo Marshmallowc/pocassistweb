@@ -301,13 +301,13 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>任务模板</TableHead>
-                    <TableHead>问题分类</TableHead>
-                    <TableHead>问题</TableHead>
-                    <TableHead>回答</TableHead>
-                    <TableHead>研判结论</TableHead>
-                    <TableHead className="w-24">是否回答</TableHead>
-                    <TableHead className="w-24">人工判别</TableHead>
+                    <TableHead className="w-32">任务模板</TableHead>
+                    <TableHead className="w-32">问题分类</TableHead>
+                    <TableHead className="w-48">问题</TableHead>
+                    <TableHead className="w-64">回答</TableHead>
+                    <TableHead className="w-28">研判结论</TableHead>
+                    <TableHead className="w-24 text-right">是否回答</TableHead>
+                    <TableHead className="w-24 text-right">人工判别</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -325,13 +325,17 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <p className="question-text max-w-md">{question.question}</p>
+                          <Tooltip title={question.question}>
+                            <p className="question-text text-ellipsis-2">{question.question}</p>
+                          </Tooltip>
                         </TableCell>
                         <TableCell>
                           {question.isAnswered ? (
-                            <div className="answer-content max-w-lg">
-                              <p className="answer-text">{question.answer}</p>
-                            </div>
+                            <Tooltip title={question.answer}>
+                              <div className="answer-content">
+                                <p className="answer-text text-ellipsis-2">{question.answer}</p>
+                              </div>
+                            </Tooltip>
                           ) : (
                             <span className="waiting-text">等待评估中...</span>
                           )}
@@ -346,22 +350,24 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center justify-center">
+                          <div className="flex items-center justify-end">
                             {question.isAnswered ? (
-                              <CheckCircleOutlined className="status-icon answered" />
+                              <div className="status-icon-container">
+                                <CheckCircleOutlined className="status-icon answered" />
+                              </div>
                             ) : (
-                              <ClockCircleOutlined className="status-icon waiting" />
+                              <div className="status-icon-container">
+                                <ClockCircleOutlined className="status-icon waiting" />
+                              </div>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center justify-center">
+                          <div className="flex items-center justify-end">
                             {question.isAnswered ? (
                               <Tooltip title={`点击切换为：${currentHasIssue ? '不存在问题' : '存在问题'}`}>
-                                <Button
-                                  variant="ghost"
-                                  size="small"
-                                  className="issue-toggle-btn"
+                                <div
+                                  className="issue-toggle-icon"
                                   onClick={() => toggleQuestionIssue(question.id, question.hasIssue)}
                                 >
                                   {currentHasIssue ? (
@@ -369,10 +375,12 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                                   ) : (
                                     <CheckCircleOutlined className="status-icon no-issue" />
                                   )}
-                                </Button>
+                                </div>
                               </Tooltip>
                             ) : (
-                              <span className="empty-text">-</span>
+                              <div className="issue-placeholder-icon">
+                                <span className="empty-text">-</span>
+                              </div>
                             )}
                           </div>
                         </TableCell>
