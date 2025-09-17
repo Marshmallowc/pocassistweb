@@ -205,6 +205,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       // 发送网络请求保存自定义模板到后端
       const templateData: SaveCustomTemplateParams = {
         name: customTemplateName.trim(),
+        description: templateDescription.trim(),
         corpusContent: currentCustomCorpusFile,
         corpusFileName: currentCustomCorpusFileName,
       };

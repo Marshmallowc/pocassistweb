@@ -49,6 +49,7 @@ export interface TaskDispatchParams {
 // 保存自定义模板请求参数接口
 export interface SaveCustomTemplateParams {
   name: string;
+  description: string;
   corpusContent: string;
   corpusFileName: string;
 }
@@ -569,7 +570,7 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
         const newTemplate: TaskTemplate = {
           id: templateId,
           name: data.name,
-          description: "自定义模板",
+          description: data.description,
           createTime: new Date().toLocaleString(),
           type: 'custom',
           corpusFileName: data.corpusFileName,

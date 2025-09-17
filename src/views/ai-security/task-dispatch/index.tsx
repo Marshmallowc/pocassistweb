@@ -48,12 +48,22 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [currentCustomCorpusFile, setCurrentCustomCorpusFile] = useState("");
-  const [currentCustomCorpusFileName, setCurrentCustomCorpusFileName] = useState("");
-  const [customTemplateName, setCustomTemplateName] = useState("");
+    const [currentCustomCorpusFileName, setCurrentCustomCorpusFileName] = useState("");
+    const [customTemplateName, setCustomTemplateName] = useState("");
+    const [customTemplateDescription, setCustomTemplateDescription] = useState("");
 
   // 快速任务模板状态
   const [quickTemplates, setQuickTemplates] = useState<TaskTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
+
+  // 重置自定义模板表单
+  const resetCustomTemplateForm = () => {
+    setCustomTemplateName("");
+    setCustomTemplateDescription("");
+    setCurrentCustomCorpusFile("");
+    setCurrentCustomCorpusFileName("");
+    if (customCorpusRef.current) customCorpusRef.current.value = "";
+  };
   
   // API配置相关状态
   const [apiFormatType, setApiFormatType] = useState<"builtin" | "custom" | "">("");
@@ -742,21 +752,28 @@ X-Custom-Header: value`}
       <Modal
         title="自定义模板配置"
         visible={isCustomDialogOpen}
-        onCancel={() => setIsCustomDialogOpen(false)}
+          onCancel={() => {
+            resetCustomTemplateForm();
+            setIsCustomDialogOpen(false);
+          }}
         footer={[
-          <Button key="cancel" onClick={() => setIsCustomDialogOpen(false)}>
+          <Button key="cancel" onClick={() => {
+            resetCustomTemplateForm();
+            setIsCustomDialogOpen(false);
+          }}>
             取消
           </Button>,
           <Button
             key="confirm"
             type="primary"
-            disabled={!customTemplateName.trim() || !currentCustomCorpusFileName}
+            disabled={!customTemplateName.trim() || !customTemplateDescription.trim() || !currentCustomCorpusFileName}
             onClick={async () => {
-              if (customTemplateName.trim() && currentCustomCorpusFileName) {
+              if (customTemplateName.trim() && customTemplateDescription.trim() && currentCustomCorpusFileName) {
                 try {
                   // 发送网络请求保存自定义模板到后端
                   const templateData: SaveCustomTemplateParams = {
                     name: customTemplateName.trim(),
+                    description: customTemplateDescription.trim(),
                     corpusContent: currentCustomCorpusFile,
                     corpusFileName: currentCustomCorpusFileName,
                   };
@@ -789,11 +806,8 @@ X-Custom-Header: value`}
                   message.error(errorMessage);
                 }
                 
-                // 重置自定义模板表单
-                setCustomTemplateName("");
-                setCurrentCustomCorpusFile("");
-                setCurrentCustomCorpusFileName("");
-                if (customCorpusRef.current) customCorpusRef.current.value = "";
+                  // 重置自定义模板表单
+                  resetCustomTemplateForm();
               }
               setIsCustomDialogOpen(false);
             }}
@@ -812,6 +826,25 @@ X-Custom-Header: value`}
               onChange={(e) => setCustomTemplateName(e.target.value)}
               style={{ marginTop: 8 }}
             />
+          </div>
+
+          <div className="dialog-section" style={{ marginTop: 16 }}>
+            <Text strong>模板描述 <span style={{ color: 'red' }}>*</span></Text>
+            <TextArea
+              placeholder="请输入模板描述"
+              value={customTemplateDescription}
+              onChange={(e) => setCustomTemplateDescription(e.target.value)}
+              rows={3}
+              style={{ 
+                marginTop: 8,
+                borderColor: !customTemplateDescription.trim() ? '#ff4d4f' : undefined
+              }}
+            />
+            {!customTemplateDescription.trim() && (
+              <div style={{ color: 'red', fontSize: '12px', marginTop: 4 }}>
+                请输入模板描述
+              </div>
+            )}
           </div>
 
           <Divider />
