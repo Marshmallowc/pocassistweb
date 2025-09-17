@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps, useHistory } from "react-router-dom";
 import { 
   Button, 
   Form, 
@@ -36,6 +36,7 @@ const { Option } = Select;
 
 const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const [form] = Form.useForm();
+  const history = useHistory();
   
   // 文件上传相关状态
   const [requestContent, setRequestContent] = useState("");
@@ -657,14 +658,14 @@ X-Custom-Header: value`}
               <Card
                 size="small"
                 className="template-item custom-template"
-                onClick={() => setIsCustomDialogOpen(true)}
+                onClick={() => history.push('/ai-security/template-management')}
                 hoverable
               >
                 <div className="template-content">
                   <SettingOutlined className="custom-icon" />
                   <Text strong>自定义模板</Text>
                   <Paragraph type="secondary" className="template-desc">
-                    创建自定义测试模板
+                    跳转到模板管理页面
                   </Paragraph>
                 </div>
               </Card>

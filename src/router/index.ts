@@ -6,6 +6,7 @@ import Result from "../views/result";
 import {Product} from "../views/modules";
 import TaskDispatch from "../views/ai-security/task-dispatch";
 import ScanResults from "../views/ai-security/scan-results";
+import TemplateManagement from "../views/template-management";
 
 interface IRouteMeta {
   name: string;
@@ -88,6 +89,14 @@ export const routes: IRoute[] = [
       icon: "icon-ai226"
     },
     subMenu: [
+      {
+        path: "/ai-security/template-management",
+        key: "/ai-security/template-management",
+        component: TemplateManagement,
+        meta: {
+          name: "模板管理"
+        }
+      },
       {
         path: "/ai-security/task-dispatch",
         key: "/ai-security/task-dispatch",
