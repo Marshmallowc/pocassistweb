@@ -676,7 +676,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                     ) : (
                       <div className="detail-item">
                         <p className="detail-label">预计耗时</p>
-                        <p className="detail-value">{task.estimatedTime}</p>
+                        <p className="detail-value">{task.estimatedTime || "-"}</p>
                       </div>
                     )}
                     {task.vulnerabilities !== null ? (
