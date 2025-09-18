@@ -184,7 +184,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
     const templateContent = `{
   "task_name": "自定义任务模板",
   "target_url": "https://example.com/api",
-  "model_type": "请选择模型类型",
   "test_cases": [
     {
       "input": "测试输入1",

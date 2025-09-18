@@ -187,7 +187,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     const templateContent = `{
   "task_name": "自定义任务模板",
   "target_url": "https://example.com/api",
-  "model_type": "请选择模型类型",
   "test_cases": [
     {
       "input": "测试输入1",
@@ -308,7 +307,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       const taskParams: TaskDispatchParams = {
         taskName: values.taskName,
         targetUrl: values.targetUrl,
-        modelType: values.modelType, // 添加模型类型字段
         apiConfig: {
           type: apiFormatType as "builtin" | "custom", // 类型断言，因为已经通过验证
           format: apiFormatType === "builtin" ? selectedBuiltinFormat : undefined,
@@ -424,22 +422,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
               />
             </Form.Item>
 
-            <Form.Item
-              label="模型类型"
-              name="modelType"
-              rules={[{ required: true, message: "请选择模型类型" }]}
-            >
-              <Select
-                placeholder="选择模型类型"
-                size="large"
-                className="form-select"
-              >
-                <Option value="qwen">Qwen</Option>
-                <Option value="deepseek">Deepseek</Option>
-                <Option value="gpt">ChatGPT</Option>
-                <Option value="other">其他-未知</Option>
-              </Select>
-            </Form.Item>
           </Form>
         </Card>
 

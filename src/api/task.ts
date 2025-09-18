@@ -34,7 +34,6 @@ export interface ResultProps {
 export interface TaskDispatchParams {
   taskName: string;
   targetUrl: string;
-  modelType?: string; // 添加模型类型字段
   apiConfig: {
     type: "builtin" | "custom";
     format?: string;

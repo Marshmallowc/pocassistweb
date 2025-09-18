@@ -95,7 +95,6 @@ export const generateDetailedMockTask = (data) => {
     completedAt: null,
     
     // 配置信息
-    modelType: data.modelType || "默认模型",
     apiConfig: {
       type: data.apiConfig.type,
       format: data.apiConfig.format || (data.apiConfig.type === "builtin" ? "OpenAI GPT-4" : "自定义格式"),
