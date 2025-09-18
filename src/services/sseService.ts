@@ -110,7 +110,7 @@ class SSEService {
         throw new Error('未找到认证令牌');
       }
 
-      await fetchEventSource('/api/scan-progress/stream', {
+      await fetchEventSource('v1/ai_task/task_progress_update/', {
         signal: this.abortController.signal,
         headers: {
           'Authorization': `JWT ${token}`,
