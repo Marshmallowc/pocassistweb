@@ -14,7 +14,7 @@ export interface ProductDataProps {
  */
 export const getProductList = (params: QueryProps) => {
   return request({
-    url: "/product/",
+    url: "v1/product/",
     method: "get",
     params
   });
@@ -26,7 +26,7 @@ export const getProductList = (params: QueryProps) => {
  */
 export const createProduct = (data: ProductDataProps) => {
   return request({
-    url: "/product/",
+    url: "v1/product/",
     method: "post",
     data
   });

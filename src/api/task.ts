@@ -142,7 +142,7 @@ export const getTaskList = (params: {
   search?: string;
 }) => {
   return request({
-    url: "/task/",
+    url: "v1/task/",
     method: "get",
     params
   });
@@ -155,7 +155,7 @@ export const getTaskList = (params: {
 
 export const deleteTask = (id: string) => {
   return request({
-    url: `/task/${id}/`,
+    url: `v1/task/${id}/`,
     method: "delete"
   });
 };
@@ -172,7 +172,7 @@ export const getResultList = (params: {
   vulField?: string;
 }) => {
   return request({
-    url: "/result/",
+    url: "v1/result/",
     method: "get",
     params
   });
@@ -185,7 +185,7 @@ export const getResultList = (params: {
 
 export const deleteResult = (id: string) => {
   return request({
-    url: `/result/${id}/`,
+    url: `v1/result/${id}/`,
     method: "delete"
   });
 };
@@ -262,7 +262,7 @@ export const dispatchTask = (data: TaskDispatchParams) => {
   
   // 真实API调用
   return request({
-    url: "/task/dispatch/",
+    url: "v1/task/dispatch/",
     method: "post",
     data
   });
@@ -451,7 +451,7 @@ export const getScanResultDetail = async (taskId: string): Promise<ScanResultDet
   }
   
   const response = await request({
-    url: `/scan-result/detail/${taskId}`,
+    url: `v1/scan-result/detail/${taskId}`,
     method: "get"
   });
   return response.data;
@@ -561,7 +561,7 @@ export const deleteScanTask = (taskId: string) => {
   
   // 真实API调用
   return request({
-    url: `/scan-task/${taskId}`,
+    url: `v1/scan-task/${taskId}`,
     method: "delete"
   });
 };
@@ -579,7 +579,7 @@ export const testApiConnectivity = (data: ApiTestParams) => {
   }
   
   return request({
-    url: "/api/test-connectivity/",
+    url: "v1/api/test-connectivity/",
     method: "post",
     data
   });
@@ -823,7 +823,7 @@ export const saveCustomTemplate = (data: SaveCustomTemplateParams) => {
   
   // 真实API调用
   return request({
-    url: "/template/custom/save",
+    url: "v1/template/custom/save",
     method: "post",
     data
   });
@@ -843,7 +843,7 @@ export const editTemplate = (data: EditTemplateParams) => {
   
   // 真实API调用 - 将templateId包含在请求体中
   return request({
-    url: "/template/edit",
+    url: "v1/template/edit",
     method: "put",
     data: {
       templateId: data.templateId,
@@ -869,7 +869,7 @@ export const deleteTemplate = (templateId: string) => {
   
   // 真实API调用
   return request({
-    url: `/template/${templateId}`,
+    url: `v1/template/${templateId}`,
     method: "delete"
   });
 };
@@ -1262,7 +1262,7 @@ export const downloadScanReport = (taskId: string) => {
   
   // 真实API调用 - 返回文件流
   return request({
-    url: `/scan-report/download/${taskId}`,
+    url: `v1/scan-report/download/${taskId}`,
     method: "get",
     responseType: 'blob' // 指定响应类型为blob，用于处理文件下载
   });
@@ -1359,7 +1359,7 @@ export const startScanTask = (taskId: string) => {
   }
   
   return request({
-    url: `/scan-task/${taskId}/start`,
+    url: `v1/scan-task/${taskId}/start`,
     method: "post"
   });
 };
@@ -1377,7 +1377,7 @@ export const pauseScanTask = (taskId: string) => {
   }
   
   return request({
-    url: `/scan-task/${taskId}/pause`,
+    url: `v1/scan-task/${taskId}/pause`,
     method: "post"
   });
 };
@@ -1395,7 +1395,7 @@ export const resumeScanTask = (taskId: string) => {
   }
   
   return request({
-    url: `/scan-task/${taskId}/resume`,
+    url: `v1/scan-task/${taskId}/resume`,
     method: "post"
   });
 };
@@ -1413,7 +1413,7 @@ export const retryScanTask = (taskId: string) => {
   }
   
   return request({
-    url: `/scan-task/${taskId}/retry`,
+    url: `v1/scan-task/${taskId}/retry`,
     method: "post"
   });
 };
@@ -1432,7 +1432,7 @@ export const getScanResults = async (params: { page?: number; pageSize?: number;
   
   // 真实API调用
   const response = await request({
-    url: "/scan-results/",
+    url: "v1/scan-results/",
     method: "get",
     params
   });
@@ -1496,7 +1496,7 @@ export const reviewQuestion = async (questionId: string, reviewData: QuestionRev
   
   // 真实API调用
   const response = await request({
-    url: `/scan-result/question/${questionId}/review`,
+    url: `v1/scan-result/question/${questionId}/review`,
     method: "put",
     data: reviewData
   });
@@ -1517,7 +1517,7 @@ export const getTaskTemplates = async (params: { page?: number; pageSize?: numbe
   
   // 真实API调用
   const response = await request({
-    url: "/templates/",
+    url: "v1/templates/",
     method: "get",
     params
   });
