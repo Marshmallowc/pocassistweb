@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { RouteComponentProps } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/Card";
 import { Button } from "../../../components/ui/Button";
@@ -13,7 +13,8 @@ import {
   pauseScanTask, 
   resumeScanTask, 
   getScanResults,
-  ScanResultItem 
+  ScanResultItem,
+  mockSSEGenerator
 } from "../../../api/task";
 import { message, Modal, Spin, Tooltip, Pagination } from "antd";
 import {
@@ -23,7 +24,12 @@ import {
   PauseCircleOutlined,
   DeleteOutlined,
   ExclamationCircleOutlined,
+  WifiOutlined,
+  DisconnectOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
+import { sseService, SSEConnectionStatus, SSEEvent } from "../../../services/sseService";
+import { getMockStatus } from "../../../utils/mockControl";
 import "./index.less";
 
 // 智能自适应类型标签显示组件
@@ -151,10 +157,45 @@ const TypeTagsDisplay: React.FC<{ types: string[] }> = ({ types }) => {
   );
 };
 
+// SSE连接状态指示组件
+const SSEConnectionIndicator: React.FC<{ status: SSEConnectionStatus }> = ({ status }) => {
+  const getStatusConfig = () => {
+    switch (status) {
+      case SSEConnectionStatus.CONNECTED:
+        return { icon: <WifiOutlined />, color: '#52c41a', text: '实时连接' };
+      case SSEConnectionStatus.CONNECTING:
+      case SSEConnectionStatus.RECONNECTING:
+        return { icon: <LoadingOutlined spin />, color: '#1890ff', text: '连接中...' };
+      case SSEConnectionStatus.DISCONNECTED:
+        return { icon: <DisconnectOutlined />, color: '#d9d9d9', text: '已断开' };
+      case SSEConnectionStatus.ERROR:
+        return { icon: <DisconnectOutlined />, color: '#ff4d4f', text: '连接错误' };
+      default:
+        return { icon: <DisconnectOutlined />, color: '#d9d9d9', text: '未知状态' };
+    }
+  };
+
+  const config = getStatusConfig();
+
+  return (
+    <Tooltip title={`SSE连接状态: ${config.text}`}>
+      <span style={{ color: config.color, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        {config.icon}
+        <span>{config.text}</span>
+      </span>
+    </Tooltip>
+  );
+};
+
 const ScanResults: React.FC<RouteComponentProps> = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [taskResults, setTaskResults] = useState<ScanResultItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  
+  // SSE连接状态管理
+  const [sseConnectionStatus, setSSEConnectionStatus] = useState<SSEConnectionStatus>(SSEConnectionStatus.DISCONNECTED);
+  const sseEventListenerRef = useRef<((event: SSEEvent) => void) | null>(null);
+  const sseStatusListenerRef = useRef<((status: SSEConnectionStatus, error?: Error) => void) | null>(null);
   
   // 分页状态管理
   const [pagination, setPagination] = useState({
@@ -197,6 +238,123 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       setLoading(false);
     }
   };
+
+  // SSE事件处理函数
+  const handleSSEEvent = useCallback((event: SSEEvent) => {
+    console.log('🎯 收到SSE事件:', event);
+    
+    setTaskResults(prevTasks => {
+      const newTasks = [...prevTasks];
+      const taskIndex = newTasks.findIndex(task => task.id === event.taskId);
+      
+      if (taskIndex === -1) {
+        console.warn(`任务 ${event.taskId} 在当前列表中不存在`);
+        return prevTasks;
+      }
+      
+      const updatedTask = { ...newTasks[taskIndex] };
+      
+      switch (event.type) {
+        case 'task_progress':
+          updatedTask.progress = event.data.progress;
+          updatedTask.estimatedTime = event.data.estimatedTime || updatedTask.estimatedTime;
+          updatedTask.status = event.data.status;
+          break;
+          
+        case 'task_completed':
+          updatedTask.status = event.data.status;
+          updatedTask.completedTime = event.data.completedTime;
+          updatedTask.progress = 100;
+          updatedTask.score = event.data.score || null;
+          updatedTask.vulnerabilities = event.data.vulnerabilities || null;
+          updatedTask.riskLevel = event.data.riskLevel || null;
+          updatedTask.details = event.data.details || null;
+          updatedTask.estimatedTime = null;
+          break;
+          
+        case 'task_status_change':
+          updatedTask.status = event.data.currentStatus as any;
+          break;
+          
+        default:
+          console.warn('未知的SSE事件类型:', (event as any).type);
+          return prevTasks;
+      }
+      
+      newTasks[taskIndex] = updatedTask;
+      return newTasks;
+    });
+  }, []);
+
+  // SSE连接状态处理函数
+  const handleSSEStatusChange = useCallback((status: SSEConnectionStatus, error?: Error) => {
+    console.log('🔗 SSE连接状态变化:', status, error);
+    setSSEConnectionStatus(status);
+    
+    if (status === SSEConnectionStatus.ERROR && error) {
+      message.error(`实时连接失败: ${error.message}`);
+    } else if (status === SSEConnectionStatus.CONNECTED) {
+      message.success('实时连接已建立');
+    }
+  }, []);
+
+  // 初始化SSE连接
+  const initializeSSE = useCallback(() => {
+    const useMock = getMockStatus();
+    
+    if (useMock) {
+      console.log('🔧 使用Mock SSE服务');
+      // 设置Mock SSE事件监听器
+      sseEventListenerRef.current = handleSSEEvent;
+      mockSSEGenerator.addEventListener(sseEventListenerRef.current);
+      setSSEConnectionStatus(SSEConnectionStatus.CONNECTED);
+    } else {
+      console.log('🌐 使用真实SSE服务');
+      // 设置真实SSE服务监听器
+      sseEventListenerRef.current = handleSSEEvent;
+      sseStatusListenerRef.current = handleSSEStatusChange;
+      
+      sseService.addEventListener(sseEventListenerRef.current);
+      sseService.addStatusListener(sseStatusListenerRef.current);
+      sseService.initVisibilityListener();
+      sseService.connect();
+    }
+  }, [handleSSEEvent, handleSSEStatusChange]);
+
+  // 清理SSE连接
+  const cleanupSSE = useCallback(() => {
+    const useMock = getMockStatus();
+    
+    if (useMock) {
+      console.log('🧹 清理Mock SSE服务');
+      if (sseEventListenerRef.current) {
+        mockSSEGenerator.removeEventListener(sseEventListenerRef.current);
+      }
+    } else {
+      console.log('🧹 清理真实SSE服务');
+      if (sseEventListenerRef.current) {
+        sseService.removeEventListener(sseEventListenerRef.current);
+      }
+      if (sseStatusListenerRef.current) {
+        sseService.removeStatusListener(sseStatusListenerRef.current);
+      }
+      sseService.removeVisibilityListener();
+      sseService.disconnect();
+    }
+    
+    sseEventListenerRef.current = null;
+    sseStatusListenerRef.current = null;
+    setSSEConnectionStatus(SSEConnectionStatus.DISCONNECTED);
+  }, []);
+
+  // 组件挂载时初始化
+  useEffect(() => {
+    initializeSSE();
+    
+    return () => {
+      cleanupSSE();
+    };
+  }, [initializeSSE, cleanupSSE]);
 
   // 分页参数变化时重新获取数据
   useEffect(() => {
@@ -385,6 +543,9 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         <div>
           <h2 className="page-title">扫描结果</h2>
           <p className="page-subtitle">查看AI安全评估任务的扫描结果</p>
+        </div>
+        <div className="header-actions">
+          <SSEConnectionIndicator status={sseConnectionStatus} />
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import request from "../utils/request";
 import { mockDispatchTask, printMockStatus } from "./mockTaskDispatch";
 import { getMockStatus, logApiSource } from "../utils/mockControl";
 import { getUserInfo } from "../utils/auth";
+import { SSEEvent, SSETaskProgressEvent, SSETaskCompletedEvent, SSETaskStatusChangeEvent } from "../services/sseService";
 
 export interface ParamsProps {
   page: number;
@@ -1257,6 +1258,19 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
       };
       
       if (isSuccess) {
+        // 根据不同动作触发相应的Mock SSE事件
+        switch (action) {
+          case 'start':
+            mockSSEGenerator.startTaskProgress(taskId);
+            break;
+          case 'pause':
+            mockSSEGenerator.pauseTask(taskId);
+            break;
+          case 'resume':
+            mockSSEGenerator.resumeTask(taskId);
+            break;
+        }
+        
         resolve({
           data: {
             code: 200,
@@ -1450,3 +1464,231 @@ export const getTaskTemplates = async (params: { page?: number; pageSize?: numbe
   });
   return response.data;
 };
+
+// ============== SSE Mock 服务实现 ==============
+
+/**
+ * Mock SSE事件生成器
+ */
+export class MockSSEEventGenerator {
+  private eventListeners: Set<(event: SSEEvent) => void> = new Set();
+  private runningTasks: Set<string> = new Set();
+  private intervalIds: Map<string, NodeJS.Timeout> = new Map();
+
+  /**
+   * 添加事件监听器
+   */
+  addEventListener(listener: (event: SSEEvent) => void) {
+    this.eventListeners.add(listener);
+  }
+
+  /**
+   * 移除事件监听器
+   */
+  removeEventListener(listener: (event: SSEEvent) => void) {
+    this.eventListeners.delete(listener);
+  }
+
+  /**
+   * 发送事件给所有监听器
+   */
+  private emitEvent(event: SSEEvent) {
+    console.log('🎯 Mock SSE发送事件:', event);
+    this.eventListeners.forEach(listener => listener(event));
+  }
+
+  /**
+   * 开始模拟任务进度更新
+   */
+  startTaskProgress(taskId: string) {
+    if (this.runningTasks.has(taskId)) {
+      console.log(`任务 ${taskId} 已在运行中`);
+      return;
+    }
+
+    this.runningTasks.add(taskId);
+    console.log(`🚀 开始模拟任务 ${taskId} 的进度更新`);
+
+    // 查找对应的任务数据
+    const task = mockScanResultsData.find(t => t.id === taskId);
+    if (!task) {
+      console.error(`任务 ${taskId} 不存在`);
+      return;
+    }
+
+    let currentProgress = task.progress;
+    const targetProgress = 100;
+    const progressStep = Math.random() * 10 + 5; // 5-15的随机步长
+
+    // 创建进度更新定时器
+    const intervalId = setInterval(() => {
+      if (!this.runningTasks.has(taskId)) {
+        clearInterval(intervalId);
+        this.intervalIds.delete(taskId);
+        return;
+      }
+
+      // 更新进度
+      currentProgress = Math.min(currentProgress + progressStep, targetProgress);
+      
+      // 计算预计剩余时间
+      const remainingProgress = targetProgress - currentProgress;
+      const estimatedMinutes = Math.ceil((remainingProgress / progressStep) * 2); // 假设每2分钟一个步长
+      const estimatedTime = estimatedMinutes > 0 ? `${estimatedMinutes}分钟` : '即将完成';
+
+      // 更新本地数据
+      const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
+      if (taskIndex !== -1) {
+        mockScanResultsData[taskIndex].progress = Math.round(currentProgress);
+        mockScanResultsData[taskIndex].estimatedTime = estimatedTime;
+        mockScanResultsData[taskIndex].status = 'running';
+      }
+
+      // 发送进度事件
+      const progressEvent: SSETaskProgressEvent = {
+        type: 'task_progress',
+        taskId,
+        data: {
+          progress: Math.round(currentProgress),
+          estimatedTime,
+          status: 'running'
+        }
+      };
+      this.emitEvent(progressEvent);
+
+      // 任务完成
+      if (currentProgress >= targetProgress) {
+        this.completeTask(taskId);
+      }
+    }, 3000 + Math.random() * 2000); // 3-5秒随机间隔
+
+    this.intervalIds.set(taskId, intervalId);
+  }
+
+  /**
+   * 完成任务
+   */
+  private completeTask(taskId: string) {
+    console.log(`✅ 任务 ${taskId} 完成`);
+    
+    this.runningTasks.delete(taskId);
+    const intervalId = this.intervalIds.get(taskId);
+    if (intervalId) {
+      clearInterval(intervalId);
+      this.intervalIds.delete(taskId);
+    }
+
+    // 生成随机的完成数据
+    const riskLevels: ('high' | 'medium' | 'low')[] = ['high', 'medium', 'low'];
+    const riskLevel = riskLevels[Math.floor(Math.random() * riskLevels.length)];
+    const vulnerabilities = Math.floor(Math.random() * 20) + 1;
+    const score = Math.floor(Math.random() * 60) + 40; // 40-100分
+    
+    const details = {
+      high: Math.floor(Math.random() * 8),
+      medium: Math.floor(Math.random() * 10),
+      low: Math.floor(Math.random() * 15)
+    };
+
+    // 更新本地数据
+    const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
+    if (taskIndex !== -1) {
+      mockScanResultsData[taskIndex].status = 'completed';
+      mockScanResultsData[taskIndex].progress = 100;
+      mockScanResultsData[taskIndex].completedTime = new Date().toLocaleString('zh-CN');
+      mockScanResultsData[taskIndex].riskLevel = riskLevel;
+      mockScanResultsData[taskIndex].vulnerabilities = vulnerabilities;
+      mockScanResultsData[taskIndex].score = score;
+      mockScanResultsData[taskIndex].details = details;
+    }
+
+    // 发送完成事件
+    const completedEvent: SSETaskCompletedEvent = {
+      type: 'task_completed',
+      taskId,
+      data: {
+        status: 'completed',
+        completedTime: new Date().toLocaleString('zh-CN'),
+        score,
+        vulnerabilities,
+        riskLevel,
+        details
+      }
+    };
+    this.emitEvent(completedEvent);
+  }
+
+  /**
+   * 暂停任务
+   */
+  pauseTask(taskId: string) {
+    console.log(`⏸️ 暂停任务 ${taskId}`);
+    
+    this.runningTasks.delete(taskId);
+    const intervalId = this.intervalIds.get(taskId);
+    if (intervalId) {
+      clearInterval(intervalId);
+      this.intervalIds.delete(taskId);
+    }
+
+    // 更新本地数据
+    const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
+    if (taskIndex !== -1) {
+      mockScanResultsData[taskIndex].status = 'paused';
+    }
+
+    // 发送状态变更事件
+    const statusChangeEvent: SSETaskStatusChangeEvent = {
+      type: 'task_status_change',
+      taskId,
+      data: {
+        previousStatus: 'running',
+        currentStatus: 'paused',
+        timestamp: new Date().toISOString()
+      }
+    };
+    this.emitEvent(statusChangeEvent);
+  }
+
+  /**
+   * 恢复任务
+   */
+  resumeTask(taskId: string) {
+    console.log(`▶️ 恢复任务 ${taskId}`);
+    
+    // 更新本地数据
+    const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
+    if (taskIndex !== -1) {
+      mockScanResultsData[taskIndex].status = 'running';
+    }
+
+    // 发送状态变更事件
+    const statusChangeEvent: SSETaskStatusChangeEvent = {
+      type: 'task_status_change',
+      taskId,
+      data: {
+        previousStatus: 'paused',
+        currentStatus: 'running',
+        timestamp: new Date().toISOString()
+      }
+    };
+    this.emitEvent(statusChangeEvent);
+
+    // 重新开始进度更新
+    this.startTaskProgress(taskId);
+  }
+
+  /**
+   * 清理所有任务
+   */
+  cleanup() {
+    console.log('🧹 清理Mock SSE服务');
+    this.runningTasks.clear();
+    this.intervalIds.forEach(intervalId => clearInterval(intervalId));
+    this.intervalIds.clear();
+    this.eventListeners.clear();
+  }
+}
+
+// 创建全局Mock SSE事件生成器实例
+export const mockSSEGenerator = new MockSSEEventGenerator();
