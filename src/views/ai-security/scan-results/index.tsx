@@ -516,13 +516,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                           <span className="risk-count low">低: {task.details.low}</span>
                         </div>
                       </div>
-                      <div className="score-progress">
-                        <div className="progress-header">
-                          <span className="summary-label">安全评分</span>
-                          <span className="progress-value">{task.score}/100</span>
-                        </div>
-                        <Progress value={task.score || 0} className="progress-bar" strokeColor="#4a4a4a" />
-                      </div>
                     </div>
                   ) : (
                     <div className="task-summary">
