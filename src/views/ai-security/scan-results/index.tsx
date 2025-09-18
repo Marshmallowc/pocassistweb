@@ -569,8 +569,8 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     <div className="scan-results-container">
       <div className="header-section">
         <div>
-          <h2 className="page-title">扫描结果</h2>
-          <p className="page-subtitle">查看AI安全评估任务的扫描结果</p>
+          <h2 className="page-title">任务列表</h2>
+          <p className="page-subtitle">查看AI安全评估任务的列表和执行状态</p>
         </div>
         <div className="header-actions">
           <SSEConnectionIndicator status={sseConnectionStatus} />
@@ -580,7 +580,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>任务列表与扫描结果</CardTitle>
+          <CardTitle>任务列表</CardTitle>
         </CardHeader>
         <CardContent>
           <Spin spinning={loading} tip="加载中...">

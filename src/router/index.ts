@@ -110,7 +110,7 @@ export const routes: IRoute[] = [
         key: "/ai-security/scan-results",
         component: ScanResults,
         meta: {
-          name: "扫描结果"
+          name: "任务列表"
         }
       }
     ]
