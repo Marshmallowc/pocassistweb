@@ -40,6 +40,7 @@ export const mockDispatchTask = async (data) => {
       data: {
         taskId: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         taskName: data.taskName,
+        description: data.description,
         targetUrl: data.targetUrl,
         status: "pending",
         createdAt: new Date().toISOString(),
@@ -85,6 +86,7 @@ export const generateDetailedMockTask = (data) => {
     // 基本信息
     taskId: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     taskName: data.taskName,
+    description: data.description,
     targetUrl: data.targetUrl,
     
     // 状态信息
@@ -137,7 +139,7 @@ export const printMockStatus = () => {
   console.log(`
 🔧 ===== Mock Service Status =====
 📡 Service: Task Dispatch API Mock
-🎯 Endpoint: POST /task/dispatch/
+🎯 Endpoint: POST /v1/ai_task/
 ✅ Status: Active
 📊 Success Rate: 80%
 ⏱️  Response Time: 1-3 seconds

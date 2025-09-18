@@ -306,6 +306,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       // 构建请求参数
       const taskParams: TaskDispatchParams = {
         taskName: values.taskName,
+        description: values.description,
         targetUrl: values.targetUrl,
         apiConfig: {
           type: apiFormatType as "builtin" | "custom", // 类型断言，因为已经通过验证
@@ -334,6 +335,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
             <div>
               <p><strong>任务ID:</strong> {response.data.taskId}</p>
               <p><strong>任务名称:</strong> {response.data.taskName}</p>
+              <p><strong>任务描述:</strong> {response.data.description}</p>
               <p><strong>目标URL:</strong> {response.data.targetUrl}</p>
               <p><strong>预估时长:</strong> {Math.floor(response.data.estimatedDuration / 60)}分{response.data.estimatedDuration % 60}秒</p>
               <p><strong>模板数量:</strong> {response.data.templateCount}个</p>
@@ -393,6 +395,23 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
               <Input 
                 placeholder="请输入任务名称" 
                 size="large"
+                className="form-input"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="任务描述"
+              name="description"
+              rules={[
+                {
+                  required: true,
+                  message: '请输入任务描述',
+                },
+              ]}
+            >
+              <TextArea 
+                placeholder="请输入任务描述" 
+                rows={3}
                 className="form-input"
               />
             </Form.Item>

@@ -33,6 +33,7 @@ export interface ResultProps {
 // 任务下发请求参数接口
 export interface TaskDispatchParams {
   taskName: string;
+  description: string;
   targetUrl: string;
   apiConfig: {
     type: "builtin" | "custom";
@@ -261,7 +262,7 @@ export const dispatchTask = (data: TaskDispatchParams) => {
   
   // 真实API调用
   return request({
-    url: "v1/task/dispatch/",
+    url: "/v1/ai_task/",
     method: "post",
     data
   });
@@ -450,7 +451,7 @@ export const getScanResultDetail = async (taskId: string): Promise<ScanResultDet
   }
   
   const response = await request({
-    url: `v1/scan-result/detail/${taskId}`,
+    url: `/v1/ai_task/${taskId}/`,
     method: "get"
   });
   return response.data;
@@ -560,7 +561,7 @@ export const deleteScanTask = (taskId: string) => {
   
   // 真实API调用
   return request({
-    url: `v1/scan-task/${taskId}`,
+    url: `/v1/ai_task/${taskId}/`,
     method: "delete"
   });
 };
@@ -1358,7 +1359,7 @@ export const startScanTask = (taskId: string) => {
   }
   
   return request({
-    url: `v1/scan-task/${taskId}/start`,
+    url: `v1/ai_task/${taskId}/start/`,
     method: "post"
   });
 };
@@ -1376,7 +1377,7 @@ export const pauseScanTask = (taskId: string) => {
   }
   
   return request({
-    url: `v1/scan-task/${taskId}/pause`,
+    url: `v1/ai_task/${taskId}/pause/`,
     method: "post"
   });
 };
@@ -1394,7 +1395,7 @@ export const resumeScanTask = (taskId: string) => {
   }
   
   return request({
-    url: `v1/scan-task/${taskId}/resume`,
+    url: `v1/ai_task/${taskId}/resume/`,
     method: "post"
   });
 };
@@ -1412,7 +1413,7 @@ export const retryScanTask = (taskId: string) => {
   }
   
   return request({
-    url: `v1/scan-task/${taskId}/retry`,
+    url: `v1/ai_task/${taskId}/retry/`,
     method: "post"
   });
 };
@@ -1495,7 +1496,7 @@ export const reviewQuestion = async (questionId: string, reviewData: QuestionRev
   
   // 真实API调用
   const response = await request({
-    url: `v1/scan-result/question/${questionId}/review`,
+    url: `v1/ai_task/${questionId}/review/`,
     method: "put",
     data: reviewData
   });
