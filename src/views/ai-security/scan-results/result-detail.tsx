@@ -59,7 +59,10 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
     );
   };
 
-  const toggleQuestionIssue = async (questionId: string, originalHasIssue: boolean) => {
+  const toggleQuestionIssue = async (question: any) => {
+    const questionId = question.id;
+    const originalHasIssue = question.hasIssue;
+    
     // 计算新的状态
     const currentState = questionStates[questionId] !== undefined ? questionStates[questionId] : originalHasIssue;
     const newHasIssue = !currentState;
@@ -73,7 +76,10 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
     try {
       // 调用人工审核API（用户身份由后端从认证上下文获取）
       const reviewData: QuestionReviewParams = {
-        hasIssue: newHasIssue
+        hasIssue: newHasIssue,
+        taskId: taskId,
+        taskTemplate: detailData?.template?.name || '',
+        taskQuestion: question.question || ''
       };
 
       const response = await reviewQuestion(questionId, reviewData);
@@ -368,7 +374,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                               <Tooltip title={`点击切换为：${currentHasIssue ? '不存在问题' : '存在问题'}`}>
                                 <div
                                   className="issue-toggle-icon"
-                                  onClick={() => toggleQuestionIssue(question.id, question.hasIssue)}
+                                  onClick={() => toggleQuestionIssue(question)}
                                 >
                                   {currentHasIssue ? (
                                     <CloseCircleOutlined className="status-icon issue" />

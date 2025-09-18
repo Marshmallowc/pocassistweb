@@ -227,6 +227,9 @@ export interface ScanResultDetailResponse {
 // 人工审核问题请求参数接口
 export interface QuestionReviewParams {
   hasIssue: boolean;           // 人工审核后的结论：true-存在问题，false-不存在问题
+  taskId: string;              // 任务ID
+  taskTemplate: string;        // 任务模板
+  taskQuestion: string;        // 任务问题
 }
 
 // 人工审核问题响应接口
@@ -1430,6 +1433,7 @@ export const getScanResults = async (params: { page?: number; pageSize?: number;
  */
 const mockReviewQuestion = (questionId: string, reviewData: QuestionReviewParams): Promise<QuestionReviewResponse> => {
   console.log("🔧 使用Mock服务进行人工审核", questionId, reviewData);
+  console.log("📋 新增参数 - taskId:", reviewData.taskId, "taskTemplate:", reviewData.taskTemplate, "taskQuestion:", reviewData.taskQuestion);
   
   return new Promise((resolve) => {
     setTimeout(() => {
