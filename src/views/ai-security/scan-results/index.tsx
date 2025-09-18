@@ -407,17 +407,24 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       
       hide();
       
-      // 修复响应数据结构处理 - Mock API 的 success 字段在 response.data.success
-      const isSuccess = response?.success || response?.data?.success;
+      // 统一的API响应格式处理
+      const isSuccess = response?.success;
       
       if (isSuccess) {
         const { blob, filename } = response.data;
+        
+        // 验证blob对象有效性
+        if (!blob || !(blob instanceof Blob)) {
+          console.error('无效的blob对象:', blob);
+          message.error('报告文件格式错误');
+          return;
+        }
         
         // 创建下载链接
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = filename;
+        link.download = filename || `扫描报告_${taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`;
         
         // 触发下载
         document.body.appendChild(link);
@@ -429,8 +436,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         
         message.success('报告下载成功');
       } else {
-        const responseMessage = response?.message || response?.data?.message;
-        message.error(responseMessage || '报告生成失败');
+        message.error(response?.message || '报告生成失败');
       }
     } catch (error) {
       hide();

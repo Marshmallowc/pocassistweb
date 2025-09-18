@@ -1175,17 +1175,14 @@ const mockDownloadScanReport = (taskId: string) => {
         const blob = generateExcelBlob(taskId);
         
         resolve({
+          code: 200,
+          message: "报告生成成功",
+          success: true,
           data: {
-            code: 200,
-            message: "报告生成成功",
-            success: true,
-            data: {
-              blob: blob,
-              filename: `扫描报告_${taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
-              size: blob.size,
-            }
-          },
-          status: 200
+            blob: blob,
+            filename: `扫描报告_${taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
+            size: blob.size,
+          }
         });
       }).catch(() => {
         // 如果导入失败，使用简单的mock数据
@@ -1195,17 +1192,14 @@ const mockDownloadScanReport = (taskId: string) => {
         });
         
         resolve({
+          code: 200,
+          message: "报告生成成功",
+          success: true,
           data: {
-            code: 200,
-            message: "报告生成成功",
-            success: true,
-            data: {
-              blob: blob,
-              filename: `扫描报告_${taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
-              size: blob.size,
-            }
-          },
-          status: 200
+            blob: blob,
+            filename: `扫描报告_${taskId}_${new Date().toISOString().slice(0, 10)}.xlsx`,
+            size: blob.size,
+          }
         });
       });
     }, 1500 + Math.random() * 1000); // 1.5-2.5秒随机延迟，模拟报告生成时间
