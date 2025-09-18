@@ -270,7 +270,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
           updatedTask.score = event.data.score || null;
           updatedTask.vulnerabilities = event.data.vulnerabilities || null;
           updatedTask.riskLevel = event.data.riskLevel || null;
-          updatedTask.details = event.data.details || null;
           updatedTask.estimatedTime = null;
           break;
           
@@ -707,18 +706,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                     )}
                   </div>
 
-                  {task.status === "completed" && task.details ? (
-                    <div className="task-summary">
-                      <div className="risk-summary">
-                        <span className="summary-label">风险分布</span>
-                        <div className="risk-counts">
-                          <span className="risk-count high">高: {task.details.high}</span>
-                          <span className="risk-count medium">中: {task.details.medium}</span>
-                          <span className="risk-count low">低: {task.details.low}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
+                  {task.status !== "completed" && (
                     <div className="task-summary">
                       <div className="progress-header">
                         <span className="summary-label">执行进度</span>

@@ -23,11 +23,6 @@ export interface SSETaskCompletedEvent {
     score?: number;
     vulnerabilities?: number;
     riskLevel?: 'high' | 'medium' | 'low';
-    details?: {
-      high: number;
-      medium: number;
-      low: number;
-    };
   };
 }
 

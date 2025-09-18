@@ -920,11 +920,6 @@ export interface ScanResultItem {
   riskLevel: 'high' | 'medium' | 'low' | null;
   vulnerabilities: number | null;
   score: number | null;
-  details: {
-    high: number;
-    medium: number;
-    low: number;
-  } | null;
 }
 
 // 扫描结果列表响应接口
@@ -978,7 +973,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: "medium",
     vulnerabilities: 12,
     score: 75,
-    details: { high: 2, medium: 5, low: 5 },
   },
   {
     id: "TASK-002",
@@ -992,7 +986,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: "high",
     vulnerabilities: 18,
     score: 45,
-    details: { high: 6, medium: 8, low: 4 },
   },
   {
     id: "TASK-003",
@@ -1006,7 +999,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: null,
     vulnerabilities: null,
     score: null,
-    details: null,
   },
   {
     id: "TASK-004",
@@ -1020,7 +1012,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: "low",
     vulnerabilities: 3,
     score: 92,
-    details: { high: 0, medium: 1, low: 2 },
   },
   {
     id: "TASK-005",
@@ -1034,7 +1025,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: "medium",
     vulnerabilities: 8,
     score: 82,
-    details: { high: 1, medium: 4, low: 3 },
   },
   {
     id: "TASK-006",
@@ -1048,7 +1038,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: null,
     vulnerabilities: null,
     score: null,
-    details: null,
   },
   {
     id: "TASK-007",
@@ -1062,7 +1051,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: null,
     vulnerabilities: null,
     score: null,
-    details: null,
   },
   {
     id: "TASK-008",
@@ -1076,7 +1064,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: "high",
     vulnerabilities: 15,
     score: 58,
-    details: { high: 4, medium: 7, low: 4 },
   },
   {
     id: "TASK-011",
@@ -1090,7 +1077,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: null,
     vulnerabilities: null,
     score: null,
-    details: null,
   },
   {
     id: "TASK-012", 
@@ -1104,7 +1090,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: "medium",
     vulnerabilities: 8,
     score: 65,
-    details: { high: 1, medium: 4, low: 3 },
   },
   {
     id: "TASK-013",
@@ -1118,7 +1103,6 @@ let mockScanResultsData: ScanResultItem[] = [
     riskLevel: null,
     vulnerabilities: null,
     score: null,
-    details: null,
   }
 ];
 
@@ -1642,12 +1626,6 @@ export class MockSSEEventGenerator {
     const riskLevel = riskLevels[Math.floor(Math.random() * riskLevels.length)];
     const vulnerabilities = Math.floor(Math.random() * 20) + 1;
     const score = Math.floor(Math.random() * 60) + 40; // 40-100分
-    
-    const details = {
-      high: Math.floor(Math.random() * 8),
-      medium: Math.floor(Math.random() * 10),
-      low: Math.floor(Math.random() * 15)
-    };
 
     // 更新本地数据
     const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
@@ -1658,7 +1636,6 @@ export class MockSSEEventGenerator {
       mockScanResultsData[taskIndex].riskLevel = riskLevel;
       mockScanResultsData[taskIndex].vulnerabilities = vulnerabilities;
       mockScanResultsData[taskIndex].score = score;
-      mockScanResultsData[taskIndex].details = details;
     }
 
     // 发送完成事件
@@ -1670,8 +1647,7 @@ export class MockSSEEventGenerator {
         completedTime: new Date().toLocaleString('zh-CN'),
         score,
         vulnerabilities,
-        riskLevel,
-        details
+        riskLevel
       }
     };
     this.emitEvent(completedEvent);
