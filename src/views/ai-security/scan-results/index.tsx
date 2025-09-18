@@ -12,6 +12,7 @@ import {
   startScanTask, 
   pauseScanTask, 
   resumeScanTask, 
+  retryScanTask,
   getScanResults,
   ScanResultItem,
   mockSSEGenerator
@@ -27,6 +28,7 @@ import {
   WifiOutlined,
   DisconnectOutlined,
   LoadingOutlined,
+  RedoOutlined,
 } from "@ant-design/icons";
 import { sseService, SSEConnectionStatus, SSEEvent } from "../../../services/sseService";
 import { getMockStatus } from "../../../utils/mockControl";
@@ -510,6 +512,26 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     }
   };
 
+  // 处理重试任务
+  const handleRetryTask = async (taskId: string) => {
+    try {
+      const response: any = await retryScanTask(taskId);
+      // 修复响应数据结构处理 - Mock API 的 success 字段在 response.data.success
+      const isSuccess = response?.success || response?.data?.success;
+      const responseMessage = response?.message || response?.data?.message;
+      
+      if (isSuccess) {
+        message.success('任务重试成功，已重新开始执行');
+        refreshTaskData();
+      } else {
+        message.error(responseMessage || '重试失败');
+      }
+    } catch (error) {
+      console.error('重试任务失败:', error);
+      message.error((error as any)?.response?.data?.message || '重试任务时发生错误');
+    }
+  };
+
   if (selectedTaskId) {
     return <ResultDetail taskId={selectedTaskId} onBack={handleBackToList} />;
   }
@@ -593,22 +615,34 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                           </Button>
                         </>
                       )}
-                      {task.status === "running" ? (
+                      {/* 运行中的任务显示暂停按钮 */}
+                      {task.status === "running" && (
                         <Button variant="ghost" size="small" onClick={() => handlePauseTask(task.id)}>
                           <PauseCircleOutlined style={{ marginRight: 4 }} />
                           暂停
                         </Button>
-                      ) : task.status === "pending" ? (
+                      )}
+                      {/* 等待中的任务显示开始按钮 */}
+                      {task.status === "pending" && (
                         <Button variant="ghost" size="small" onClick={() => handleStartTask(task.id)}>
                           <PlayCircleOutlined style={{ marginRight: 4 }} />
                           开始
                         </Button>
-                      ) : task.status === "paused" ? (
+                      )}
+                      {/* 已暂停的任务显示恢复按钮 */}
+                      {task.status === "paused" && (
                         <Button variant="ghost" size="small" onClick={() => handleResumeTask(task.id)}>
                           <PlayCircleOutlined style={{ marginRight: 4 }} />
                           恢复
                         </Button>
-                      ) : null}
+                      )}
+                      {/* 失败的任务显示重试按钮 */}
+                      {task.status === "failed" && (
+                        <Button variant="ghost" size="small" onClick={() => handleRetryTask(task.id)}>
+                          <RedoOutlined style={{ marginRight: 4 }} />
+                          重试
+                        </Button>
+                      )}
                       <Button 
                         variant="ghost" 
                         size="small"

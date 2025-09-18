@@ -877,7 +877,7 @@ export const deleteTemplate = (templateId: string) => {
 // 下载扫描报告接口类型定义
 
 // 任务控制操作类型
-export type TaskControlAction = 'start' | 'pause' | 'resume';
+export type TaskControlAction = 'start' | 'pause' | 'resume' | 'retry';
 
 // 任务控制请求参数
 export interface TaskControlParams {
@@ -905,7 +905,7 @@ export type TaskStatus =
   | 'running'    // 运行中
   | 'paused'     // 已暂停
   | 'completed'  // 已完成
-  | 'failed';    // 失败
+  | 'failed';     // 失败
 
 // 扫描结果列表项接口
 export interface ScanResultItem {
@@ -1077,6 +1077,48 @@ let mockScanResultsData: ScanResultItem[] = [
     vulnerabilities: 15,
     score: 58,
     details: { high: 4, medium: 7, low: 4 },
+  },
+  {
+    id: "TASK-011",
+    name: "语音识别模型安全扫描",
+    type: ["对抗攻击测试", "模型鲁棒性评估"],
+    status: "failed",
+    progress: 45,
+    createTime: "2024-01-17 11:20",
+    completedTime: null,
+    estimatedTime: null,
+    riskLevel: null,
+    vulnerabilities: null,
+    score: null,
+    details: null,
+  },
+  {
+    id: "TASK-012", 
+    name: "生成式AI内容安全评估",
+    type: ["内容安全检测", "恶意内容生成防护"],
+    status: "failed",
+    progress: 75,
+    createTime: "2024-01-17 14:30",
+    completedTime: null,
+    estimatedTime: null,
+    riskLevel: "medium",
+    vulnerabilities: 8,
+    score: 65,
+    details: { high: 1, medium: 4, low: 3 },
+  },
+  {
+    id: "TASK-013",
+    name: "金融AI模型风险评估",
+    type: ["金融安全检测", "公平性测试"],
+    status: "paused",
+    progress: 30,
+    createTime: "2024-01-17 16:00",
+    completedTime: null,
+    estimatedTime: "2小时45分钟",
+    riskLevel: null,
+    vulnerabilities: null,
+    score: null,
+    details: null,
   }
 ];
 
@@ -1239,7 +1281,8 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
       const statusMap = {
         start: { from: 'pending', to: 'running' },
         pause: { from: 'running', to: 'paused' },
-        resume: { from: 'paused', to: 'running' }
+        resume: { from: 'paused', to: 'running' },
+        retry: { from: 'failed', to: 'running' }
       };
       
       const statusChange = statusMap[action];
@@ -1248,7 +1291,8 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
       const actionNameMap = {
         start: '启动',
         pause: '暂停', 
-        resume: '恢复'
+        resume: '恢复',
+        retry: '重试'
       };
       
       if (isSuccess) {
@@ -1262,6 +1306,9 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
             break;
           case 'resume':
             mockSSEGenerator.resumeTask(taskId);
+            break;
+          case 'retry':
+            mockSSEGenerator.startTaskProgress(taskId);
             break;
         }
         
@@ -1349,6 +1396,24 @@ export const resumeScanTask = (taskId: string) => {
   
   return request({
     url: `/scan-task/${taskId}/resume`,
+    method: "post"
+  });
+};
+
+/**
+ * 重试扫描任务（用于失败或部分失败的任务）
+ * @param taskId 任务ID
+ */
+export const retryScanTask = (taskId: string) => {
+  const useMock = getMockEnabled();
+  logApiSource("重试扫描任务", useMock);
+  
+  if (useMock) {
+    return mockTaskControl(taskId, 'retry');
+  }
+  
+  return request({
+    url: `/scan-task/${taskId}/retry`,
     method: "post"
   });
 };
