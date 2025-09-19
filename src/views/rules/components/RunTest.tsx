@@ -41,7 +41,6 @@ const RunTest: React.FC<RunTestProps> = (props, ref) => {
 
   useEffect(() => {
     if (!!testData) {
-      console.log(testData);
       const itemData = testData.set
         ? Object.keys(testData.set).map(item => {
             return { name: item, value: testData.set[item] };
@@ -102,7 +101,6 @@ const RunTest: React.FC<RunTestProps> = (props, ref) => {
   };
 
   const handleTestFinish = (value: TestComponentProps["data"]) => {
-    console.log(value);
     const curData = groupData.map((item: any) => {
       if (item.id === value.id) {
         return value;
@@ -114,7 +112,6 @@ const RunTest: React.FC<RunTestProps> = (props, ref) => {
 
   const handleDeleteTest = (id: string) => {
     const curData = groupData.filter((item: any) => {
-      // console.log(item.test.id, value.test.id);
       return item.id !== id;
     });
     setGroupData(curData);
@@ -165,7 +162,6 @@ const RunTest: React.FC<RunTestProps> = (props, ref) => {
   };
 
   const handleDeleteItem = (key: string) => {
-    // console.log(itemData, key);
     setItemData(prevState => prevState.filter(item => item.key !== key));
   };
 

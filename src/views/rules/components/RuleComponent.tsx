@@ -8,7 +8,6 @@ interface RuleComponentProps {
   setData: any;
 }
 const RuleComponent: React.FC<RuleComponentProps> = props => {
-  console.log(props);
   const { data } = props;
   const [headerList, setHeaderList] = useState<any[]>([{ id: getId() }]);
 
@@ -40,7 +39,6 @@ const RuleComponent: React.FC<RuleComponentProps> = props => {
   };
 
   const handleChange = (val: any) => {
-    console.log(val);
     setHeaderList(prevState => {
       return prevState.map(item => {
         if (item.id === val.id) {
@@ -55,12 +53,10 @@ const RuleComponent: React.FC<RuleComponentProps> = props => {
   const handleHeaderSubmit = () => {
     let newVal: any = {};
     headerList.forEach(header => {
-      console.log(header);
       if (header.key) {
         newVal[header.key] = header.value;
       }
     });
-    console.log(newVal);
     props.setData(data.id, "headers", newVal);
     message.success("保存请求头成功");
   };

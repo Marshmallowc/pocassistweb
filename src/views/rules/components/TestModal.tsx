@@ -52,8 +52,6 @@ const TestModal: React.FC<TestModalProps> = props => {
 
   const handleSubmit = () => {
     form.validateFields().then(val => {
-      console.log(val);
-      console.log(fileList);
       const targetType = val.targetType;
       let value;
       if (targetType !== "url") {
@@ -72,7 +70,6 @@ const TestModal: React.FC<TestModalProps> = props => {
           ? batchTestList
           : batchTestUrl;
       uri(value).then(res => {
-        console.log(res);
         message.success("任务创建成功");
         // @ts-ignore
         props.onCancel();
@@ -86,7 +83,6 @@ const TestModal: React.FC<TestModalProps> = props => {
   };
 
   const normFile = (e: any) => {
-    console.log("Upload event:", e);
     if (Array.isArray(e)) {
       return e;
     }
@@ -99,7 +95,6 @@ const TestModal: React.FC<TestModalProps> = props => {
       setFileList([]);
     },
     beforeUpload: (file: any) => {
-      console.log(file);
       setFileList([file]);
       return false;
     },

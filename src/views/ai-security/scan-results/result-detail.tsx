@@ -36,7 +36,6 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
         }
       } catch (err) {
         setError('网络请求失败');
-        console.error('获取扫描结果详情失败:', err);
       } finally {
         setLoading(false);
       }
@@ -89,7 +88,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
         
         // 可选：记录是否修改了AI的原始判断
         if (response.data.isModified) {
-          console.log(`问题 ${questionId} 的审核结果与AI判断不同`);
+          // AI判断结果被修改
         }
       } else {
         message.error(response.message || '保存审核结果失败');
@@ -100,7 +99,6 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
         }));
       }
     } catch (error) {
-      console.error('人工审核失败:', error);
       message.error('网络请求失败，请稍后重试');
       // 回滚UI状态
       setQuestionStates((prev) => ({
@@ -172,7 +170,6 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
       }
     } catch (error) {
       hide();
-      console.error('下载报告失败:', error);
       message.error((error as any)?.response?.data?.message || '下载报告时发生错误');
     }
   };

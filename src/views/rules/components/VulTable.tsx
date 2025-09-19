@@ -95,7 +95,6 @@ const VulTable: React.FC<VulComponentProps> = props => {
   ];
 
   const handlePageChange = (page: number, pageSize: number | undefined) => {
-    // console.log(page, pageSize);
     dispatch({ type: "SET_PAGINATION", payload: { page, pagesize: pageSize } });
   };
 
@@ -122,12 +121,10 @@ const VulTable: React.FC<VulComponentProps> = props => {
   };
 
   // const onSelectChange = (selectedRowKeys: any[]) => {
-  //   console.log("selectedRowKeys changed: ", selectedRowKeys);
   //   setSelectedRowKeys(selectedRowKeys);
   // };
   //
   // const handleBatchTest = () => {
-  //   console.log(selectedRowKeys);
   // };
 
   const width = document.documentElement.offsetWidth;

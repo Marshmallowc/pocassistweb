@@ -234,7 +234,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         message.error(response.message || "获取扫描结果失败");
       }
     } catch (error) {
-      console.error("获取扫描结果失败:", error);
       message.error("获取扫描结果时发生错误");
     } finally {
       setLoading(false);
@@ -243,14 +242,12 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
 
   // SSE事件处理函数
   const handleSSEEvent = useCallback((event: SSEEvent) => {
-    console.log('🎯 收到SSE事件:', event);
     
     setTaskResults(prevTasks => {
       const newTasks = [...prevTasks];
       const taskIndex = newTasks.findIndex(task => task.id === event.taskId);
       
       if (taskIndex === -1) {
-        console.warn(`任务 ${event.taskId} 在当前列表中不存在`);
         return prevTasks;
       }
       
@@ -278,7 +275,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
           break;
           
         default:
-          console.warn('未知的SSE事件类型:', (event as any).type);
           return prevTasks;
       }
       
@@ -289,7 +285,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
 
   // SSE连接状态处理函数
   const handleSSEStatusChange = useCallback((status: SSEConnectionStatus, error?: Error) => {
-    console.log('🔗 SSE连接状态变化:', status, error);
     setSSEConnectionStatus(status);
     
     if (status === SSEConnectionStatus.ERROR && error) {
@@ -304,13 +299,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     const useMock = getMockStatus();
     
     if (useMock) {
-      console.log('🔧 使用Mock SSE服务');
       // 设置Mock SSE事件监听器
       sseEventListenerRef.current = handleSSEEvent;
       mockSSEGenerator.addEventListener(sseEventListenerRef.current);
       setSSEConnectionStatus(SSEConnectionStatus.CONNECTED);
     } else {
-      console.log('🌐 使用真实SSE服务');
       // 设置真实SSE服务监听器
       sseEventListenerRef.current = handleSSEEvent;
       sseStatusListenerRef.current = handleSSEStatusChange;
@@ -327,12 +320,10 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     const useMock = getMockStatus();
     
     if (useMock) {
-      console.log('🧹 清理Mock SSE服务');
       if (sseEventListenerRef.current) {
         mockSSEGenerator.removeEventListener(sseEventListenerRef.current);
       }
     } else {
-      console.log('🧹 清理真实SSE服务');
       if (sseEventListenerRef.current) {
         sseService.removeEventListener(sseEventListenerRef.current);
       }
@@ -393,7 +384,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
             message.error(responseMessage || '删除失败');
           }
         } catch (error) {
-          console.error('删除任务失败:', error);
           message.error((error as any)?.response?.data?.message || '删除任务时发生错误');
         }
       },
@@ -416,7 +406,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         
         // 验证blob对象有效性
         if (!blob || !(blob instanceof Blob)) {
-          console.error('无效的blob对象:', blob);
           message.error('报告文件格式错误');
           return;
         }
@@ -441,7 +430,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       }
     } catch (error) {
       hide();
-      console.error('下载报告失败:', error);
       message.error((error as any)?.response?.data?.message || '下载报告时发生错误');
     }
   };
@@ -466,7 +454,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         message.error(responseMessage || '启动失败');
       }
     } catch (error) {
-      console.error('启动任务失败:', error);
       message.error((error as any)?.response?.data?.message || '启动任务时发生错误');
     }
   };
@@ -486,7 +473,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         message.error(responseMessage || '暂停失败');
       }
     } catch (error) {
-      console.error('暂停任务失败:', error);
       message.error((error as any)?.response?.data?.message || '暂停任务时发生错误');
     }
   };
@@ -506,7 +492,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         message.error(responseMessage || '恢复失败');
       }
     } catch (error) {
-      console.error('恢复任务失败:', error);
       message.error((error as any)?.response?.data?.message || '恢复任务时发生错误');
     }
   };
@@ -526,7 +511,6 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         message.error(responseMessage || '重试失败');
       }
     } catch (error) {
-      console.error('重试任务失败:', error);
       message.error((error as any)?.response?.data?.message || '重试任务时发生错误');
     }
   };

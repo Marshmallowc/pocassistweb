@@ -42,7 +42,6 @@ const Task: React.FC<RouteComponentProps> = () => {
   };
 
   const handleDelete = (record: any) => {
-    console.log(record);
     deleteTask(record.id).then(res => {
       message.success("删除成功");
       setParams(prevState => ({ ...prevState }));

@@ -1,6 +1,6 @@
 import request from "../utils/request";
-import { mockDispatchTask, printMockStatus } from "./mockTaskDispatch";
-import { getMockStatus, logApiSource } from "../utils/mockControl";
+import { mockDispatchTask } from "./mockTaskDispatch";
+import { getMockStatus } from "../utils/mockControl";
 import { getUserInfo } from "../utils/auth";
 import { SSEEvent, SSETaskProgressEvent, SSETaskCompletedEvent, SSETaskStatusChangeEvent } from "../services/sseService";
 
@@ -252,14 +252,8 @@ const getMockEnabled = () => getMockStatus();
  */
 export const dispatchTask = (data: TaskDispatchParams) => {
   const useMock = getMockEnabled();
-  logApiSource("任务下发", useMock);
   
   if (useMock) {
-    // 打印Mock服务状态（仅第一次调用时）
-    if (!(window as any).__mockStatusPrinted) {
-      printMockStatus();
-      (window as any).__mockStatusPrinted = true;
-    }
     
     return mockDispatchTask(data);
   }
@@ -277,7 +271,6 @@ export const dispatchTask = (data: TaskDispatchParams) => {
  * @param taskId 任务ID
  */
 const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailResponse> => {
-  console.log("🔧 使用Mock服务获取扫描结果详情", taskId);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -402,7 +395,6 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
  * @param data API测试参数
  */
 const mockTestApiConnectivity = (data: ApiTestParams) => {
-  console.log("🔧 使用Mock服务测试API连通性", data);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -448,7 +440,6 @@ const mockTestApiConnectivity = (data: ApiTestParams) => {
  */
 export const getScanResultDetail = async (taskId: string): Promise<ScanResultDetailResponse> => {
   const useMock = getMockEnabled();
-  logApiSource("获取扫描结果详情", useMock);
   
   if (useMock) {
     return mockGetScanResultDetail(taskId);
@@ -466,7 +457,6 @@ export const getScanResultDetail = async (taskId: string): Promise<ScanResultDet
  * @param taskId 任务ID
  */
 const mockDeleteScanTask = (taskId: string) => {
-  console.log("🔧 使用Mock服务删除扫描任务", taskId);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -515,8 +505,6 @@ const mockDeleteScanTask = (taskId: string) => {
       if (isSuccess) {
         // 真正从数组中删除任务
         const deletedTask = mockScanResultsData.splice(taskIndex, 1)[0];
-        console.log(`✅ Mock删除成功: 已删除任务 ${taskId} (${deletedTask.name})`);
-        console.log(`📊 当前剩余任务数量: ${mockScanResultsData.length}`);
         
         resolve({
           data: {
@@ -557,7 +545,6 @@ const mockDeleteScanTask = (taskId: string) => {
  */
 export const deleteScanTask = (taskId: string) => {
   const useMock = getMockEnabled();
-  logApiSource("删除扫描任务", useMock);
   
   if (useMock) {
     return mockDeleteScanTask(taskId);
@@ -576,7 +563,6 @@ export const deleteScanTask = (taskId: string) => {
  */
 export const testApiConnectivity = (data: ApiTestParams) => {
   const useMock = getMockEnabled();
-  logApiSource("API连通性测试", useMock);
   
   if (useMock) {
     return mockTestApiConnectivity(data);
@@ -594,7 +580,6 @@ export const testApiConnectivity = (data: ApiTestParams) => {
  * @param data 自定义模板数据
  */
 const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCustomTemplateResponse> => {
-  console.log("🔧 使用Mock服务保存自定义模板", data);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -637,8 +622,6 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
         };
         
         mockTaskTemplatesData.push(newTemplate);
-        console.log(`✅ Mock保存成功: 已添加自定义模板 ${data.name} (${templateId})`);
-        console.log(`📊 当前模板总数: ${mockTaskTemplatesData.length}`);
         
         resolve({
           code: 200,
@@ -669,7 +652,6 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
  * @param data 编辑模板数据
  */
 const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateResponse> => {
-  console.log("🔧 使用Mock服务编辑模板", data);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -736,9 +718,6 @@ const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateRespons
           corpusFileName: data.corpusFileName || existingTemplate.corpusFileName
         };
         
-        console.log(`✅ Mock编辑成功: 已更新模板 ${data.name} (${data.templateId})`);
-        console.log(`📊 是否有修改: ${isModified}`);
-        
         resolve({
           code: 200,
           message: "模板编辑成功",
@@ -770,7 +749,6 @@ const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateRespons
  * @param templateId 模板ID
  */
 const mockDeleteTemplate = (templateId: string): Promise<DeleteTemplateResponse> => {
-  console.log("🔧 使用Mock服务删除模板", templateId);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -815,9 +793,6 @@ const mockDeleteTemplate = (templateId: string): Promise<DeleteTemplateResponse>
         // 从数组中删除模板
         const deletedTemplate = mockTaskTemplatesData.splice(templateIndex, 1)[0];
         
-        console.log(`✅ Mock删除成功: 已删除模板 ${deletedTemplate.name} (${templateId})`);
-        console.log(`📊 当前剩余模板数量: ${mockTaskTemplatesData.length}`);
-        
         resolve({
           code: 200,
           message: "模板删除成功",
@@ -850,7 +825,6 @@ const mockDeleteTemplate = (templateId: string): Promise<DeleteTemplateResponse>
  */
 export const saveCustomTemplate = (data: SaveCustomTemplateParams) => {
   const useMock = getMockEnabled();
-  logApiSource("保存自定义模板", useMock);
   
   if (useMock) {
     return mockSaveCustomTemplate(data);
@@ -878,7 +852,6 @@ export const saveCustomTemplate = (data: SaveCustomTemplateParams) => {
  */
 export const editTemplate = (data: EditTemplateParams) => {
   const useMock = getMockEnabled();
-  logApiSource("编辑模板", useMock);
   
   if (useMock) {
     return mockEditTemplate(data);
@@ -909,7 +882,6 @@ export const editTemplate = (data: EditTemplateParams) => {
  */
 export const deleteTemplate = (templateId: string) => {
   const useMock = getMockEnabled();
-  logApiSource("删除模板", useMock);
   
   if (useMock) {
     return mockDeleteTemplate(templateId);
@@ -1162,7 +1134,6 @@ let mockScanResultsData: ScanResultItem[] = [
  * @param params 查询参数
  */
 const mockGetTaskTemplates = (params: { page?: number; pageSize?: number } = {}): Promise<GetTaskTemplatesResponse> => {
-  console.log("🔧 使用Mock服务获取任务模板列表", params);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -1197,7 +1168,6 @@ const mockGetTaskTemplates = (params: { page?: number; pageSize?: number } = {})
  * @param params 查询参数
  */
 const mockGetScanResults = (params: { page?: number; pageSize?: number; search?: string } = {}): Promise<ScanResultsResponse> => {
-  console.log("🔧 使用Mock服务获取扫描结果列表", params);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -1243,7 +1213,6 @@ const mockGetScanResults = (params: { page?: number; pageSize?: number; search?:
  * @param taskId 任务ID
  */
 const mockDownloadScanReport = (taskId: string) => {
-  console.log("🔧 使用Mock服务下载扫描报告", taskId);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -1289,7 +1258,6 @@ const mockDownloadScanReport = (taskId: string) => {
  */
 export const downloadScanReport = (taskId: string) => {
   const useMock = getMockEnabled();
-  logApiSource("下载扫描报告", useMock);
   
   if (useMock) {
     return mockDownloadScanReport(taskId);
@@ -1309,7 +1277,6 @@ export const downloadScanReport = (taskId: string) => {
  * @param action 控制动作
  */
 const mockTaskControl = (taskId: string, action: TaskControlAction) => {
-  console.log(`🔧 使用Mock服务${action}扫描任务`, taskId);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -1387,7 +1354,6 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
  */
 export const startScanTask = (taskId: string) => {
   const useMock = getMockEnabled();
-  logApiSource("开始扫描任务", useMock);
   
   if (useMock) {
     return mockTaskControl(taskId, 'start');
@@ -1405,7 +1371,6 @@ export const startScanTask = (taskId: string) => {
  */
 export const pauseScanTask = (taskId: string) => {
   const useMock = getMockEnabled();
-  logApiSource("暂停扫描任务", useMock);
   
   if (useMock) {
     return mockTaskControl(taskId, 'pause');
@@ -1423,7 +1388,6 @@ export const pauseScanTask = (taskId: string) => {
  */
 export const resumeScanTask = (taskId: string) => {
   const useMock = getMockEnabled();
-  logApiSource("恢复扫描任务", useMock);
   
   if (useMock) {
     return mockTaskControl(taskId, 'resume');
@@ -1441,7 +1405,6 @@ export const resumeScanTask = (taskId: string) => {
  */
 export const retryScanTask = (taskId: string) => {
   const useMock = getMockEnabled();
-  logApiSource("重试扫描任务", useMock);
   
   if (useMock) {
     return mockTaskControl(taskId, 'retry');
@@ -1459,7 +1422,6 @@ export const retryScanTask = (taskId: string) => {
  */
 export const getScanResults = async (params: { page?: number; pageSize?: number; search?: string } = {}): Promise<ScanResultsResponse> => {
   const useMock = getMockEnabled();
-  logApiSource("获取扫描结果列表", useMock);
   
   if (useMock) {
     return mockGetScanResults(params);
@@ -1480,8 +1442,6 @@ export const getScanResults = async (params: { page?: number; pageSize?: number;
  * @param reviewData 审核数据
  */
 const mockReviewQuestion = (questionId: string, reviewData: QuestionReviewParams): Promise<QuestionReviewResponse> => {
-  console.log("🔧 使用Mock服务进行人工审核", questionId, reviewData);
-  console.log("📋 新增参数 - taskId:", reviewData.taskId, "taskTemplate:", reviewData.taskTemplate, "taskQuestion:", reviewData.taskQuestion);
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -1524,7 +1484,6 @@ const mockReviewQuestion = (questionId: string, reviewData: QuestionReviewParams
  */
 export const reviewQuestion = async (questionId: string, reviewData: QuestionReviewParams): Promise<QuestionReviewResponse> => {
   const useMock = getMockEnabled();
-  logApiSource("人工审核问题", useMock);
   
   if (useMock) {
     return mockReviewQuestion(questionId, reviewData);
@@ -1545,7 +1504,6 @@ export const reviewQuestion = async (questionId: string, reviewData: QuestionRev
  */
 export const getTaskTemplates = async (params: { page?: number; pageSize?: number } = {}): Promise<GetTaskTemplatesResponse> => {
   const useMock = getMockEnabled();
-  logApiSource("获取任务模板列表", useMock);
   
   if (useMock) {
     return mockGetTaskTemplates(params);
@@ -1588,7 +1546,6 @@ export class MockSSEEventGenerator {
    * 发送事件给所有监听器
    */
   private emitEvent(event: SSEEvent) {
-    console.log('🎯 Mock SSE发送事件:', event);
     this.eventListeners.forEach(listener => listener(event));
   }
 
@@ -1597,17 +1554,14 @@ export class MockSSEEventGenerator {
    */
   startTaskProgress(taskId: string) {
     if (this.runningTasks.has(taskId)) {
-      console.log(`任务 ${taskId} 已在运行中`);
       return;
     }
 
     this.runningTasks.add(taskId);
-    console.log(`🚀 开始模拟任务 ${taskId} 的进度更新`);
 
     // 查找对应的任务数据
     const task = mockScanResultsData.find(t => t.id === taskId);
     if (!task) {
-      console.error(`任务 ${taskId} 不存在`);
       return;
     }
 
@@ -1664,7 +1618,6 @@ export class MockSSEEventGenerator {
    * 完成任务
    */
   private completeTask(taskId: string) {
-    console.log(`✅ 任务 ${taskId} 完成`);
     
     this.runningTasks.delete(taskId);
     const intervalId = this.intervalIds.get(taskId);
@@ -1709,7 +1662,6 @@ export class MockSSEEventGenerator {
    * 暂停任务
    */
   pauseTask(taskId: string) {
-    console.log(`⏸️ 暂停任务 ${taskId}`);
     
     this.runningTasks.delete(taskId);
     const intervalId = this.intervalIds.get(taskId);
@@ -1741,7 +1693,6 @@ export class MockSSEEventGenerator {
    * 恢复任务
    */
   resumeTask(taskId: string) {
-    console.log(`▶️ 恢复任务 ${taskId}`);
     
     // 更新本地数据
     const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
@@ -1769,7 +1720,6 @@ export class MockSSEEventGenerator {
    * 清理所有任务
    */
   cleanup() {
-    console.log('🧹 清理Mock SSE服务');
     this.runningTasks.clear();
     this.intervalIds.forEach(intervalId => clearInterval(intervalId));
     this.intervalIds.clear();

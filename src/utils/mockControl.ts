@@ -18,9 +18,3 @@ export const setMockStatus = (enabled: boolean): void => {
   }
 };
 
-// 打印当前API数据源状态
-export const logApiSource = (apiName: string, isMock: boolean): void => {
-  const icon = isMock ? "🔧" : "🌐";
-  const source = isMock ? "Mock数据" : "真实API";
-  console.log(`${icon} ${apiName}: 使用${source}`);
-};

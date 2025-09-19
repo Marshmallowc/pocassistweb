@@ -59,7 +59,6 @@ const VulModal: React.FC<AddVulProps> = props => {
   };
 
   useEffect(() => {
-    // console.log(selected);
     // 根据selected判断当前是编辑还是新增
     if (!!selected) {
       setRuleData(selected);
@@ -86,7 +85,6 @@ const VulModal: React.FC<AddVulProps> = props => {
       writer_id: userInfo?.id,
       ...xml
     };
-    // console.log(finalData);
     vulApi(finalData, ruleData?.id || vulAddId)
       .then((res: any) => {
         setVulAddId(res?.data?.id);
@@ -119,10 +117,8 @@ const VulModal: React.FC<AddVulProps> = props => {
       writer_id: userInfo?.id,
       ...xml
     };
-    console.log(xml);
     try {
       downloadYaml(xml).then(res => {
-        // console.log(res);
         const link = document.createElement("a");
         const blob = new Blob(["\uFEFF" + res.data], {
           type: "text/vnd.yaml"
@@ -139,7 +135,6 @@ const VulModal: React.FC<AddVulProps> = props => {
         document.body.removeChild(link);
       });
     } catch (e) {
-      console.log(e);
     }
   };
 
@@ -166,7 +161,6 @@ const VulModal: React.FC<AddVulProps> = props => {
   };
 
   const renderTestResult = (record: any) => {
-    console.log(record);
     const { req_msg, resp_msg } = record;
 
     return (
@@ -279,10 +273,8 @@ const VulModal: React.FC<AddVulProps> = props => {
     },
     onChange(info: any) {
       if (info.file.status !== "uploading") {
-        console.log(info.file, info.fileList);
       }
       if (info.file.status === "done") {
-        console.log(info);
         setRuleData((prev: any) => {
           return {
             ...prev,

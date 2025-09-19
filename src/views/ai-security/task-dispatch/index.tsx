@@ -83,12 +83,10 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       const response = await getTaskTemplates();
       if (response.success && response.data) {
         setQuickTemplates(response.data.templates);
-        console.log("✅ 获取任务模板列表成功:", response.data.templates);
       } else {
         message.error(response.message || "获取模板列表失败");
       }
     } catch (error) {
-      console.error("获取模板列表失败:", error);
       const err = error as any;
       let errorMessage = "获取模板列表失败";
       if (err?.response?.data?.message) {
@@ -233,7 +231,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
         testParams.customHeaders = customHeaders;
       }
 
-      console.log("🔌 发送API连通性测试请求:", testParams);
       
       // 调用API测试接口
       const response = await testApiConnectivity(testParams) as any;
@@ -246,7 +243,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
         message.error(`API连接测试失败: ${response.data?.message || "未知错误"}`);
       }
     } catch (error) {
-      console.error("API连通性测试失败:", error);
       setApiTestResult("failed");
       
       let errorMessage = "API连接测试失败";
@@ -326,7 +322,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       // 成功处理
       if (response?.data?.taskId) {
         message.success(`任务下发成功！任务ID: ${response.data.taskId}`);
-        console.log("✅ 任务下发成功:", response);
         
         // 显示详细的成功信息
         Modal.success({
@@ -348,7 +343,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
         });
       } else {
         message.success("任务下发成功！");
-        console.log("✅ 任务下发响应:", response);
       }
       
       // 可选：重置表单或跳转页面
@@ -356,7 +350,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       // history.push('/task'); // 跳转到任务列表页面
       
     } catch (error) {
-      console.error("任务下发失败:", error);
       
       // 根据错误类型显示不同的错误信息
       let errorMessage = "任务下发失败，请检查配置后重试";
@@ -784,8 +777,7 @@ X-Custom-Header: value`}
                   if (response.success || response.data?.success) {
                     // 保存成功，重新获取模板列表
                     const templateName = response.data?.templateName || customTemplateName.trim();
-                    message.success(`自定义模板"${templateName}"保存成功`);
-                    console.log("✅ 自定义模板保存成功:", response);
+                    message.success(`自定义模板“${templateName}”保存成功`);
                     
                     // 重新获取模板列表以显示最新数据
                     await fetchTemplates();
@@ -796,7 +788,6 @@ X-Custom-Header: value`}
                     message.error(response.message || response.data?.message || "保存自定义模板失败");
                   }
                 } catch (error) {
-                  console.error("保存自定义模板失败:", error);
                   const err = error as any;
                   let errorMessage = "保存自定义模板失败";
                   if (err?.response?.data?.message) {

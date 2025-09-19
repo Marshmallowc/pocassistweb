@@ -89,7 +89,6 @@ class SSEService {
   async connect(): Promise<void> {
     if (this.connectionStatus === SSEConnectionStatus.CONNECTED || 
         this.connectionStatus === SSEConnectionStatus.CONNECTING) {
-      console.log('SSE连接已存在或正在连接中');
       return;
     }
 
@@ -114,7 +113,6 @@ class SSEService {
         },
         onopen: async (response) => {
           if (response.ok && response.headers.get('content-type')?.includes('text/event-stream')) {
-            console.log('✅ SSE连接建立成功');
             this.setConnectionStatus(SSEConnectionStatus.CONNECTED);
             this.reconnectAttempts = 0;
           } else {
@@ -124,21 +122,17 @@ class SSEService {
         onmessage: (event) => {
           try {
             const data = JSON.parse(event.data) as SSEEvent;
-            console.log('📨 收到SSE事件:', data);
             this.eventListeners.forEach(listener => listener(data));
           } catch (error) {
-            console.error('解析SSE事件数据失败:', error, event.data);
           }
         },
         onclose: () => {
-          console.log('🔌 SSE连接关闭');
           if (!this.isManuallyDisconnected) {
             this.setConnectionStatus(SSEConnectionStatus.DISCONNECTED);
             this.handleReconnect();
           }
         },
         onerror: (error) => {
-          console.error('❌ SSE连接错误:', error);
           this.setConnectionStatus(SSEConnectionStatus.ERROR, error);
           
           if (!this.isManuallyDisconnected) {
@@ -150,7 +144,6 @@ class SSEService {
         }
       });
     } catch (error) {
-      console.error('SSE连接启动失败:', error);
       this.setConnectionStatus(SSEConnectionStatus.ERROR, error as Error);
       
       if (!this.isManuallyDisconnected) {
@@ -168,15 +161,12 @@ class SSEService {
     }
 
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error(`❌ SSE重连失败，已达到最大重试次数 (${this.maxReconnectAttempts})`);
       this.setConnectionStatus(SSEConnectionStatus.ERROR, new Error('重连次数超过限制'));
       return;
     }
 
     this.reconnectAttempts++;
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // 指数退避
-    
-    console.log(`🔄 SSE将在 ${delay}ms 后进行第 ${this.reconnectAttempts} 次重连...`);
     this.setConnectionStatus(SSEConnectionStatus.RECONNECTING);
 
     setTimeout(() => {
@@ -190,7 +180,6 @@ class SSEService {
    * 断开SSE连接
    */
   disconnect() {
-    console.log('🔌 主动断开SSE连接');
     this.isManuallyDisconnected = true;
     
     if (this.abortController) {
@@ -243,12 +232,10 @@ class SSEService {
    */
   private handleVisibilityChange = () => {
     if (document.hidden) {
-      console.log('📱 页面隐藏，暂停SSE连接');
       if (this.connectionStatus === SSEConnectionStatus.CONNECTED) {
         this.disconnect();
       }
     } else {
-      console.log('📱 页面显示，恢复SSE连接');
       if (this.connectionStatus === SSEConnectionStatus.DISCONNECTED && !this.isManuallyDisconnected) {
         this.connect();
       }

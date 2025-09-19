@@ -70,7 +70,6 @@ const TestComponent: React.FC<TestComponentProps> = props => {
   };
 
   const remove = (targetKey: string) => {
-    console.log(targetKey);
     const current = {
       ...data,
       data: data.data.filter((item: any) => item.id !== targetKey)

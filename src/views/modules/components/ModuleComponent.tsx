@@ -79,7 +79,6 @@ const ModuleComponent: React.FC<ModuleComponentProps> = props => {
       }
       api(params)
         .then(res => {
-          // console.log(res);
           setList(res.data.data);
           setTotal(res.data.total);
         })
@@ -150,7 +149,6 @@ const ModuleComponent: React.FC<ModuleComponentProps> = props => {
   ];
 
   const handleDelete = (id: number) => {
-    // console.log(id);
     let api;
     switch (props.type) {
       case "product":
@@ -160,7 +158,6 @@ const ModuleComponent: React.FC<ModuleComponentProps> = props => {
         api = deleteProduct;
     }
     api(id).then(res => {
-      // console.log(res);
       message.success("删除成功");
       getTableData(query);
     });
@@ -177,7 +174,6 @@ const ModuleComponent: React.FC<ModuleComponentProps> = props => {
   };
 
   const handleFinish = (val: any) => {
-    console.log(val);
     setQuery(prevState => {
       return {
         ...prevState,
@@ -199,7 +195,6 @@ const ModuleComponent: React.FC<ModuleComponentProps> = props => {
   };
 
   const handleModalFinish = (value: any) => {
-    console.log(value);
     let api;
     switch (props.type) {
       case "product":
@@ -209,7 +204,6 @@ const ModuleComponent: React.FC<ModuleComponentProps> = props => {
         api = !!selected ? updateProduct : createProduct;
     }
     api(value, selected?.id).then(res => {
-      console.log(res);
       getTableData(query);
       handleToggleAdd();
     });

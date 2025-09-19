@@ -7,7 +7,6 @@ import { message } from "antd";
  * @returns {Promise} 模拟的API响应
  */
 export const mockDispatchTask = async (data) => {
-  console.log("🔧 Mock Service: 接收到任务下发请求", data);
   
   // 模拟网络延迟
   await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
@@ -15,11 +14,11 @@ export const mockDispatchTask = async (data) => {
   // 验证必要参数
   if (!data.taskName || !data.targetUrl || !data.selectedTemplates?.length) {
     const error = new Error("参数验证失败");
-    console.error("❌ Mock Service: 参数验证失败", {
+    error.details = {
       taskName: !!data.taskName,
       targetUrl: !!data.targetUrl,
       selectedTemplates: !!data.selectedTemplates?.length
-    });
+    };
     throw error;
   }
   
@@ -53,8 +52,6 @@ export const mockDispatchTask = async (data) => {
         }
       }
     };
-    
-    console.log("✅ Mock Service: 任务下发成功", mockResponse);
     return mockResponse;
     
   } else {
@@ -67,7 +64,6 @@ export const mockDispatchTask = async (data) => {
     ];
     
     const errorResponse = errorScenarios[Math.floor(Math.random() * errorScenarios.length)];
-    console.log("❌ Mock Service: 任务下发失败", errorResponse);
     
     // 抛出错误以模拟真实的API错误处理
     const error = new Error(errorResponse.msg);
@@ -132,18 +128,3 @@ export const generateDetailedMockTask = (data) => {
   };
 };
 
-/**
- * 打印Mock服务状态信息
- */
-export const printMockStatus = () => {
-  console.log(`
-🔧 ===== Mock Service Status =====
-📡 Service: Task Dispatch API Mock
-🎯 Endpoint: POST /v1/ai_task/
-✅ Status: Active
-📊 Success Rate: 80%
-⏱️  Response Time: 1-3 seconds
-🔄 Auto Scenarios: Enabled
-================================
-  `);
-};

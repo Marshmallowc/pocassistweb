@@ -55,7 +55,6 @@ const VulModal: React.FC<AddVulProps> = props => {
   };
 
   useEffect(() => {
-    // console.log(selected);
     // 根据selected判断当前是编辑还是新增
     if (!!selected) {
       setVulData(selected);
@@ -261,7 +260,6 @@ const VulModal: React.FC<AddVulProps> = props => {
                             : data[item.name as string];
                       });
                       setVulData((prev: any) => ({ ...prev, ...cur }));
-                      console.log({ ...vulData, ...cur });
                       handleFinish({ ...vulData, ...cur });
                     })
                     .catch(err => {});

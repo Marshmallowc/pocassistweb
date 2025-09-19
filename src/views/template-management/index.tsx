@@ -78,12 +78,10 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
           ...prev,
           total: response.data.total
         }));
-        console.log("✅ 获取模板列表成功:", response.data.templates);
       } else {
         message.error(response.message || "获取模板列表失败");
       }
     } catch (error) {
-      console.error("获取模板列表失败:", error);
       const err = error as any;
       let errorMessage = "获取模板列表失败";
       if (err?.response?.data?.message) {
@@ -247,7 +245,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
         // 保存成功，重新获取模板列表
         const templateName = response.data?.templateName || customTemplateName.trim();
         message.success(`自定义模板"${templateName}"创建成功`);
-        console.log("✅ 自定义模板保存成功:", response);
         
         // 重新获取模板列表以显示最新数据
         await fetchTemplates(pagination.current, pagination.pageSize);
@@ -255,7 +252,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
         message.error(response.message || response.data?.message || "创建自定义模板失败");
       }
     } catch (error) {
-      console.error("创建自定义模板失败:", error);
       const err = error as any;
       let errorMessage = "创建自定义模板失败";
       if (err?.response?.data?.message) {
@@ -320,7 +316,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       
       if (response.success || response.data?.success) {
         message.success("模板编辑成功");
-        console.log("✅ 模板编辑成功:", response);
         
         // 重新获取模板列表以显示最新数据
         await fetchTemplates(pagination.current, pagination.pageSize);
@@ -328,7 +323,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
         message.error(response.message || response.data?.message || "编辑模板失败");
       }
     } catch (error) {
-      console.error("编辑模板失败:", error);
       const err = error as any;
       let errorMessage = "编辑模板失败";
       if (err?.response?.data?.message) {
@@ -359,7 +353,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
           
           if (response.success || response.data?.success) {
             message.success("模板删除成功");
-            console.log("✅ 模板删除成功:", response);
             
             // 重新获取模板列表以显示最新数据
             await fetchTemplates(pagination.current, pagination.pageSize);
@@ -367,7 +360,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
             message.error(response.message || response.data?.message || "删除模板失败");
           }
         } catch (error) {
-          console.error("删除模板失败:", error);
           const err = error as any;
           let errorMessage = "删除模板失败";
           if (err?.response?.data?.message) {

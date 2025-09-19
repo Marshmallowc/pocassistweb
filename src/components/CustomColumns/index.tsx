@@ -11,7 +11,6 @@ interface CustomColumnsProps {
   setColumns: React.Dispatch<React.SetStateAction<ColumnProps<any>[]>>;
 }
 const CustomColumns: React.FC<CustomColumnsProps> = props => {
-  // console.log(props);
   const { className, columns, setColumns, allColumns } = props;
   const [showModal, setShowModal] = useState<boolean>(false);
   const [value, setValue] = useState<string[]>([]);
@@ -42,7 +41,6 @@ const CustomColumns: React.FC<CustomColumnsProps> = props => {
   };
 
   const handleFinish = () => {
-    // console.log(value);
     const returnColumns = allColumns.filter(
       item => value.indexOf(item.dataIndex as string) !== -1
     );

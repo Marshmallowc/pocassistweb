@@ -93,7 +93,6 @@ const VulTable: React.FC<VulComponentProps> = props => {
   ];
 
   const handlePageChange = (page: number, pageSize: number | undefined) => {
-    // console.log(page, pageSize);
     dispatch({ type: "SET_PAGINATION", payload: { page, pagesize: pageSize } });
   };
 

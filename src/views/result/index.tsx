@@ -56,7 +56,6 @@ const Result: React.FC<RouteComponentProps> = () => {
   };
 
   const handleDelete = (record: any) => {
-    console.log(record);
     deleteResult(record.id).then(res => {
       message.success("删除成功");
       setParams(prevState => ({ ...prevState }));
@@ -64,12 +63,10 @@ const Result: React.FC<RouteComponentProps> = () => {
   };
 
   const handleShowDetail = (record: any) => {
-    console.log(record);
     setTestResult(record.detail);
     setShow(true);
   };
   const renderExpandRow = (record: any) => {
-    console.log(record);
     const { req_msg, resp_msg } = record?.detail;
 
     return (
