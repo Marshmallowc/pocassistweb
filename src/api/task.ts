@@ -108,6 +108,7 @@ export interface TaskTemplate {
   type: 'builtin' | 'custom'; // 内置模板或自定义模板
   corpusFileName?: string;
   corpusContent?: string;
+  totalCount?: number; // 总数，由后端返回
 }
 
 // 获取任务模板响应接口
@@ -611,6 +612,7 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
           createTime: new Date().toLocaleString(),
           type: 'custom',
           corpusFileName: data.corpusFileName,
+          totalCount: Math.floor(Math.random() * 200) + 50, // 生成50-250之间的随机总数
           corpusContent: JSON.stringify({
             name: data.name,
             description: "自定义模板",
@@ -987,21 +989,24 @@ let mockTaskTemplatesData: TaskTemplate[] = [
     name: "基础安全扫描模板",
     description: "用于检测基础TC260内容的模板",
     createTime: "2024-01-15 10:30:00",
-    type: 'builtin'
+    type: 'builtin',
+    totalCount: 156
   },
   {
     id: "2", 
     name: "对抗样本测试模板",
     description: "生成对抗样本进行鲁棒性测试的模板",
     createTime: "2024-01-14 15:20:00",
-    type: 'builtin'
+    type: 'builtin',
+    totalCount: 89
   },
   {
     id: "3",
     name: "隐私泄露检测模板",
     description: "检测模型是否存在隐私泄露风险的模板",
     createTime: "2024-01-13 09:15:00",
-    type: 'builtin'
+    type: 'builtin',
+    totalCount: 203
   }
 ];
 

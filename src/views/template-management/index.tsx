@@ -120,8 +120,20 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       title: "模板描述信息",
       dataIndex: "description", 
       key: "description",
-      width: 350,
+      width: 300,
       ellipsis: true,
+    },
+    {
+      title: "总数",
+      dataIndex: "totalCount",
+      key: "totalCount",
+      width: 120,
+      align: 'center' as const,
+      render: (totalCount: number | undefined) => (
+        <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
+          {totalCount !== undefined ? totalCount : '-'}
+        </span>
+      ),
     },
     {
       title: "操作",
@@ -530,6 +542,12 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
                 <div className="detail-item">
                   <Text strong>创建时间：</Text>
                   <Text>{currentTemplate.createTime}</Text>
+                </div>
+                <div className="detail-item">
+                  <Text strong>总数：</Text>
+                  <Text style={{ fontWeight: 'bold', color: '#1890ff' }}>
+                    {currentTemplate.totalCount !== undefined ? currentTemplate.totalCount : '-'}
+                  </Text>
                 </div>
                 {currentTemplate.corpusFileName && (
                   <div className="detail-item">
