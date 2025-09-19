@@ -47,10 +47,10 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   // 模板选择相关状态
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
-  const [currentCustomCorpusFile, setCurrentCustomCorpusFile] = useState("");
-    const [currentCustomCorpusFileName, setCurrentCustomCorpusFileName] = useState("");
-    const [customTemplateName, setCustomTemplateName] = useState("");
-    const [customTemplateDescription, setCustomTemplateDescription] = useState("");
+  const [currentCustomCorpusFile, setCurrentCustomCorpusFile] = useState<File | null>(null);
+  const [currentCustomCorpusFileName, setCurrentCustomCorpusFileName] = useState("");
+  const [customTemplateName, setCustomTemplateName] = useState("");
+  const [customTemplateDescription, setCustomTemplateDescription] = useState("");
 
   // 快速任务模板状态
   const [quickTemplates, setQuickTemplates] = useState<TaskTemplate[]>([]);
@@ -60,7 +60,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const resetCustomTemplateForm = () => {
     setCustomTemplateName("");
     setCustomTemplateDescription("");
-    setCurrentCustomCorpusFile("");
+    setCurrentCustomCorpusFile(null);
     setCurrentCustomCorpusFileName("");
     if (customCorpusRef.current) customCorpusRef.current.value = "";
   };
@@ -164,13 +164,15 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const handleCustomCorpusUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === "application/json") {
+      // 验证JSON格式但不读取全部内容
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
         try {
           // 验证JSON格式
           JSON.parse(content);
-          setCurrentCustomCorpusFile(content);
+          // 验证通过后保存File对象而非内容
+          setCurrentCustomCorpusFile(file);
           setCurrentCustomCorpusFileName(file.name);
         } catch (error) {
           message.error("JSON文件格式不正确，请检查文件内容");
@@ -317,7 +319,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
           responseContent: apiFormatType === "custom" ? responseContent : undefined,
         },
         selectedTemplates,
-        customCorpusFile: currentCustomCorpusFile ? [currentCustomCorpusFile] : undefined
+        customCorpusFile: undefined // 任务调度中不直接使用自定义语料文件
       };
       
       // 发送任务下发请求
@@ -767,15 +769,15 @@ X-Custom-Header: value`}
           <Button
             key="confirm"
             type="primary"
-            disabled={!customTemplateName.trim() || !customTemplateDescription.trim() || !currentCustomCorpusFileName}
+            disabled={!customTemplateName.trim() || !customTemplateDescription.trim() || !currentCustomCorpusFile}
             onClick={async () => {
-              if (customTemplateName.trim() && customTemplateDescription.trim() && currentCustomCorpusFileName) {
+              if (customTemplateName.trim() && customTemplateDescription.trim() && currentCustomCorpusFile) {
                 try {
                   // 发送网络请求保存自定义模板到后端
                   const templateData: SaveCustomTemplateParams = {
                     name: customTemplateName.trim(),
                     description: customTemplateDescription.trim(),
-                    corpusContent: currentCustomCorpusFile,
+                    corpusFile: currentCustomCorpusFile,
                     corpusFileName: currentCustomCorpusFileName,
                   };
 
@@ -885,7 +887,7 @@ X-Custom-Header: value`}
                       cancelText: '保留',
                       okType: 'danger',
                       onOk() {
-                        setCurrentCustomCorpusFile("");
+                        setCurrentCustomCorpusFile(null);
                         setCurrentCustomCorpusFileName("");
                         if (customCorpusRef.current) customCorpusRef.current.value = "";
                         message.success('已取消选择');

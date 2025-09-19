@@ -51,8 +51,8 @@ export interface TaskDispatchParams {
 export interface SaveCustomTemplateParams {
   name: string;
   description: string;
-  corpusContent: string;
   corpusFileName: string;
+  corpusFile: File; // 改为File对象，用于FormData上传
 }
 
 // 保存自定义模板响应接口
@@ -611,7 +611,7 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
           createTime: new Date().toLocaleString(),
           type: 'custom',
           corpusFileName: data.corpusFileName,
-          corpusContent: data.corpusContent
+          corpusContent: `Mock content for ${data.corpusFileName}` // Mock模式下的虚拟内容
         };
         
         mockTaskTemplatesData.push(newTemplate);
@@ -824,11 +824,19 @@ export const saveCustomTemplate = (data: SaveCustomTemplateParams) => {
     return mockSaveCustomTemplate(data);
   }
   
-  // 真实API调用
+  // 真实API调用 - 使用FormData上传文件
+  const formData = new FormData();
+  formData.append('name', data.name);
+  formData.append('description', data.description);
+  formData.append('json', data.corpusFile, data.corpusFileName); // 使用json作为字段名，类似yaml的示例
+  
   return request({
     url: "v1/template/custom/save",
     method: "post",
-    data
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   });
 };
 

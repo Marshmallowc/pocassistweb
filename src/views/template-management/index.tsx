@@ -54,7 +54,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   // 新建模板相关状态
   const [customTemplateName, setCustomTemplateName] = useState("");
   const [templateDescription, setTemplateDescription] = useState("");
-  const [currentCustomCorpusFile, setCurrentCustomCorpusFile] = useState("");
+  const [currentCustomCorpusFile, setCurrentCustomCorpusFile] = useState<File | null>(null);
   const [currentCustomCorpusFileName, setCurrentCustomCorpusFileName] = useState("");
   
   const customCorpusRef = useRef<HTMLInputElement>(null);
@@ -161,13 +161,15 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   const handleCustomCorpusUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === "application/json") {
+      // 验证JSON格式但不读取全部内容
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
         try {
           // 验证JSON格式
           JSON.parse(content);
-          setCurrentCustomCorpusFile(content);
+          // 验证通过后保存File对象而非内容
+          setCurrentCustomCorpusFile(file);
           setCurrentCustomCorpusFileName(file.name);
         } catch (error) {
           message.error("JSON文件格式不正确，请检查文件内容");
@@ -218,7 +220,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       message.error("请输入模板描述");
       return;
     }
-    if (!currentCustomCorpusFileName) {
+    if (!currentCustomCorpusFile) {
       message.error("请上传测试语料文件");
       return;
     }
@@ -228,7 +230,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       const templateData: SaveCustomTemplateParams = {
         name: customTemplateName.trim(),
         description: templateDescription.trim(),
-        corpusContent: currentCustomCorpusFile,
+        corpusFile: currentCustomCorpusFile,
         corpusFileName: currentCustomCorpusFileName,
       };
 
@@ -266,7 +268,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   const resetCreateForm = () => {
     setCustomTemplateName("");
     setTemplateDescription("");
-    setCurrentCustomCorpusFile("");
+    setCurrentCustomCorpusFile(null);
     setCurrentCustomCorpusFileName("");
     if (customCorpusRef.current) customCorpusRef.current.value = "";
   };
@@ -283,7 +285,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
     setCustomTemplateName(record.name);
     setTemplateDescription(record.description);
     setCurrentCustomCorpusFileName(record.corpusFileName || "");
-    setCurrentCustomCorpusFile(record.corpusContent || "");
+    setCurrentCustomCorpusFile(null); // 编辑时不预填充文件对象
     setIsEditModalOpen(true);
   };
 
@@ -309,7 +311,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
         templateId: currentTemplate.id,
         name: customTemplateName.trim(),
         description: templateDescription.trim(),
-        corpusContent: currentCustomCorpusFile || currentTemplate.corpusContent,
+        corpusContent: currentTemplate.corpusContent, // 编辑时保持原有内容
         corpusFileName: currentCustomCorpusFileName || currentTemplate.corpusFileName,
       };
 
@@ -486,7 +488,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
                   danger
                   icon={<CloseOutlined />}
                   onClick={() => {
-                    setCurrentCustomCorpusFile("");
+                    setCurrentCustomCorpusFile(null);
                     setCurrentCustomCorpusFileName("");
                     if (customCorpusRef.current) customCorpusRef.current.value = "";
                   }}
@@ -665,7 +667,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
                   danger
                   icon={<CloseOutlined />}
                   onClick={() => {
-                    setCurrentCustomCorpusFile("");
+                    setCurrentCustomCorpusFile(null);
                     setCurrentCustomCorpusFileName("");
                     if (customCorpusRef.current) customCorpusRef.current.value = "";
                   }}
