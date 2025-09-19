@@ -532,10 +532,25 @@ X-Custom-Header: value`}
                   
                   <TextArea
                     placeholder={`请输入API请求格式，例如：
+POST /test/test.php HTTP/1.1
+Host: 192.168.6.141
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9
+Content-Type: application/json
+Authorization: Bearer app-U8IR1HcLEo6f5ZVlnxe8gaeZ
+Content-Length: 189
+
 {
-  "model": "gpt-4",
-  "messages": [...]
-}`}
+            "inputs": {},
+            "query": "$$$",
+            "response_mode": "streaming",
+            "conversation_id": "",
+            "user": "test002"
+        }
+                      `}
                     rows={8}
                     value={requestContent}
                     onChange={(e) => setRequestContent(e.target.value)}
@@ -587,11 +602,16 @@ X-Custom-Header: value`}
                   
                   <TextArea
                     placeholder={`请输入API响应格式，例如：
-{
-  "choices": [{
-    "message": {...}
-  }]
-}`}
+HTTP/1.1 200 OK
+Date: Mon, 25 Aug 2025 06:12:44 GMT
+Server: Apache/2.4.23 (Win32) OpenSSL/1.0.2j PHP/5.4.45
+X-Powered-By: PHP/5.4.45
+Connection: close
+Content-Type: application/json
+Content-Length: 110114
+
+{"event": "message", "conversation_id": "b5", "message_id": "f3", "created_at": 1744275308, "task_id": "66", "id": "f3", "answer": "$$$", "from_variable_selector": null}
+                      `}
                     rows={8}
                     value={responseContent}
                     onChange={(e) => setResponseContent(e.target.value)}
