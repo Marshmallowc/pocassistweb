@@ -217,6 +217,20 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   };
 
   // 提交任务
+  // 校验$$$标记的函数
+  const validateDollarMarkers = (content: string, fieldName: string) => {
+    // 使用更精确的正则表达式，确保恰好是三个$，前后不能有更多的$
+    const exactTripleDollarRegex = /(?<!\$)\$\$\$(?!\$)/g;
+    const matches = content.match(exactTripleDollarRegex) || [];
+    
+    if (matches.length === 0) {
+      return `${fieldName}中必须包含一个$$$标记`;
+    } else if (matches.length > 1) {
+      return `${fieldName}中只能包含一个$$$标记，当前有${matches.length}个`;
+    }
+    return null;
+  };
+
   const handleSubmitTask = async () => {
     // 验证必填项
     const errors = [];
@@ -233,9 +247,22 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
             } else if (apiFormatType === "custom") {
               if (!requestContent.trim()) {
                 errors.push("请输入请求格式");
+              } else {
+                // 校验请求格式中的$$$标记
+                const requestError = validateDollarMarkers(requestContent, "请求格式");
+                if (requestError) {
+                  errors.push(requestError);
+                }
               }
+              
               if (!responseContent.trim()) {
                 errors.push("请输入响应格式");
+              } else {
+                // 校验响应格式中的$$$标记
+                const responseError = validateDollarMarkers(responseContent, "响应格式");
+                if (responseError) {
+                  errors.push(responseError);
+                }
               }
             }
     
