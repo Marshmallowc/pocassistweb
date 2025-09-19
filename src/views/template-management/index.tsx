@@ -300,7 +300,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
         templateId: currentTemplate.id,
         name: customTemplateName.trim(),
         description: "自定义模板",
-        corpusContent: currentTemplate.corpusContent, // 编辑时保持原有内容
+        corpusFile: currentCustomCorpusFile || undefined, // 如果有上传新文件就传File对象
         corpusFileName: currentCustomCorpusFileName || currentTemplate.corpusFileName,
       };
 

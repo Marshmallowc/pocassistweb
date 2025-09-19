@@ -71,7 +71,7 @@ export interface EditTemplateParams {
   templateId: string;
   name: string;
   description: string;
-  corpusContent?: string;
+  corpusFile?: File; // 改为File对象，用于FormData上传
   corpusFileName?: string;
 }
 
@@ -710,17 +710,27 @@ const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateRespons
       
       if (isSuccess) {
         // 检查是否有修改
-        const isModified = existingTemplate.name !== data.name || 
-                          existingTemplate.description !== data.description ||
-                          existingTemplate.corpusContent !== data.corpusContent ||
-                          existingTemplate.corpusFileName !== data.corpusFileName;
+        const hasFileUpdate = data.corpusFile !== undefined;
+        const isModified = Boolean(
+          existingTemplate.name !== data.name || 
+          existingTemplate.description !== data.description ||
+          hasFileUpdate ||
+          (data.corpusFileName && existingTemplate.corpusFileName !== data.corpusFileName)
+        );
+        
+        // 模拟读取文件内容（实际中由后端处理）
+        let newCorpusContent = existingTemplate.corpusContent;
+        if (data.corpusFile) {
+          // 在mock中模拟文件内容更新
+          newCorpusContent = `{"mockUpdatedContent": "编辑模板时上传的新文件内容", "timestamp": "${new Date().toISOString()}"}`;
+        }
         
         // 更新模板数据
         mockTaskTemplatesData[templateIndex] = {
           ...existingTemplate,
           name: data.name,
           description: "自定义模板",
-          corpusContent: data.corpusContent || existingTemplate.corpusContent,
+          corpusContent: newCorpusContent,
           corpusFileName: data.corpusFileName || existingTemplate.corpusFileName
         };
         
@@ -872,16 +882,21 @@ export const editTemplate = (data: EditTemplateParams) => {
     return mockEditTemplate(data);
   }
   
-  // 真实API调用 - 将templateId包含在请求体中
+  // 真实API调用 - 使用FormData上传文件
+  const formData = new FormData();
+  formData.append('templateId', data.templateId);
+  formData.append('name', data.name);
+  formData.append('description', data.description);
+  if (data.corpusFile) {
+    formData.append('json', data.corpusFile, data.corpusFileName || data.corpusFile.name);
+  }
+  
   return request({
     url: "v1/template/edit",
     method: "put",
-    data: {
-      templateId: data.templateId,
-      name: data.name,
-      description: data.description,
-      corpusContent: data.corpusContent,
-      corpusFileName: data.corpusFileName
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data'
     }
   });
 };
