@@ -50,7 +50,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const [currentCustomCorpusFile, setCurrentCustomCorpusFile] = useState<File | null>(null);
   const [currentCustomCorpusFileName, setCurrentCustomCorpusFileName] = useState("");
   const [customTemplateName, setCustomTemplateName] = useState("");
-  const [customTemplateDescription, setCustomTemplateDescription] = useState("");
 
   // 快速任务模板状态
   const [quickTemplates, setQuickTemplates] = useState<TaskTemplate[]>([]);
@@ -59,7 +58,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   // 重置自定义模板表单
   const resetCustomTemplateForm = () => {
     setCustomTemplateName("");
-    setCustomTemplateDescription("");
     setCurrentCustomCorpusFile(null);
     setCurrentCustomCorpusFileName("");
     if (customCorpusRef.current) customCorpusRef.current.value = "";
@@ -696,7 +694,7 @@ X-Custom-Header: value`}
                     <div className="template-content">
                       <Text strong>{template.name}</Text>
                       <Paragraph type="secondary" className="template-desc">
-                        {template.description}
+                        {template.type === 'custom' ? '自定义模板' : template.description}
                       </Paragraph>
                     </div>
                   </Card>
@@ -769,14 +767,14 @@ X-Custom-Header: value`}
           <Button
             key="confirm"
             type="primary"
-            disabled={!customTemplateName.trim() || !customTemplateDescription.trim() || !currentCustomCorpusFile}
+            disabled={!customTemplateName.trim() || !currentCustomCorpusFile}
             onClick={async () => {
-              if (customTemplateName.trim() && customTemplateDescription.trim() && currentCustomCorpusFile) {
+              if (customTemplateName.trim() && currentCustomCorpusFile) {
                 try {
                   // 发送网络请求保存自定义模板到后端
                   const templateData: SaveCustomTemplateParams = {
                     name: customTemplateName.trim(),
-                    description: customTemplateDescription.trim(),
+                    description: "自定义模板",
                     corpusFile: currentCustomCorpusFile,
                     corpusFileName: currentCustomCorpusFileName,
                   };
@@ -829,25 +827,6 @@ X-Custom-Header: value`}
               onChange={(e) => setCustomTemplateName(e.target.value)}
               style={{ marginTop: 8 }}
             />
-          </div>
-
-          <div className="dialog-section" style={{ marginTop: 16 }}>
-            <Text strong>模板描述 <span style={{ color: 'red' }}>*</span></Text>
-            <TextArea
-              placeholder="请输入模板描述"
-              value={customTemplateDescription}
-              onChange={(e) => setCustomTemplateDescription(e.target.value)}
-              rows={3}
-              style={{ 
-                marginTop: 8,
-                borderColor: !customTemplateDescription.trim() ? '#ff4d4f' : undefined
-              }}
-            />
-            {!customTemplateDescription.trim() && (
-              <div style={{ color: 'red', fontSize: '12px', marginTop: 4 }}>
-                请输入模板描述
-              </div>
-            )}
           </div>
 
           <Divider />

@@ -53,7 +53,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   
   // 新建模板相关状态
   const [customTemplateName, setCustomTemplateName] = useState("");
-  const [templateDescription, setTemplateDescription] = useState("");
   const [currentCustomCorpusFile, setCurrentCustomCorpusFile] = useState<File | null>(null);
   const [currentCustomCorpusFileName, setCurrentCustomCorpusFileName] = useState("");
   
@@ -216,10 +215,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       message.error("请输入模板名称");
       return;
     }
-    if (!templateDescription.trim()) {
-      message.error("请输入模板描述");
-      return;
-    }
     if (!currentCustomCorpusFile) {
       message.error("请上传测试语料文件");
       return;
@@ -229,7 +224,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       // 发送网络请求保存自定义模板到后端
       const templateData: SaveCustomTemplateParams = {
         name: customTemplateName.trim(),
-        description: templateDescription.trim(),
+        description: "自定义模板",
         corpusFile: currentCustomCorpusFile,
         corpusFileName: currentCustomCorpusFileName,
       };
@@ -267,7 +262,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   // 重置创建表单
   const resetCreateForm = () => {
     setCustomTemplateName("");
-    setTemplateDescription("");
     setCurrentCustomCorpusFile(null);
     setCurrentCustomCorpusFileName("");
     if (customCorpusRef.current) customCorpusRef.current.value = "";
@@ -283,7 +277,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   const handleEdit = (record: TemplateItem) => {
     setCurrentTemplate(record);
     setCustomTemplateName(record.name);
-    setTemplateDescription(record.description);
     setCurrentCustomCorpusFileName(record.corpusFileName || "");
     setCurrentCustomCorpusFile(null); // 编辑时不预填充文件对象
     setIsEditModalOpen(true);
@@ -293,10 +286,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
   const handleSaveEdit = async () => {
     if (!customTemplateName.trim()) {
       message.error("请输入模板名称");
-      return;
-    }
-    if (!templateDescription.trim()) {
-      message.error("请输入模板描述");
       return;
     }
 
@@ -310,7 +299,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
       const editData: EditTemplateParams = {
         templateId: currentTemplate.id,
         name: customTemplateName.trim(),
-        description: templateDescription.trim(),
+        description: "自定义模板",
         corpusContent: currentTemplate.corpusContent, // 编辑时保持原有内容
         corpusFileName: currentCustomCorpusFileName || currentTemplate.corpusFileName,
       };
@@ -447,17 +436,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
             />
           </div>
 
-          <div className="dialog-section" style={{ marginTop: 16 }}>
-            <Text strong>模板描述 <span style={{ color: '#ff4d4f' }}>*</span></Text>
-            <TextArea
-              placeholder="请输入模板描述信息"
-              value={templateDescription}
-              onChange={(e) => setTemplateDescription(e.target.value)}
-              rows={3}
-              style={{ marginTop: 8 }}
-            />
-          </div>
-
           <Divider />
 
           <div className="dialog-section">
@@ -583,7 +561,16 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
                     </div>
                     <div className="json-viewer">
                       <pre className="json-content">
-                        {JSON.stringify(JSON.parse(currentTemplate.corpusContent), null, 2)}
+                        {(() => {
+                          try {
+                            // 尝试解析JSON
+                            const parsed = JSON.parse(currentTemplate.corpusContent);
+                            return JSON.stringify(parsed, null, 2);
+                          } catch (error) {
+                            // 如果不是有效JSON，直接显示原内容
+                            return currentTemplate.corpusContent;
+                          }
+                        })()}
                       </pre>
                     </div>
                   </>
@@ -636,17 +623,6 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
               placeholder="请输入自定义模板名称"
               value={customTemplateName}
               onChange={(e) => setCustomTemplateName(e.target.value)}
-              style={{ marginTop: 8 }}
-            />
-          </div>
-
-          <div className="dialog-section" style={{ marginTop: 16 }}>
-            <Text strong>模板描述 <span style={{ color: '#ff4d4f' }}>*</span></Text>
-            <TextArea
-              placeholder="请输入模板描述信息"
-              value={templateDescription}
-              onChange={(e) => setTemplateDescription(e.target.value)}
-              rows={3}
               style={{ marginTop: 8 }}
             />
           </div>

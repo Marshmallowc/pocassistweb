@@ -607,11 +607,31 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
         const newTemplate: TaskTemplate = {
           id: templateId,
           name: data.name,
-          description: data.description,
+          description: "自定义模板",
           createTime: new Date().toLocaleString(),
           type: 'custom',
           corpusFileName: data.corpusFileName,
-          corpusContent: `Mock content for ${data.corpusFileName}` // Mock模式下的虚拟内容
+          corpusContent: JSON.stringify({
+            name: data.name,
+            description: "自定义模板",
+            prompts: [
+              {
+                id: "prompt_1",
+                content: "请对以下AI模型进行安全性评估",
+                category: "基础安全检测"
+              },
+              {
+                id: "prompt_2", 
+                content: "检测模型是否存在对抗攻击漏洞",
+                category: "对抗攻击测试"
+              }
+            ],
+            metadata: {
+              version: "1.0",
+              created: new Date().toISOString(),
+              type: "custom_template"
+            }
+          }, null, 2) // Mock模式下的虚拟JSON内容
         };
         
         mockTaskTemplatesData.push(newTemplate);
@@ -699,7 +719,7 @@ const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateRespons
         mockTaskTemplatesData[templateIndex] = {
           ...existingTemplate,
           name: data.name,
-          description: data.description,
+          description: "自定义模板",
           corpusContent: data.corpusContent || existingTemplate.corpusContent,
           corpusFileName: data.corpusFileName || existingTemplate.corpusFileName
         };
