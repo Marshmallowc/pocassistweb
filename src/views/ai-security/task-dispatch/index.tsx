@@ -216,6 +216,23 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     }
   };
 
+  // JSON格式校验函数
+  const validateJsonFormat = (content: string, fieldName: string) => {
+    try {
+      // 先提取JSON部分 - 查找请求体或响应体中的JSON
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return `${fieldName}中未找到有效的JSON格式内容，请确保包含完整的JSON对象`;
+      }
+      
+      // 验证JSON格式
+      JSON.parse(jsonMatch[0]);
+      return null;
+    } catch (error) {
+      return `${fieldName}中的JSON格式不正确，请检查语法是否有误`;
+    }
+  };
+
   // 提交任务
   // 校验$$$标记的函数
   const validateDollarMarkers = (content: string, fieldName: string) => {
@@ -228,6 +245,33 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     } else if (matches.length > 1) {
       return `${fieldName}中只能包含一个$$$标记，当前有${matches.length}个`;
     }
+    
+    // 验证$$$标记是否在有效的JSON值位置
+    // 首先尝试将$$$替换为占位符来验证JSON结构是否正确
+    const contentWithPlaceholder = content.replace(exactTripleDollarRegex, '"PLACEHOLDER"');
+    
+    try {
+      // 尝试解析替换后的JSON
+      JSON.parse(contentWithPlaceholder);
+      
+      // 如果JSON结构正确，再检查$$$是否在有效位置
+      // 检查$$$是否作为JSON值出现
+      // 使用正则表达式检查$$$是否被引号包围，作为字符串值
+      const dollarInStringRegex = /"[^"]*\$\$\$[^"]*"/g;
+      const stringMatches = content.match(dollarInStringRegex) || [];
+      
+      // 或者检查$$$是否作为非字符串值出现（如数字、布尔值位置）
+      const dollarAsValueRegex = /:\s*\$\$\$/g;
+      const valueMatches = content.match(dollarAsValueRegex) || [];
+      
+      if (stringMatches.length === 0 && valueMatches.length === 0) {
+        return `${fieldName}中的$$$标记必须作为JSON对象的值出现，不能在JSON结构外部`;
+      }
+    } catch (error) {
+      // 如果替换后的JSON仍然无法解析，说明$$$在JSON结构外部
+      return `${fieldName}中的$$$标记必须作为JSON对象的值出现，不能在JSON结构外部`;
+    }
+    
     return null;
   };
 
@@ -248,20 +292,32 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
               if (!requestContent.trim()) {
                 errors.push("请输入请求格式");
               } else {
-                // 校验请求格式中的$$$标记
-                const requestError = validateDollarMarkers(requestContent, "请求格式");
-                if (requestError) {
-                  errors.push(requestError);
+                // 校验请求格式中的JSON格式
+                const requestJsonError = validateJsonFormat(requestContent, "请求格式");
+                if (requestJsonError) {
+                  errors.push(requestJsonError);
+                } else {
+                  // 校验请求格式中的$$$标记
+                  const requestError = validateDollarMarkers(requestContent, "请求格式");
+                  if (requestError) {
+                    errors.push(requestError);
+                  }
                 }
               }
               
               if (!responseContent.trim()) {
                 errors.push("请输入响应格式");
               } else {
-                // 校验响应格式中的$$$标记
-                const responseError = validateDollarMarkers(responseContent, "响应格式");
-                if (responseError) {
-                  errors.push(responseError);
+                // 校验响应格式中的JSON格式
+                const responseJsonError = validateJsonFormat(responseContent, "响应格式");
+                if (responseJsonError) {
+                  errors.push(responseJsonError);
+                } else {
+                  // 校验响应格式中的$$$标记
+                  const responseError = validateDollarMarkers(responseContent, "响应格式");
+                  if (responseError) {
+                    errors.push(responseError);
+                  }
                 }
               }
             }
@@ -503,7 +559,7 @@ X-Custom-Header: value`}
                   </div>
                   
                   <TextArea
-                    placeholder={`请输入API请求格式，例如：
+                    placeholder={`请输入API请求格式（必须包含JSON格式内容），例如：
 POST /test/test.php HTTP/1.1
 Host: 192.168.6.141
 Upgrade-Insecure-Requests: 1
@@ -528,6 +584,9 @@ Content-Length: 189
                     onChange={(e) => setRequestContent(e.target.value)}
                     className="format-textarea"
                   />
+                  <Text type="secondary" style={{ fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                    💡 提示：请确保输入内容包含有效的JSON格式数据，并在需要替换的位置使用 $$$ 标记
+                  </Text>
 
                 </div>
               </Col>
@@ -541,7 +600,7 @@ Content-Length: 189
                   </div>
                   
                   <TextArea
-                    placeholder={`请输入API响应格式，例如：
+                    placeholder={`请输入API响应格式（必须包含JSON格式内容），例如：
 HTTP/1.1 200 OK
 Date: Mon, 25 Aug 2025 06:12:44 GMT
 Server: Apache/2.4.23 (Win32) OpenSSL/1.0.2j PHP/5.4.45
@@ -557,6 +616,9 @@ Content-Length: 110114
                     onChange={(e) => setResponseContent(e.target.value)}
                     className="format-textarea"
                   />
+                  <Text type="secondary" style={{ fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                    💡 提示：请确保输入内容包含有效的JSON格式数据，并在需要替换的位置使用 $$$ 标记
+                  </Text>
 
                 </div>
               </Col>
