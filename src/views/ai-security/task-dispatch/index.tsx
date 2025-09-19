@@ -38,11 +38,9 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const [form] = Form.useForm();
   const history = useHistory();
   
-  // 文件上传相关状态
+  // API格式内容状态
   const [requestContent, setRequestContent] = useState("");
   const [responseContent, setResponseContent] = useState("");
-  const [requestFileName, setRequestFileName] = useState("");
-  const [responseFileName, setResponseFileName] = useState("");
   
   // 模板选择相关状态
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
@@ -72,8 +70,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const [apiTestResult, setApiTestResult] = useState<"success" | "failed" | null>(null);
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
-  const requestFileRef = useRef<HTMLInputElement>(null);
-  const responseFileRef = useRef<HTMLInputElement>(null);
   const customCorpusRef = useRef<HTMLInputElement>(null);
 
   // 获取模板列表
@@ -105,45 +101,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     fetchTemplates();
   }, []);
 
-  // 文件上传处理
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, type: "request" | "response") => {
-    const file = event.target.files?.[0];
-    if (file && file.type === "application/json") {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        try {
-          // 验证JSON格式
-          JSON.parse(content);
-          if (type === "request") {
-            setRequestContent(content);
-            setRequestFileName(file.name);
-          } else {
-            setResponseContent(content);
-            setResponseFileName(file.name);
-          }
-        } catch (error) {
-          message.error("JSON文件格式不正确，请检查文件内容");
-        }
-      };
-      reader.readAsText(file);
-    } else {
-      message.error("请选择json格式的文件");
-    }
-  };
-
-  // 清除文件
-  const clearFile = (type: "request" | "response") => {
-    if (type === "request") {
-      setRequestContent("");
-      setRequestFileName("");
-      if (requestFileRef.current) requestFileRef.current.value = "";
-    } else {
-      setResponseContent("");
-      setResponseFileName("");
-      if (responseFileRef.current) responseFileRef.current.value = "";
-    }
-  };
 
   // 模板选择处理
   const handleTemplateSelect = (templateName: string) => {
@@ -273,14 +230,14 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       } else if (!apiKey.trim()) {
         errors.push("请输入API密钥");
       }
-    } else if (apiFormatType === "custom") {
-      if (!requestContent.trim()) {
-        errors.push("请输入或上传请求格式");
-      }
-      if (!responseContent.trim()) {
-        errors.push("请输入或上传响应格式");
-      }
-    }
+            } else if (apiFormatType === "custom") {
+              if (!requestContent.trim()) {
+                errors.push("请输入请求格式");
+              }
+              if (!responseContent.trim()) {
+                errors.push("请输入响应格式");
+              }
+            }
     
     // 验证模板选择
     if (selectedTemplates.length === 0) {
@@ -516,18 +473,6 @@ X-Custom-Header: value`}
                        <Text strong>
                          请求格式 <span style={{ color: '#ff4d4f' }}>*</span>
                        </Text>
-                    {requestFileName && (
-                      <div className="file-info">
-                        <FileTextOutlined />
-                        <span>{requestFileName}</span>
-                        <Button 
-                          type="text" 
-                          size="small" 
-                          icon={<CloseOutlined />}
-                          onClick={() => clearFile("request")}
-                        />
-                      </div>
-                    )}
                   </div>
                   
                   <TextArea
@@ -557,26 +502,6 @@ Content-Length: 189
                     className="format-textarea"
                   />
 
-                  <div className="upload-area">
-                    <input
-                      ref={requestFileRef}
-                      type="file"
-                      accept=".json"
-                      onChange={(e) => handleFileUpload(e, "request")}
-                      style={{ display: "none" }}
-                    />
-                    <div className="upload-content">
-                      <UploadOutlined className="upload-icon" />
-                      <Text>上传请求格式文件</Text>
-                      <Button 
-                        type="dashed" 
-                        size="small" 
-                        onClick={() => requestFileRef.current?.click()}
-                      >
-                        选择json文件
-                      </Button>
-                    </div>
-                  </div>
                 </div>
               </Col>
 
@@ -586,18 +511,6 @@ Content-Length: 189
                        <Text strong>
                          响应格式 <span style={{ color: '#ff4d4f' }}>*</span>
                        </Text>
-                    {responseFileName && (
-                      <div className="file-info">
-                        <FileTextOutlined />
-                        <span>{responseFileName}</span>
-                        <Button 
-                          type="text" 
-                          size="small" 
-                          icon={<CloseOutlined />}
-                          onClick={() => clearFile("response")}
-                        />
-                      </div>
-                    )}
                   </div>
                   
                   <TextArea
@@ -618,26 +531,6 @@ Content-Length: 110114
                     className="format-textarea"
                   />
 
-                  <div className="upload-area">
-                    <input
-                      ref={responseFileRef}
-                      type="file"
-                      accept=".json"
-                      onChange={(e) => handleFileUpload(e, "response")}
-                      style={{ display: "none" }}
-                    />
-                    <div className="upload-content">
-                      <UploadOutlined className="upload-icon" />
-                      <Text>上传响应格式文件</Text>
-                      <Button 
-                        type="dashed" 
-                        size="small" 
-                        onClick={() => responseFileRef.current?.click()}
-                      >
-                        选择json文件
-                      </Button>
-                    </div>
-                  </div>
                 </div>
               </Col>
             </Row>
