@@ -50,7 +50,7 @@ export const getRuleList = (params: {
   search_query?: string;
 }) => {
   return request({
-    url: "/poc/",
+    url: "/v1/poc/",
     method: "get",
     params
   });
@@ -73,7 +73,7 @@ export const getRuleDetail = (id: number) => {
  */
 export const createRule = (data: RuleDataProps) => {
   return request({
-    url: "/poc/",
+    url: "/v1/poc/",
     method: "post",
     data
   });
