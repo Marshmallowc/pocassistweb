@@ -175,17 +175,16 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       // 构建API测试参数
       const testParams: ApiTestParams = {
         type: apiFormatType as "builtin" | "custom",
+        customHeaders, // 必填字段，直接赋值
       };
 
       // 根据API格式类型添加相应参数
       if (apiFormatType === "builtin") {
         testParams.format = selectedBuiltinFormat;
         testParams.apiKey = apiKey;
-        testParams.customHeaders = customHeaders; // builtin类型也支持自定义请求头
       } else if (apiFormatType === "custom") {
         testParams.requestContent = requestContent;
         testParams.responseContent = responseContent;
-        testParams.customHeaders = customHeaders;
       }
 
       
@@ -230,6 +229,23 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       return null;
     } catch (error) {
       return `${fieldName}中的JSON格式不正确，请检查语法是否有误`;
+    }
+  };
+
+  // 自定义Header JSON格式校验函数
+  const validateCustomHeadersJson = (content: string) => {
+    if (!content.trim()) {
+      return "自定义Header不能为空";
+    }
+    
+    try {
+      const parsed = JSON.parse(content);
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        return "自定义Header必须是有效的JSON对象格式";
+      }
+      return null;
+    } catch (error) {
+      return "自定义Header的JSON格式不正确，请检查语法是否有误";
     }
   };
 
@@ -288,39 +304,45 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       } else if (!apiKey.trim()) {
         errors.push("请输入API密钥");
       }
-            } else if (apiFormatType === "custom") {
-              if (!requestContent.trim()) {
-                errors.push("请输入请求格式");
-              } else {
-                // 校验请求格式中的JSON格式
-                const requestJsonError = validateJsonFormat(requestContent, "请求格式");
-                if (requestJsonError) {
-                  errors.push(requestJsonError);
-                } else {
-                  // 校验请求格式中的$$$标记
-                  const requestError = validateDollarMarkers(requestContent, "请求格式");
-                  if (requestError) {
-                    errors.push(requestError);
-                  }
-                }
-              }
-              
-              if (!responseContent.trim()) {
-                errors.push("请输入响应格式");
-              } else {
-                // 校验响应格式中的JSON格式
-                const responseJsonError = validateJsonFormat(responseContent, "响应格式");
-                if (responseJsonError) {
-                  errors.push(responseJsonError);
-                } else {
-                  // 校验响应格式中的$$$标记
-                  const responseError = validateDollarMarkers(responseContent, "响应格式");
-                  if (responseError) {
-                    errors.push(responseError);
-                  }
-                }
-              }
-            }
+      
+      // 验证自定义Header（内置API格式时为必填）
+      const customHeaderError = validateCustomHeadersJson(customHeaders);
+      if (customHeaderError) {
+        errors.push(customHeaderError);
+      }
+    } else if (apiFormatType === "custom") {
+      if (!requestContent.trim()) {
+        errors.push("请输入请求格式");
+      } else {
+        // 校验请求格式中的JSON格式
+        const requestJsonError = validateJsonFormat(requestContent, "请求格式");
+        if (requestJsonError) {
+          errors.push(requestJsonError);
+        } else {
+          // 校验请求格式中的$$$标记
+          const requestError = validateDollarMarkers(requestContent, "请求格式");
+          if (requestError) {
+            errors.push(requestError);
+          }
+        }
+      }
+      
+      if (!responseContent.trim()) {
+        errors.push("请输入响应格式");
+      } else {
+        // 校验响应格式中的JSON格式
+        const responseJsonError = validateJsonFormat(responseContent, "响应格式");
+        if (responseJsonError) {
+          errors.push(responseJsonError);
+        } else {
+          // 校验响应格式中的$$$标记
+          const responseError = validateDollarMarkers(responseContent, "响应格式");
+          if (responseError) {
+            errors.push(responseError);
+          }
+        }
+      }
+    }
     
     // 验证模板选择
     if (selectedTemplates.length === 0) {
@@ -531,12 +553,16 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
               </div>
 
               <div className="config-item">
-                <Text strong>自定义Header</Text>
+                <Text strong>
+                  自定义Header <span style={{ color: '#ff4d4f' }}>*</span>
+                </Text>
                 <TextArea
-                  placeholder={`请输入自定义请求头，格式如：
-Authorization: Bearer your-token
-Content-Type: application/json
-X-Custom-Header: value`}
+                  placeholder={`请输入自定义请求头（JSON格式），格式如：
+{
+  "Authorization": "Bearer your-token",
+  "Content-Type": "application/json",
+  "X-Custom-Header": "value"
+}`}
                   rows={4}
                   value={customHeaders}
                   onChange={(e) => setCustomHeaders(e.target.value)}
@@ -549,14 +575,14 @@ X-Custom-Header: value`}
 
           {/* 自定义API格式配置 */}
           {apiFormatType === "custom" && (
-            <Row gutter={16} className="custom-format-section">
-              <Col span={12}>
-                   <div className="format-upload-section">
-                     <div className="section-header">
-                       <Text strong>
-                         请求格式 <span style={{ color: '#ff4d4f' }}>*</span>
-                       </Text>
-                  </div>
+              <Row gutter={16} className="custom-format-section">
+                <Col span={12}>
+                     <div className="format-upload-section">
+                       <div className="section-header">
+                         <Text strong>
+                           请求格式 <span style={{ color: '#ff4d4f' }}>*</span>
+                         </Text>
+                    </div>
                   
                   <TextArea
                     placeholder={`请输入API请求格式（必须包含JSON格式内容），例如：
@@ -622,7 +648,7 @@ Content-Length: 110114
 
                 </div>
               </Col>
-            </Row>
+              </Row>
           )}
 
           {/* API测试 */}
@@ -632,7 +658,7 @@ Content-Length: 110114
                <Button
                  type="default"
                  onClick={handleApiTest}
-                 disabled={isTestingApi || !apiFormatType || (apiFormatType === "builtin" && (!selectedBuiltinFormat || !apiKey.trim())) || (apiFormatType === "custom" && (!requestContent.trim() || !responseContent.trim()))}
+                 disabled={isTestingApi || !apiFormatType || !customHeaders.trim() || (apiFormatType === "builtin" && (!selectedBuiltinFormat || !apiKey.trim())) || (apiFormatType === "custom" && (!requestContent.trim() || !responseContent.trim()))}
                  icon={isTestingApi ? <Spin size="small" /> : <WifiOutlined />}
                >
                 {isTestingApi ? "测试中..." : "一键测试API请求联通性"}

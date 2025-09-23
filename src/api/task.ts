@@ -39,7 +39,7 @@ export interface TaskDispatchParams {
     type: "builtin" | "custom";
     format?: string;
     apiKey?: string;
-    customHeaders?: string;
+    customHeaders: string; // 改为必填字段
     requestContent?: string;
     responseContent?: string;
   };
@@ -127,7 +127,7 @@ export interface ApiTestParams {
   type: "builtin" | "custom";
   format?: string; // 当type为builtin时，表示内置格式类型（如openai、claude等）
   apiKey?: string;
-  customHeaders?: string;
+  customHeaders: string; // 改为必填字段
   requestContent?: string;
   responseContent?: string;
 }
