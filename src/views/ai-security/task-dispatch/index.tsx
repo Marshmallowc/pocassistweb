@@ -172,6 +172,16 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     setApiTestResult(null);
 
     try {
+      // 测试前先验证自定义Header的JSON格式
+      if (customHeaders.trim()) {
+        const headerValidationError = validateCustomHeadersJson(customHeaders);
+        if (headerValidationError) {
+          message.error(headerValidationError);
+          setApiTestResult("failed");
+          return;
+        }
+      }
+
       // 构建API测试参数
       const testParams: ApiTestParams = {
         type: apiFormatType as "builtin" | "custom",
@@ -215,22 +225,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     }
   };
 
-  // JSON格式校验函数
-  const validateJsonFormat = (content: string, fieldName: string) => {
-    try {
-      // 先提取JSON部分 - 查找请求体或响应体中的JSON
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        return `${fieldName}中未找到有效的JSON格式内容，请确保包含完整的JSON对象`;
-      }
-      
-      // 验证JSON格式
-      JSON.parse(jsonMatch[0]);
-      return null;
-    } catch (error) {
-      return `${fieldName}中的JSON格式不正确，请检查语法是否有误`;
-    }
-  };
 
   // 自定义Header JSON格式校验函数
   const validateCustomHeadersJson = (content: string) => {
@@ -262,32 +256,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       return `${fieldName}中只能包含一个$$$标记，当前有${matches.length}个`;
     }
     
-    // 验证$$$标记是否在有效的JSON值位置
-    // 首先尝试将$$$替换为占位符来验证JSON结构是否正确
-    const contentWithPlaceholder = content.replace(exactTripleDollarRegex, '"PLACEHOLDER"');
-    
-    try {
-      // 尝试解析替换后的JSON
-      JSON.parse(contentWithPlaceholder);
-      
-      // 如果JSON结构正确，再检查$$$是否在有效位置
-      // 检查$$$是否作为JSON值出现
-      // 使用正则表达式检查$$$是否被引号包围，作为字符串值
-      const dollarInStringRegex = /"[^"]*\$\$\$[^"]*"/g;
-      const stringMatches = content.match(dollarInStringRegex) || [];
-      
-      // 或者检查$$$是否作为非字符串值出现（如数字、布尔值位置）
-      const dollarAsValueRegex = /:\s*\$\$\$/g;
-      const valueMatches = content.match(dollarAsValueRegex) || [];
-      
-      if (stringMatches.length === 0 && valueMatches.length === 0) {
-        return `${fieldName}中的$$$标记必须作为JSON对象的值出现，不能在JSON结构外部`;
-      }
-    } catch (error) {
-      // 如果替换后的JSON仍然无法解析，说明$$$在JSON结构外部
-      return `${fieldName}中的$$$标记必须作为JSON对象的值出现，不能在JSON结构外部`;
-    }
-    
     return null;
   };
 
@@ -314,32 +282,20 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       if (!requestContent.trim()) {
         errors.push("请输入请求格式");
       } else {
-        // 校验请求格式中的JSON格式
-        const requestJsonError = validateJsonFormat(requestContent, "请求格式");
-        if (requestJsonError) {
-          errors.push(requestJsonError);
-        } else {
-          // 校验请求格式中的$$$标记
-          const requestError = validateDollarMarkers(requestContent, "请求格式");
-          if (requestError) {
-            errors.push(requestError);
-          }
+        // 校验请求格式中的$$$标记
+        const requestError = validateDollarMarkers(requestContent, "请求格式");
+        if (requestError) {
+          errors.push(requestError);
         }
       }
       
       if (!responseContent.trim()) {
         errors.push("请输入响应格式");
       } else {
-        // 校验响应格式中的JSON格式
-        const responseJsonError = validateJsonFormat(responseContent, "响应格式");
-        if (responseJsonError) {
-          errors.push(responseJsonError);
-        } else {
-          // 校验响应格式中的$$$标记
-          const responseError = validateDollarMarkers(responseContent, "响应格式");
-          if (responseError) {
-            errors.push(responseError);
-          }
+        // 校验响应格式中的$$$标记
+        const responseError = validateDollarMarkers(responseContent, "响应格式");
+        if (responseError) {
+          errors.push(responseError);
         }
       }
     }
@@ -545,7 +501,13 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
                    <Input.Password
                   placeholder="请输入API密钥"
                   value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
+                  onChange={(e) => {
+                    setApiKey(e.target.value);
+                    // 清除之前的测试结果，因为配置已改变
+                    if (apiTestResult) {
+                      setApiTestResult(null);
+                    }
+                  }}
                   size="large"
                   className="form-input"
                   style={{ marginTop: 8 }}
@@ -565,10 +527,24 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
 }`}
                   rows={4}
                   value={customHeaders}
-                  onChange={(e) => setCustomHeaders(e.target.value)}
-                  className="header-textarea"
-                  style={{ marginTop: 8 }}
+                  onChange={(e) => {
+                    setCustomHeaders(e.target.value);
+                    // 清除之前的测试结果，因为配置已改变
+                    if (apiTestResult) {
+                      setApiTestResult(null);
+                    }
+                  }}
+                  className={`header-textarea ${customHeaders.trim() && validateCustomHeadersJson(customHeaders) ? 'error' : ''}`}
+                  style={{ 
+                    marginTop: 8,
+                    borderColor: customHeaders.trim() && validateCustomHeadersJson(customHeaders) ? '#ff4d4f' : undefined
+                  }}
                 />
+                {customHeaders.trim() && validateCustomHeadersJson(customHeaders) && (
+                  <Text type="danger" style={{ fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                    {validateCustomHeadersJson(customHeaders)}
+                  </Text>
+                )}
               </div>
             </div>
           )}
@@ -607,12 +583,15 @@ Content-Length: 189
                       `}
                     rows={8}
                     value={requestContent}
-                    onChange={(e) => setRequestContent(e.target.value)}
+                    onChange={(e) => {
+                      setRequestContent(e.target.value);
+                      // 清除之前的测试结果，因为配置已改变
+                      if (apiTestResult) {
+                        setApiTestResult(null);
+                      }
+                    }}
                     className="format-textarea"
                   />
-                  <Text type="secondary" style={{ fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                    💡 提示：请确保输入内容包含有效的JSON格式数据，并在需要替换的位置使用 $$$ 标记
-                  </Text>
 
                 </div>
               </Col>
@@ -639,12 +618,15 @@ Content-Length: 110114
                       `}
                     rows={8}
                     value={responseContent}
-                    onChange={(e) => setResponseContent(e.target.value)}
+                    onChange={(e) => {
+                      setResponseContent(e.target.value);
+                      // 清除之前的测试结果，因为配置已改变
+                      if (apiTestResult) {
+                        setApiTestResult(null);
+                      }
+                    }}
                     className="format-textarea"
                   />
-                  <Text type="secondary" style={{ fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                    💡 提示：请确保输入内容包含有效的JSON格式数据，并在需要替换的位置使用 $$$ 标记
-                  </Text>
 
                 </div>
               </Col>
@@ -658,10 +640,17 @@ Content-Length: 110114
                <Button
                  type="default"
                  onClick={handleApiTest}
-                 disabled={isTestingApi || !apiFormatType || !customHeaders.trim() || (apiFormatType === "builtin" && (!selectedBuiltinFormat || !apiKey.trim())) || (apiFormatType === "custom" && (!requestContent.trim() || !responseContent.trim()))}
+                 disabled={
+                   isTestingApi || 
+                   !apiFormatType || 
+                   !customHeaders.trim() || 
+                   validateCustomHeadersJson(customHeaders) !== null ||
+                   (apiFormatType === "builtin" && (!selectedBuiltinFormat || !apiKey.trim())) || 
+                   (apiFormatType === "custom" && (!requestContent.trim() || !responseContent.trim()))
+                 }
                  icon={isTestingApi ? <Spin size="small" /> : <WifiOutlined />}
                >
-                {isTestingApi ? "测试中..." : "一键测试API请求联通性"}
+                {isTestingApi ? "测试中..." : "一键测试API请求连通性"}
               </Button>
 
               {apiTestResult && (
