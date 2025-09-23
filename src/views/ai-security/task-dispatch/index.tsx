@@ -70,6 +70,19 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const [apiTestResult, setApiTestResult] = useState<"success" | "failed" | null>(null);
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
+  // 字段验证状态
+  const [fieldErrors, setFieldErrors] = useState({
+    taskName: false,
+    description: false,
+    targetUrl: false,
+    apiFormatType: false,
+    apiKey: false,
+    customHeaders: false,
+    requestContent: false,
+    responseContent: false,
+    selectedTemplates: false
+  });
+
   const customCorpusRef = useRef<HTMLInputElement>(null);
 
   // 获取模板列表
@@ -105,11 +118,16 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   // 模板选择处理
   const handleTemplateSelect = (templateName: string) => {
     setSelectedTemplates((prev) => {
-      if (prev.includes(templateName)) {
-        return prev.filter((t) => t !== templateName);
-      } else {
-        return [...prev, templateName];
+      const newTemplates = prev.includes(templateName) 
+        ? prev.filter((t) => t !== templateName)
+        : [...prev, templateName];
+      
+      // 清除模板选择的错误状态
+      if (newTemplates.length > 0 && fieldErrors.selectedTemplates) {
+        setFieldErrors(prevErrors => ({ ...prevErrors, selectedTemplates: false }));
       }
+      
+      return newTemplates;
     });
   };
 
@@ -259,54 +277,102 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     return null;
   };
 
+  // 清除指定字段的错误状态
+  const clearFieldError = (fieldName: keyof typeof fieldErrors) => {
+    setFieldErrors(prev => ({
+      ...prev,
+      [fieldName]: false
+    }));
+  };
+
   const handleSubmitTask = async () => {
-    // 验证必填项
-    const errors = [];
+    // 验证必填项并设置错误状态
+    const newFieldErrors = {
+      taskName: false,
+      description: false,
+      targetUrl: false,
+      apiFormatType: false,
+      apiKey: false,
+      customHeaders: false,
+      requestContent: false,
+      responseContent: false,
+      selectedTemplates: false
+    };
+    
+    let hasError = false;
+    
+    // 获取表单值
+    const formValues = form.getFieldsValue();
+    
+    // 验证基本信息
+    if (!formValues.taskName || !formValues.taskName.trim()) {
+      newFieldErrors.taskName = true;
+      hasError = true;
+    }
+    
+    if (!formValues.description || !formValues.description.trim()) {
+      newFieldErrors.description = true;
+      hasError = true;
+    }
+    
+    // 验证目标URL
+    if (!formValues.targetUrl || !formValues.targetUrl.trim()) {
+      newFieldErrors.targetUrl = true;
+      hasError = true;
+    }
     
     // 验证API格式配置
-    if (!apiFormatType) {
-      errors.push("请选择API格式类型");
+    if (!apiFormatType || (apiFormatType === "builtin" && !selectedBuiltinFormat)) {
+      newFieldErrors.apiFormatType = true;
+      hasError = true;
     } else if (apiFormatType === "builtin") {
-      if (!selectedBuiltinFormat) {
-        errors.push("请选择具体的API格式");
-      } else if (!apiKey.trim()) {
-        errors.push("请输入API密钥");
+      if (!apiKey.trim()) {
+        newFieldErrors.apiKey = true;
+        hasError = true;
       }
       
       // 验证自定义Header（内置API格式时为必填）
       const customHeaderError = validateCustomHeadersJson(customHeaders);
       if (customHeaderError) {
-        errors.push(customHeaderError);
+        newFieldErrors.customHeaders = true;
+        hasError = true;
       }
     } else if (apiFormatType === "custom") {
       if (!requestContent.trim()) {
-        errors.push("请输入请求格式");
+        newFieldErrors.requestContent = true;
+        hasError = true;
       } else {
         // 校验请求格式中的$$$标记
         const requestError = validateDollarMarkers(requestContent, "请求格式");
         if (requestError) {
-          errors.push(requestError);
+          newFieldErrors.requestContent = true;
+          hasError = true;
         }
       }
       
       if (!responseContent.trim()) {
-        errors.push("请输入响应格式");
+        newFieldErrors.responseContent = true;
+        hasError = true;
       } else {
         // 校验响应格式中的$$$标记
         const responseError = validateDollarMarkers(responseContent, "响应格式");
         if (responseError) {
-          errors.push(responseError);
+          newFieldErrors.responseContent = true;
+          hasError = true;
         }
       }
     }
     
     // 验证模板选择
     if (selectedTemplates.length === 0) {
-      errors.push("请至少选择一个测试模板");
+      newFieldErrors.selectedTemplates = true;
+      hasError = true;
     }
     
-    if (errors.length > 0) {
-      message.error(errors[0]); // 显示第一个错误
+    // 更新错误状态
+    setFieldErrors(newFieldErrors);
+    
+    if (hasError) {
       return;
     }
     
@@ -402,11 +468,18 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
               label="任务名称"
               name="taskName"
               rules={[{ required: true, message: "请输入任务名称" }]}
+              validateStatus={fieldErrors.taskName ? "error" : ""}
+              help={fieldErrors.taskName ? "请输入任务名称" : ""}
             >
               <Input 
                 placeholder="请输入任务名称" 
                 size="large"
-                className="form-input"
+                className={`form-input ${fieldErrors.taskName ? 'error-input' : ''}`}
+                onChange={(e) => {
+                  if (e.target.value.trim()) {
+                    clearFieldError('taskName');
+                  }
+                }}
               />
             </Form.Item>
 
@@ -419,11 +492,18 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
                   message: '请输入任务描述',
                 },
               ]}
+              validateStatus={fieldErrors.description ? "error" : ""}
+              help={fieldErrors.description ? "请输入任务描述" : ""}
             >
               <TextArea 
                 placeholder="请输入任务描述" 
                 rows={3}
-                className="form-input"
+                className={`form-input ${fieldErrors.description ? 'error-input' : ''}`}
+                onChange={(e) => {
+                  if (e.target.value.trim()) {
+                    clearFieldError('description');
+                  }
+                }}
               />
             </Form.Item>
 
@@ -444,11 +524,18 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
                 { required: true, message: "请输入目标URL" },
                 { type: "url", message: "请输入有效的URL" }
               ]}
+              validateStatus={fieldErrors.targetUrl ? "error" : ""}
+              help={fieldErrors.targetUrl ? "请输入目标URL" : ""}
             >
               <Input 
                 placeholder="https://example.com/api" 
                 size="large"
-                className="form-input"
+                className={`form-input ${fieldErrors.targetUrl ? 'error-input' : ''}`}
+                onChange={(e) => {
+                  if (e.target.value.trim()) {
+                    clearFieldError('targetUrl');
+                  }
+                }}
               />
             </Form.Item>
 
@@ -465,22 +552,29 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
              <Text strong>
                API格式类型 <span style={{ color: '#ff4d4f' }}>*</span>
              </Text>
-             <Select
-              value={apiFormatType === "custom" ? "custom" : (apiFormatType === "builtin" ? selectedBuiltinFormat : undefined)}
-               onChange={(value) => {
-                 if (value === "custom") {
-                   setApiFormatType("custom");
-                   setSelectedBuiltinFormat("");
-                 } else {
-                   setApiFormatType("builtin");
-                   setSelectedBuiltinFormat(value);
-                 }
-               }}
-              placeholder="选择API格式类型"
-              size="large"
-              className="format-select"
-              style={{ width: "100%", marginTop: 8 }}
-            >
+            <Select
+             value={apiFormatType === "custom" ? "custom" : (apiFormatType === "builtin" ? selectedBuiltinFormat : undefined)}
+              onChange={(value) => {
+                if (value === "custom") {
+                  setApiFormatType("custom");
+                  setSelectedBuiltinFormat("");
+                } else {
+                  setApiFormatType("builtin");
+                  setSelectedBuiltinFormat(value);
+                }
+                // 清除API格式类型的错误状态
+                if (fieldErrors.apiFormatType) {
+                  setFieldErrors(prev => ({ ...prev, apiFormatType: false }));
+                }
+              }}
+             placeholder="选择API格式类型"
+             size="large"
+             className={`format-select ${fieldErrors.apiFormatType ? 'error-select' : ''}`}
+             style={{ 
+               width: "100%", 
+               marginTop: 8
+             }}
+           >
               <Option value="dify">Dify</Option>
               <Option value="openai">OpenAI</Option>
               <Option value="claude">Claude</Option>
@@ -499,19 +593,25 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
                      API_KEY <span style={{ color: '#ff4d4f' }}>*</span>
                    </Text>
                    <Input.Password
-                  placeholder="请输入API密钥"
-                  value={apiKey}
-                  onChange={(e) => {
-                    setApiKey(e.target.value);
-                    // 清除之前的测试结果，因为配置已改变
-                    if (apiTestResult) {
-                      setApiTestResult(null);
-                    }
-                  }}
-                  size="large"
-                  className="form-input"
-                  style={{ marginTop: 8 }}
-                />
+                 placeholder="请输入API密钥"
+                 value={apiKey}
+                 onChange={(e) => {
+                   setApiKey(e.target.value);
+                   // 清除之前的测试结果，因为配置已改变
+                   if (apiTestResult) {
+                     setApiTestResult(null);
+                   }
+                   // 清除API密钥的错误状态
+                   if (fieldErrors.apiKey) {
+                     setFieldErrors(prev => ({ ...prev, apiKey: false }));
+                   }
+                 }}
+                 size="large"
+                 className={`form-input ${fieldErrors.apiKey ? 'error-input' : ''}`}
+                 style={{ 
+                   marginTop: 8
+                 }}
+               />
               </div>
 
               <div className="config-item">
@@ -533,16 +633,20 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
                     if (apiTestResult) {
                       setApiTestResult(null);
                     }
+                    // 清除自定义Header的错误状态
+                    if (e.target.value.trim() && fieldErrors.customHeaders) {
+                      clearFieldError('customHeaders');
+                    }
                   }}
-                  className={`header-textarea ${customHeaders.trim() && validateCustomHeadersJson(customHeaders) ? 'error' : ''}`}
+                  className={`header-textarea ${fieldErrors.customHeaders ? 'error' : ''}`}
                   style={{ 
                     marginTop: 8,
-                    borderColor: customHeaders.trim() && validateCustomHeadersJson(customHeaders) ? '#ff4d4f' : undefined
+                    borderColor: fieldErrors.customHeaders ? '#ff4d4f' : undefined
                   }}
                 />
-                {customHeaders.trim() && validateCustomHeadersJson(customHeaders) && (
+                {fieldErrors.customHeaders && (
                   <Text type="danger" style={{ fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                    {validateCustomHeadersJson(customHeaders)}
+                    {customHeaders.trim() ? validateCustomHeadersJson(customHeaders) : '自定义Header不能为空'}
                   </Text>
                 )}
               </div>
@@ -589,8 +693,12 @@ Content-Length: 189
                       if (apiTestResult) {
                         setApiTestResult(null);
                       }
+                      // 清除请求格式的错误状态
+                      if (fieldErrors.requestContent) {
+                        setFieldErrors(prev => ({ ...prev, requestContent: false }));
+                      }
                     }}
-                    className="format-textarea"
+                    className={`format-textarea ${fieldErrors.requestContent ? 'error-textarea' : ''}`}
                   />
 
                 </div>
@@ -624,8 +732,12 @@ Content-Length: 110114
                       if (apiTestResult) {
                         setApiTestResult(null);
                       }
+                      // 清除响应格式的错误状态
+                      if (fieldErrors.responseContent) {
+                        setFieldErrors(prev => ({ ...prev, responseContent: false }));
+                      }
                     }}
-                    className="format-textarea"
+                    className={`format-textarea ${fieldErrors.responseContent ? 'error-textarea' : ''}`}
                   />
 
                 </div>
@@ -671,13 +783,18 @@ Content-Length: 110114
         </Card>
 
          {/* 快速任务模板 */}
-         <Card className="section-card template-card">
+         <Card className={`section-card template-card ${fieldErrors.selectedTemplates ? 'error-card' : ''}`}>
            <Title level={3}>
              快速任务模板 <span style={{ color: '#ff4d4f' }}>*</span>
            </Title>
            <Paragraph type="secondary">
              选择预设的任务模板快速创建（支持多选）
            </Paragraph>
+           {fieldErrors.selectedTemplates && (
+             <div style={{ color: '#ff4d4f', fontSize: '12px', marginBottom: '8px' }}>
+               请至少选择一个测试模板
+             </div>
+           )}
 
           <Row gutter={[16, 16]} className="template-grid">
             {templatesLoading ? (
@@ -742,8 +859,8 @@ Content-Length: 110114
                     ))}
                   </div>
                 </div>
-                <Button 
-                  type="primary" 
+                <Button
+                  type="primary"
                   size="large"
                   icon={isSubmittingTask ? <Spin size="small" /> : <PlusOutlined />}
                   onClick={handleSubmitTask}
