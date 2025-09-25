@@ -123,13 +123,13 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
     },
     {
       title: "总数",
-      dataIndex: "totalCount",
-      key: "totalCount",
+      dataIndex: "count",
+      key: "count",
       width: 120,
       align: 'center' as const,
-      render: (totalCount: number | undefined) => (
+      render: (count: number | undefined) => (
         <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
-          {totalCount !== undefined ? totalCount : '-'}
+          {count !== undefined ? count : '-'}
         </span>
       ),
     },
@@ -533,12 +533,12 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
                 </div>
                 <div className="detail-item">
                   <Text strong>创建时间：</Text>
-                  <Text>{currentTemplate.createTime}</Text>
+                  <Text>{currentTemplate.createTime || '-'}</Text>
                 </div>
                 <div className="detail-item">
                   <Text strong>总数：</Text>
                   <Text style={{ fontWeight: 'bold', color: '#1890ff' }}>
-                    {currentTemplate.totalCount !== undefined ? currentTemplate.totalCount : '-'}
+                    {currentTemplate.count !== undefined ? currentTemplate.count : '-'}
                   </Text>
                 </div>
                 {currentTemplate.corpusFileName && (

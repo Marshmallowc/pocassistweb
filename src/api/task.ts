@@ -104,11 +104,11 @@ export interface TaskTemplate {
   id: string;
   name: string;
   description: string;
-  createTime: string;
-  type: 'builtin' | 'custom'; // 内置模板或自定义模板
+  createTime?: string; // 改为可选字段，支持后端不返回的情况
+  type?: 'builtin' | 'custom'; // 改为可选字段，支持后端不返回的情况
   corpusFileName?: string;
   corpusContent?: string;
-  totalCount?: number; // 总数，由后端返回
+  count?: number; // 总数，由后端返回
 }
 
 // 获取任务模板响应接口
@@ -597,7 +597,7 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
           createTime: new Date().toLocaleString(),
           type: 'custom',
           corpusFileName: data.corpusFileName,
-          totalCount: Math.floor(Math.random() * 200) + 50, // 生成50-250之间的随机总数
+          count: Math.floor(Math.random() * 200) + 50, // 生成50-250之间的随机总数
           corpusContent: JSON.stringify({
             name: data.name,
             description: "自定义模板",
@@ -934,7 +934,7 @@ export interface ScanResultItem {
   type: string[]; // 修改为数组类型，支持多个类型
   status: TaskStatus;
   progress: number;
-  createTime: string;
+  createTime?: string; // 改为可选字段，支持后端不返回的情况
   completedTime: string | null;
   estimatedTime: string | null;
   riskLevel: 'high' | 'medium' | 'low' | null;
@@ -962,7 +962,7 @@ let mockTaskTemplatesData: TaskTemplate[] = [
     description: "用于检测基础TC260内容的模板",
     createTime: "2024-01-15 10:30:00",
     type: 'builtin',
-    totalCount: 156
+    count: 156
   },
   {
     id: "2", 
@@ -970,7 +970,7 @@ let mockTaskTemplatesData: TaskTemplate[] = [
     description: "生成对抗样本进行鲁棒性测试的模板",
     createTime: "2024-01-14 15:20:00",
     type: 'builtin',
-    totalCount: 89
+    count: 89
   },
   {
     id: "3",
@@ -978,7 +978,7 @@ let mockTaskTemplatesData: TaskTemplate[] = [
     description: "检测模型是否存在隐私泄露风险的模板",
     createTime: "2024-01-13 09:15:00",
     type: 'builtin',
-    totalCount: 203
+    count: 203
   }
 ];
 

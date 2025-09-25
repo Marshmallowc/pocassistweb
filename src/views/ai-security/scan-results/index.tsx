@@ -649,7 +649,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                     </div>
                     <div className="detail-item">
                       <p className="detail-label">创建时间</p>
-                      <p className="detail-value">{task.createTime}</p>
+                      <p className="detail-value">{task.createTime || '-'}</p>
                     </div>
                     {task.completedTime ? (
                       <div className="detail-item">
