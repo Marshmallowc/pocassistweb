@@ -19,9 +19,9 @@ module.exports = {
     proxy: {
       // 配置跨域
       "/v1": {
-        target: "http://127.0.0.1:1231/api",
+        target: "http://10.32.34.97:1231/api",
         ws: false,
-        changOrigin: true, // 允许跨域
+        changeOrigin: true, // 允许跨域
         pathRewrite: {
           "^/v1": "" // 请求的时候使用这个api就可以
         }

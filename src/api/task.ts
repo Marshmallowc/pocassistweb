@@ -1418,7 +1418,7 @@ export const getTaskTemplates = async (params: { page?: number; pageSize?: numbe
     method: "get",
     params
   });
-  return response.data;
+  return response as unknown as GetTaskTemplatesResponse;
 };
 
 // ============== SSE Mock 服务实现 ==============

@@ -37,7 +37,8 @@ service.interceptors.response.use(
     response => {
       if (response.data.code !== undefined) {
         const body = response.data;
-        if (body && !body.code) {
+        // 明确判断失败状态码（假设0表示失败）
+        if (body && body.code === 0) {
           message.error(response.data?.msg || body.error);
           return Promise.reject();
         }
