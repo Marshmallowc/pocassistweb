@@ -228,10 +228,9 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       }
 
       // 构建API测试参数
-      const parsedHeaders = parseCustomHeaders(customHeaders);
       const testParams: ApiTestParams = {
         type: apiFormatType === "custom" ? 0 : 1, // 0 - 自定义API格式, 1 - 其他内置模型
-        customHeaders: parsedHeaders, // 传递解析后的对象
+        customHeaders: customHeaders, // 直接传递字符串
       };
 
       // 根据API格式类型添加相应参数
@@ -453,7 +452,6 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       setIsSubmittingTask(true);
       
       // 构建请求参数
-      const parsedHeaders = parseCustomHeaders(customHeaders);
       const taskParams: TaskDispatchParams = {
         taskName: values.taskName,
         description: values.description,
@@ -461,7 +459,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
         type: apiFormatType === "custom" ? 0 : 1, // 0 - 自定义API格式, 1 - 其他内置模型
         modelType: apiFormatType === "builtin" ? selectedBuiltinFormat : undefined,
         apiKey: apiFormatType === "builtin" ? apiKey : undefined,
-        customHeaders: parsedHeaders, // 传递解析后的对象
+        customHeaders: customHeaders, // 直接传递字符串
         requestContent: apiFormatType === "custom" ? requestContent : undefined,
         responseContent: apiFormatType === "custom" ? responseContent : undefined,
         selectedTemplates,

@@ -38,7 +38,7 @@ export interface TaskDispatchParams {
   type: 0 | 1; // 0 - 自定义API格式, 1 - 其他内置模型
   modelType?: string;
   apiKey?: string;
-  customHeaders: {}; // 改为对象类型
+  customHeaders: string; // 改为字符串类型
   requestContent?: string;
   responseContent?: string;
   selectedTemplates: string[];
@@ -121,7 +121,7 @@ export interface ApiTestParams {
   type: 0 | 1; // 0 - 自定义API格式, 1 - 其他内置模型
   modelType?: string; // 当type为1时，表示内置格式类型（如openai、claude等）
   apiKey?: string;
-  customHeaders: {}; // 改为对象类型，与TaskDispatchParams保持一致
+  customHeaders: string; // 改为字符串类型，与TaskDispatchParams保持一致
   requestContent?: string;
   responseContent?: string;
 }
