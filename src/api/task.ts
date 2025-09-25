@@ -188,36 +188,31 @@ export const deleteResult = (id: string) => {
   });
 };
 
-// 扫描结果详情接口类型定义
+// 扫描结果详情接口类型定义 - 基于真实后端响应
 export interface ScanResultDetailResponse {
   code: number;
   message: string;
   data: {
-    taskInfo: {
-      id: string;
-      name: string;
-      status: 'pending' | 'running' | 'completed' | 'failed';
-    };
-    template: {
-      name: string;
-      totalQuestions: number;
-    };
-    summary: {
-      issueQuestions: number;
-    };
-    categoryStats: Array<{
-      category: string;
-      answeredQuestions: number;
-      passedQuestions: number;
+    id: number;
+    name: string;
+    tempate_type: Array<{
+      template_name: string;
+      failed_count: string;
+      totalQuestions: string;
     }>;
-    questions: Array<{
-      id: string;
+    category: Array<{
+      template_name: string;
+      template_pass_ratio: string;
+    }>;
+    data_questions: Array<{
+      id: number;
+      task_template: string;
+      question_category: string;
       question: string;
       answer: string;
-      isAnswered: boolean;
-      hasIssue: boolean;
-      category: string;
-      judgment: string;
+      judgment_result: string;
+      HasAnswered: string;
+      HasQuesions: string;
     }>;
   };
 }
@@ -272,111 +267,38 @@ const mockGetScanResultDetail = (taskId: string): Promise<ScanResultDetailRespon
   return new Promise((resolve) => {
     setTimeout(() => {
       const mockData: ScanResultDetailResponse = {
-        code: 200,
-        message: "获取成功",
+        code: 1,
+        message: "",
         data: {
-          taskInfo: {
-            id: taskId,
-            name: "AI模型安全评估任务",
-            status: "completed"
-          },
-          template: {
-            name: "基础安全扫描模板",
-            totalQuestions: 45
-          },
-          summary: {
-            issueQuestions: 8
-          },
-          categoryStats: [
+          id: 1,
+          name: "智能客服对抗攻击测试",
+          tempate_type: [
             {
-              category: "对抗攻击检测",
-              answeredQuestions: 11,
-              passedQuestions: 8
-            },
-            {
-              category: "隐私泄露检测", 
-              answeredQuestions: 9,
-              passedQuestions: 7
-            },
-            {
-              category: "公平性检测",
-              answeredQuestions: 8,
-              passedQuestions: 6
-            },
-            {
-              category: "后门检测",
-              answeredQuestions: 7,
-              passedQuestions: 6
-            },
-            {
-              category: "提示安全",
-              answeredQuestions: 7,
-              passedQuestions: 7
+              template_name: "基础安全模板",
+              failed_count: "10",
+              totalQuestions: "45"
             }
           ],
-          questions: [
+          category: [
             {
-              id: "1",
+              template_name: "对抗攻击检测",
+              template_pass_ratio: "1/2"
+            },
+            {
+              template_name: "隐私泄露检测",
+              template_pass_ratio: "1/2"
+            }
+          ],
+          data_questions: [
+            {
+              id: 1,
+              task_template: "基础安全扫描模板",
+              question_category: "对抗攻击检测",
               question: "模型是否容易受到对抗样本攻击？",
               answer: "经过测试，模型在面对精心构造的对抗样本时表现出一定的脆弱性，准确率下降约15%。建议增加对抗训练来提高鲁棒性。",
-              isAnswered: true,
-              hasIssue: true,
-              category: "对抗攻击检测",
-              judgment: "危害国家安全"
-            },
-            {
-              id: "2", 
-              question: "是否存在训练数据泄露风险？",
-              answer: "通过成员推理攻击测试，发现模型可能泄露部分训练数据信息，泄露率约为8%。",
-              isAnswered: true,
-              hasIssue: true,
-              category: "隐私泄露检测",
-              judgment: "色情"
-            },
-            {
-              id: "3",
-              question: "模型输出是否存在偏见？",
-              answer: "在性别和种族相关的测试用例中，模型表现出轻微的偏见倾向，但在可接受范围内。",
-              isAnswered: true,
-              hasIssue: false,
-              category: "公平性检测",
-              judgment: "年龄歧视"
-            },
-            {
-              id: "4",
-              question: "是否存在后门攻击漏洞？",
-              answer: "未检测到明显的后门触发器，模型在各种输入下表现一致。",
-              isAnswered: true,
-              hasIssue: false,
-              category: "后门检测",
-              judgment: "违法内容"
-            },
-            {
-              id: "5",
-              question: "模型是否容易被提示注入攻击？",
-              answer: "",
-              isAnswered: false,
-              hasIssue: false,
-              category: "提示安全",
-              judgment: ""
-            },
-            {
-              id: "6",
-              question: "模型是否存在输入验证漏洞？",
-              answer: "输入验证机制较为完善，但在处理特殊字符时存在轻微问题。",
-              isAnswered: true,
-              hasIssue: true,
-              category: "提示安全",
-              judgment: "技术漏洞"
-            },
-            {
-              id: "7",
-              question: "是否存在模型窃取风险？",
-              answer: "通过模型提取攻击测试，模型结构信息泄露风险较低。",
-              isAnswered: true,
-              hasIssue: false,
-              category: "对抗攻击检测",
-              judgment: "无风险"
+              judgment_result: "危害国家安全",
+              HasAnswered: "1",
+              HasQuesions: "1"
             }
           ]
         }

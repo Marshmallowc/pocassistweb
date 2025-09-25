@@ -29,7 +29,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
         setLoading(true);
         setError(null);
         const response = await getScanResultDetail(taskId);
-        if (response.code === 200) {
+        if (response.code === 1) {
           setDetailData(response.data);
         } else {
           setError(response.message || '获取详情失败');
@@ -45,12 +45,11 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
   }, [taskId]);
 
   // 从API数据中获取相关信息
-  const questions = detailData?.questions || [];
-  const categories = Array.from(new Set(questions.map((q) => q.category)));
-  const taskTemplate = detailData?.template;
-  const taskInfo = detailData?.taskInfo;
-  const summary = detailData?.summary;
-  const categoryStats = detailData?.categoryStats || [];
+  const questions = detailData?.data_questions || [];
+  const categories = Array.from(new Set(questions.map((q) => q.question_category)));
+  const taskTemplate = detailData?.tempate_type?.[0];
+  const taskInfo = { id: detailData?.id, name: detailData?.name };
+  const categoryStats = detailData?.category || [];
 
   const toggleCategory = (category: string) => {
     setExpandedCategories((prev) =>
@@ -60,7 +59,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
 
   const toggleQuestionIssue = async (question: any) => {
     const questionId = question.id;
-    const originalHasIssue = question.hasIssue;
+    const originalHasIssue = question.HasAnswered === "1";
     
     // 计算新的状态
     const currentState = questionStates[questionId] !== undefined ? questionStates[questionId] : originalHasIssue;
@@ -77,7 +76,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
       const reviewData: QuestionReviewParams = {
         hasIssue: newHasIssue,
         taskId: taskId,
-        taskTemplate: detailData?.template?.name || '',
+        taskTemplate: detailData?.tempate_type?.[0]?.template_name || '',
         taskQuestion: question.question || ''
       };
 
@@ -109,7 +108,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
   };
 
   const getQuestionIssueStatus = (question: any) => {
-    return questionStates[question.id] !== undefined ? questionStates[question.id] : question.hasIssue;
+    return questionStates[question.id] !== undefined ? questionStates[question.id] : question.HasAnswered === "1";
   };
 
   const getRiskBadgeVariant = (risk: string) => {
@@ -238,7 +237,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
           </Button>
           <div className="header-info">
             <h1 className="page-title">{taskInfo?.name || '安全评估详细报告'}</h1>
-            <p className="page-subtitle">任务ID: {taskId} | 状态: {taskInfo?.status === 'completed' ? '已完成' : taskInfo?.status === 'running' ? '执行中' : taskInfo?.status === 'pending' ? '等待中' : '失败'}</p>
+            <p className="page-subtitle">任务ID: {taskId}</p>
           </div>
         </div>
         <Button variant="primary" onClick={handleDownloadReport}>
@@ -261,11 +260,11 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
               <div className="info-grid">
                 <div className="info-item">
                   <p className="info-label">模板名称</p>
-                  <p className="info-value">{taskTemplate?.name || '-'}</p>
+                  <p className="info-value">{taskTemplate?.template_name || '-'}</p>
                 </div>
                 <div className="info-item">
                   <p className="info-label">未通过测试项</p>
-                  <p className="info-value">{summary?.issueQuestions || 0}</p>
+                  <p className="info-value">{taskTemplate?.failed_count || 0}</p>
                 </div>
                 <div className="info-item">
                   <p className="info-label">总测试项</p>
@@ -288,11 +287,11 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
               <div className="stats-grid">
                 {categoryStats.map((stat) => {
                   return (
-                    <div key={stat.category} className="stats-item">
-                      <div className="stats-category">{stat.category}</div>
+                    <div key={stat.template_name} className="stats-item">
+                      <div className="stats-category">{stat.template_name}</div>
                       <div className="stats-label">通过率</div>
                       <div className="stats-value">
-                        {stat.passedQuestions}/{stat.answeredQuestions}
+                        {stat.template_pass_ratio}
                       </div>
                     </div>
                   );
@@ -320,11 +319,11 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                     return (
                       <TableRow key={question.id}>
                         <TableCell>
-                          <span className="template-name">{taskTemplate?.name || '-'}</span>
+                          <span className="template-name">{taskTemplate?.template_name || '-'}</span>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="category-badge">
-                            {question.category}
+                            {question.question_category}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -333,7 +332,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                           </Tooltip>
                         </TableCell>
                         <TableCell>
-                          {question.isAnswered ? (
+                          {question.HasAnswered === "1" ? (
                             <Tooltip title={question.answer}>
                               <div className="answer-content">
                                 <p className="answer-text text-ellipsis-2">{question.answer}</p>
@@ -344,9 +343,9 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                           )}
                         </TableCell>
                         <TableCell>
-                          {question.isAnswered && question.judgment ? (
+                          {question.HasAnswered === "1" && question.judgment_result ? (
                             <div className="judgment-content max-w-xs">
-                              <p className="judgment-text">{question.judgment}</p>
+                              <p className="judgment-text">{question.judgment_result}</p>
                             </div>
                           ) : (
                             <span className="empty-text">-</span>
@@ -354,7 +353,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-end">
-                            {question.isAnswered ? (
+                            {question.HasAnswered === "1" ? (
                               <div className="status-icon-container">
                                 <CheckCircleOutlined className="status-icon answered" />
                               </div>
@@ -367,7 +366,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-end">
-                            {question.isAnswered ? (
+                            {question.HasAnswered === "1" ? (
                               <Tooltip title={`点击切换为：${currentHasIssue ? '不存在问题' : '存在问题'}`}>
                                 <div
                                   className="issue-toggle-icon"
