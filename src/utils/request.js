@@ -39,8 +39,8 @@ service.interceptors.response.use(
         const body = response.data;
         // 明确判断失败状态码（假设0表示失败）
         if (body && body.code === 0) {
-          message.error(response.data?.msg || body.error);
-          return Promise.reject();
+          // 不在这里显示错误消息，让各个API调用处自己处理
+          return Promise.reject(body);
         }
         return body;
       }
@@ -51,8 +51,8 @@ service.interceptors.response.use(
     if (error.response?.status === 401) {
       window.location.href = "/#/login";
     }
-    message.error(error.toString());
-    return Promise.reject();
+    // 不在这里显示错误消息，让各个API调用处自己处理
+    return Promise.reject(error);
   }
 );
 export default service;

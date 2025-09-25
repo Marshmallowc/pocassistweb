@@ -210,7 +210,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
 
       // 根据API格式类型添加相应参数
       if (apiFormatType === "builtin") {
-        testParams.format = selectedBuiltinFormat;
+        testParams.modelType = selectedBuiltinFormat;
         testParams.apiKey = apiKey;
       } else if (apiFormatType === "custom") {
         testParams.requestContent = requestContent;
@@ -243,13 +243,27 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       
       let errorMessage = "API连接测试失败";
       const err = error as any;
-      if (err?.response?.data?.message) {
+      
+      // 处理来自响应拦截器的code: 0错误（直接是响应体）
+      if (err?.code === 0) {
+        const elapsedTime = err?.data?.elapsed_time;
+        if (elapsedTime !== undefined) {
+          setApiTestElapsedTime(elapsedTime);
+        }
+        errorMessage = err?.message || "API连接测试失败";
+        const elapsedTimeText = elapsedTime !== undefined ? ` (响应时间: ${elapsedTime}ms)` : "";
+        message.error(`${errorMessage}${elapsedTimeText}`);
+      } 
+      // 处理网络错误等其他错误
+      else if (err?.response?.data?.message) {
         errorMessage += `: ${err.response.data.message}`;
+        message.error(errorMessage);
       } else if (err?.message) {
         errorMessage += `: ${err.message}`;
+        message.error(errorMessage);
+      } else {
+        message.error(errorMessage);
       }
-      
-      message.error(errorMessage);
     } finally {
       setIsTestingApi(false);
     }
@@ -402,7 +416,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
         targetUrl: values.targetUrl,
         apiConfig: {
           type: apiFormatType as "builtin" | "custom", // 类型断言，因为已经通过验证
-          format: apiFormatType === "builtin" ? selectedBuiltinFormat : undefined,
+          modelType: apiFormatType === "builtin" ? selectedBuiltinFormat : undefined,
           apiKey: apiFormatType === "builtin" ? apiKey : undefined,
           customHeaders,
           requestContent: apiFormatType === "custom" ? requestContent : undefined,
@@ -452,7 +466,13 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       
       // 类型断言处理错误对象
       const err = error as any;
-      if (err?.response?.data?.msg) {
+      
+      // 处理来自响应拦截器的code: 0错误（直接是响应体）
+      if (err?.code === 0) {
+        errorMessage = err?.msg || err?.error || "任务下发失败";
+      }
+      // 处理网络错误等其他错误
+      else if (err?.response?.data?.msg) {
         errorMessage = err.response.data.msg;
       } else if (err?.response?.data?.error) {
         errorMessage = err.response.data.error;

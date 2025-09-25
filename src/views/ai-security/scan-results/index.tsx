@@ -454,7 +454,19 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         message.error(responseMessage || '启动失败');
       }
     } catch (error) {
-      message.error((error as any)?.response?.data?.message || '启动任务时发生错误');
+      const err = error as any;
+      let errorMessage = '启动任务时发生错误';
+      
+      // 处理来自响应拦截器的code: 0错误（直接是响应体）
+      if (err?.code === 0) {
+        errorMessage = err?.msg || err?.message || '启动任务失败';
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      message.error(errorMessage);
     }
   };
 
@@ -473,7 +485,19 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         message.error(responseMessage || '暂停失败');
       }
     } catch (error) {
-      message.error((error as any)?.response?.data?.message || '暂停任务时发生错误');
+      const err = error as any;
+      let errorMessage = '暂停任务时发生错误';
+      
+      // 处理来自响应拦截器的code: 0错误（直接是响应体）
+      if (err?.code === 0) {
+        errorMessage = err?.msg || err?.message || '暂停任务失败';
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      message.error(errorMessage);
     }
   };
 
@@ -492,7 +516,19 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         message.error(responseMessage || '恢复失败');
       }
     } catch (error) {
-      message.error((error as any)?.response?.data?.message || '恢复任务时发生错误');
+      const err = error as any;
+      let errorMessage = '恢复任务时发生错误';
+      
+      // 处理来自响应拦截器的code: 0错误（直接是响应体）
+      if (err?.code === 0) {
+        errorMessage = err?.msg || err?.message || '恢复任务失败';
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      message.error(errorMessage);
     }
   };
 

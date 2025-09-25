@@ -37,7 +37,7 @@ export interface TaskDispatchParams {
   targetUrl: string;
   apiConfig: {
     type: "builtin" | "custom";
-    format?: string;
+    modelType?: string;
     apiKey?: string;
     customHeaders: string; // 改为必填字段
     requestContent?: string;
@@ -122,7 +122,7 @@ export interface GetTaskTemplatesResponse {
 // API连通性测试请求参数接口
 export interface ApiTestParams {
   type: "builtin" | "custom";
-  format?: string; // 当type为builtin时，表示内置格式类型（如openai、claude等）
+  modelType?: string; // 当type为builtin时，表示内置格式类型（如openai、claude等）
   apiKey?: string;
   customHeaders: string; // 改为必填字段
   requestContent?: string;
@@ -482,7 +482,7 @@ export const testApiConnectivity = (data: ApiTestParams) => {
   }
   
   return request({
-    url: "v1/api/test-connectivity/",
+    url: "v1/test-connectivity",
     method: "post",
     data
   });

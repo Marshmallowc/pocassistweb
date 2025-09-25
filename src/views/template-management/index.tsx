@@ -254,11 +254,16 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
     } catch (error) {
       const err = error as any;
       let errorMessage = "创建自定义模板失败";
-      if (err?.response?.data?.message) {
+      
+      // 处理来自响应拦截器的code: 0错误（直接是响应体）
+      if (err?.code === 0) {
+        errorMessage = err?.msg || err?.message || "创建自定义模板失败";
+      } else if (err?.response?.data?.message) {
         errorMessage += `: ${err.response.data.message}`;
       } else if (err?.message) {
         errorMessage += `: ${err.message}`;
       }
+      
       message.error(errorMessage);
     }
     
