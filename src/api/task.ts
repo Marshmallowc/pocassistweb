@@ -380,7 +380,7 @@ const mockDeleteScanTask = (taskId: string) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       // 检查任务是否存在
-      const taskIndex = mockScanResultsData.findIndex(task => task.id === taskId);
+      const taskIndex = mockScanResultsData.findIndex(task => task.id === parseInt(taskId));
       
       if (taskIndex === -1) {
         resolve({
@@ -848,17 +848,17 @@ export type TaskStatus =
 
 // 扫描结果列表项接口
 export interface ScanResultItem {
-  id: string;
+  id: number;
   name: string;
-  type: string[]; // 修改为数组类型，支持多个类型
-  status: TaskStatus;
-  progress: number;
-  createTime?: string; // 改为可选字段，支持后端不返回的情况
-  completedTime: string | null;
-  estimatedTime: string | null;
-  riskLevel: 'high' | 'medium' | 'low' | null;
-  vulnerabilities: number | null;
-  score: number | null;
+  status: string;
+  progress: string;
+  tempate_type: string[]; // 保持后端返回的字段名
+  create_time: string;
+  completed_time: string;
+  estimated_time: string;
+  risk_level: string;
+  failed_items: string;
+  score: string;
 }
 
 // 扫描结果列表响应接口
@@ -866,10 +866,8 @@ export interface ScanResultsResponse {
   code: number;
   message: string;
   data: {
-    results: ScanResultItem[];
+    data: ScanResultItem[];
     total: number;
-    page: number;
-    pageSize: number;
   };
 }
 
@@ -891,147 +889,134 @@ let mockTaskTemplatesData: TaskTemplate[] = [
 // Mock 数据存储 - 使用全局变量来模拟数据库
 let mockScanResultsData: ScanResultItem[] = [
   {
-    id: "TASK-001",
-    name: "电商平台AI推荐系统安全评估",
-    type: ["模型安全评估", "隐私检测", "公平性测试"],
-    status: "completed",
-    progress: 100,
-    createTime: "2024-01-15 10:30",
-    completedTime: "2024-01-15 15:45",
-    estimatedTime: "2小时30分钟",
-    riskLevel: "medium",
-    vulnerabilities: 12,
-    score: 75,
-  },
-  {
-    id: "TASK-002",
+    id: 1,
     name: "智能客服对抗攻击测试",
-    type: ["对抗攻击测试", "鲁棒性检测"],
-    status: "completed",
-    progress: 100,
-    createTime: "2024-01-14 14:20",
-    completedTime: "2024-01-14 16:05",
-    estimatedTime: "1小时45分钟",
-    riskLevel: "high",
-    vulnerabilities: 18,
-    score: 45,
+    status: "已完成",
+    progress: "",
+    tempate_type: ["数据隐私检测", "对抗攻击测试"],
+    create_time: "2025-9-8 14:00:00",
+    completed_time: "2025-9-8 14:00:00",
+    estimated_time: "3小时10分钟",
+    risk_level: "高",
+    failed_items: "12",
+    score: "75",
   },
   {
-    id: "TASK-003",
+    id: 2,
+    name: "电商推荐系统安全测试",
+    status: "运行中",
+    progress: "",
+    tempate_type: ["模型安全评估", "公平性测试"],
+    create_time: "2025-9-7 10:30:00",
+    completed_time: "",
+    estimated_time: "2小时30分钟",
+    risk_level: "",
+    failed_items: "",
+    score: "",
+  },
+  {
+    id: 3,
     name: "图像识别模型隐私检测",
-    type: ["数据隐私检测", "成员推理攻击"],
-    status: "running",
-    progress: 65,
-    createTime: "2024-01-16 09:15",
-    completedTime: null,
-    estimatedTime: "3小时10分钟",
-    riskLevel: null,
-    vulnerabilities: null,
-    score: null,
+    status: "已完成",
+    progress: "",
+    tempate_type: ["数据隐私检测"],
+    create_time: "2025-9-6 16:15:00",
+    completed_time: "2025-9-6 18:45:00",
+    estimated_time: "2小时30分钟",
+    risk_level: "中",
+    failed_items: "6",
+    score: "82",
   },
   {
-    id: "TASK-004",
-    name: "图像分类模型基础扫描",
-    type: ["基础安全扫描"],
-    status: "completed",
-    progress: 100,
-    createTime: "2024-01-13 09:20",
-    completedTime: "2024-01-13 11:20",
-    estimatedTime: "2小时",
-    riskLevel: "low",
-    vulnerabilities: 3,
-    score: 92,
+    id: 4,
+    name: "语音识别系统安全评估",
+    status: "已完成",
+    progress: "",
+    tempate_type: ["对抗攻击测试", "模型安全评估"],
+    create_time: "2025-9-5 14:20:00",
+    completed_time: "2025-9-5 17:50:00",
+    estimated_time: "3小时30分钟",
+    risk_level: "低",
+    failed_items: "3",
+    score: "91",
   },
   {
-    id: "TASK-005",
-    name: "语音识别模型安全评估",
-    type: ["模型安全评估", "后门检测", "提示注入测试"],
-    status: "completed",
-    progress: 100,
-    createTime: "2024-01-12 16:30",
-    completedTime: "2024-01-12 19:15",
-    estimatedTime: "2小时45分钟",
-    riskLevel: "medium",
-    vulnerabilities: 8,
-    score: 82,
-  },
-  {
-    id: "TASK-006",
+    id: 5,
     name: "自然语言处理模型检测",
-    type: ["基础安全扫描", "文本对抗攻击"],
-    status: "paused",
-    progress: 30,
-    createTime: "2024-01-16 11:00",
-    completedTime: null,
-    estimatedTime: "4小时",
-    riskLevel: null,
-    vulnerabilities: null,
-    score: null,
+    status: "暂停",
+    progress: "",
+    tempate_type: ["数据隐私检测", "对抗攻击测试"],
+    create_time: "2025-9-4 11:00:00",
+    completed_time: "",
+    estimated_time: "4小时",
+    risk_level: "",
+    failed_items: "",
+    score: "",
   },
   {
-    id: "TASK-007",
+    id: 6,
     name: "计算机视觉模型评估",
-    type: ["对抗攻击测试", "模型窃取检测"],
-    status: "failed",
-    progress: 0,
-    createTime: "2024-01-11 14:00",
-    completedTime: null,
-    estimatedTime: "3小时30分钟",
-    riskLevel: null,
-    vulnerabilities: null,
-    score: null,
+    status: "失败",
+    progress: "",
+    tempate_type: ["对抗攻击测试", "模型窃取检测"],
+    create_time: "2025-9-3 09:00:00",
+    completed_time: "",
+    estimated_time: "3小时30分钟",
+    risk_level: "",
+    failed_items: "",
+    score: "",
   },
   {
-    id: "TASK-008",
+    id: 7,
     name: "多模态AI模型安全检测",
-    type: ["数据隐私检测", "跨模态攻击阿萨尔贡哈根黑啊和我", "模型安全评估"],
-    status: "completed",
-    progress: 100,
-    createTime: "2024-01-10 09:30",
-    completedTime: "2024-01-10 13:45",
-    estimatedTime: "4小时15分钟",
-    riskLevel: "high",
-    vulnerabilities: 15,
-    score: 58,
+    status: "已完成",
+    progress: "",
+    tempate_type: ["数据隐私检测", "模型安全评估"],
+    create_time: "2025-9-2 13:45:00",
+    completed_time: "2025-9-2 17:30:00",
+    estimated_time: "3小时45分钟",
+    risk_level: "高",
+    failed_items: "22",
+    score: "58",
   },
   {
-    id: "TASK-011",
-    name: "语音识别模型安全扫描",
-    type: ["对抗攻击测试", "模型鲁棒性评估"],
-    status: "failed",
-    progress: 45,
-    createTime: "2024-01-17 11:20",
-    completedTime: null,
-    estimatedTime: null,
-    riskLevel: null,
-    vulnerabilities: null,
-    score: null,
+    id: 8,
+    name: "医疗AI诊断模型隐私评估",
+    status: "已完成",
+    progress: "",
+    tempate_type: ["数据隐私检测", "合规性测试"],
+    create_time: "2025-9-1 08:30:00",
+    completed_time: "2025-9-1 12:15:00",
+    estimated_time: "3小时45分钟",
+    risk_level: "中",
+    failed_items: "6",
+    score: "88",
   },
   {
-    id: "TASK-012", 
-    name: "生成式AI内容安全评估",
-    type: ["内容安全检测", "恶意内容生成防护"],
-    status: "failed",
-    progress: 75,
-    createTime: "2024-01-17 14:30",
-    completedTime: null,
-    estimatedTime: null,
-    riskLevel: "medium",
-    vulnerabilities: 8,
-    score: 65,
+    id: 9,
+    name: "自动驾驶AI安全性测试",
+    status: "运行中",
+    progress: "",
+    tempate_type: ["安全关键系统测试", "场景覆盖评估"],
+    create_time: "2025-8-31 10:00:00",
+    completed_time: "",
+    estimated_time: "5小时30分钟",
+    risk_level: "",
+    failed_items: "",
+    score: "",
   },
   {
-    id: "TASK-013",
+    id: 10,
     name: "金融AI模型风险评估",
-    type: ["金融安全检测", "公平性测试"],
-    status: "paused",
-    progress: 30,
-    createTime: "2024-01-17 16:00",
-    completedTime: null,
-    estimatedTime: "2小时45分钟",
-    riskLevel: null,
-    vulnerabilities: null,
-    score: null,
+    status: "队列中",
+    progress: "",
+    tempate_type: ["金融安全检测", "公平性测试"],
+    create_time: "2025-8-30 16:00:00",
+    completed_time: "",
+    estimated_time: "2小时45分钟",
+    risk_level: "",
+    failed_items: "",
+    score: "",
   }
 ];
 
@@ -1083,8 +1068,8 @@ const mockGetScanResults = (params: { page?: number; pageSize?: number; search?:
         const searchTerm = params.search.toLowerCase();
         filteredResults = mockResults.filter(item => 
           item.name.toLowerCase().includes(searchTerm) ||
-          item.type.some(type => type.toLowerCase().includes(searchTerm)) ||
-          item.id.toLowerCase().includes(searchTerm)
+          item.tempate_type.some(type => type.toLowerCase().includes(searchTerm)) ||
+          item.id.toString().includes(searchTerm)
         );
       }
 
@@ -1096,13 +1081,11 @@ const mockGetScanResults = (params: { page?: number; pageSize?: number; search?:
       const paginatedResults = filteredResults.slice(startIndex, endIndex);
 
       const mockResponse: ScanResultsResponse = {
-        code: 200,
-        message: "获取成功",
+        code: 1,
+        message: "",
         data: {
-          results: paginatedResults,
+          data: paginatedResults,
           total: filteredResults.length,
-          page: page,
-          pageSize: pageSize,
         }
       };
       
@@ -1332,7 +1315,7 @@ export const getScanResults = async (params: { page?: number; pageSize?: number;
   
   // 真实API调用
   const response = await request({
-    url: "v1/scan-results/",
+    url: "/api/v1/ai_task/",
     method: "get",
     params
   });
@@ -1463,12 +1446,12 @@ export class MockSSEEventGenerator {
     this.runningTasks.add(taskId);
 
     // 查找对应的任务数据
-    const task = mockScanResultsData.find(t => t.id === taskId);
+    const task = mockScanResultsData.find(t => t.id === parseInt(taskId));
     if (!task) {
       return;
     }
 
-    let currentProgress = task.progress;
+    let currentProgress = parseInt(task.progress) || 0;
     const targetProgress = 100;
     const progressStep = Math.random() * 10 + 5; // 5-15的随机步长
 
@@ -1489,11 +1472,11 @@ export class MockSSEEventGenerator {
       const estimatedTime = estimatedMinutes > 0 ? `${estimatedMinutes}分钟` : '即将完成';
 
       // 更新本地数据
-      const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
+      const taskIndex = mockScanResultsData.findIndex(t => t.id === parseInt(taskId));
       if (taskIndex !== -1) {
-        mockScanResultsData[taskIndex].progress = Math.round(currentProgress);
-        mockScanResultsData[taskIndex].estimatedTime = estimatedTime;
-        mockScanResultsData[taskIndex].status = 'running';
+        mockScanResultsData[taskIndex].progress = Math.round(currentProgress).toString();
+        mockScanResultsData[taskIndex].estimated_time = estimatedTime;
+        mockScanResultsData[taskIndex].status = '运行中';
       }
 
       // 发送进度事件
@@ -1536,14 +1519,14 @@ export class MockSSEEventGenerator {
     const score = Math.floor(Math.random() * 60) + 40; // 40-100分
 
     // 更新本地数据
-    const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
+    const taskIndex = mockScanResultsData.findIndex(t => t.id === parseInt(taskId));
     if (taskIndex !== -1) {
-      mockScanResultsData[taskIndex].status = 'completed';
-      mockScanResultsData[taskIndex].progress = 100;
-      mockScanResultsData[taskIndex].completedTime = new Date().toLocaleString('zh-CN');
-      mockScanResultsData[taskIndex].riskLevel = riskLevel;
-      mockScanResultsData[taskIndex].vulnerabilities = vulnerabilities;
-      mockScanResultsData[taskIndex].score = score;
+      mockScanResultsData[taskIndex].status = '已完成';
+      mockScanResultsData[taskIndex].progress = '';
+      mockScanResultsData[taskIndex].completed_time = new Date().toLocaleString('zh-CN');
+      mockScanResultsData[taskIndex].risk_level = riskLevel;
+      mockScanResultsData[taskIndex].failed_items = vulnerabilities.toString();
+      mockScanResultsData[taskIndex].score = score.toString();
     }
 
     // 发送完成事件
@@ -1574,9 +1557,9 @@ export class MockSSEEventGenerator {
     }
 
     // 更新本地数据
-    const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
+    const taskIndex = mockScanResultsData.findIndex(t => t.id === parseInt(taskId));
     if (taskIndex !== -1) {
-      mockScanResultsData[taskIndex].status = 'paused';
+      mockScanResultsData[taskIndex].status = '暂停';
     }
 
     // 发送状态变更事件
@@ -1598,9 +1581,9 @@ export class MockSSEEventGenerator {
   resumeTask(taskId: string) {
     
     // 更新本地数据
-    const taskIndex = mockScanResultsData.findIndex(t => t.id === taskId);
+    const taskIndex = mockScanResultsData.findIndex(t => t.id === parseInt(taskId));
     if (taskIndex !== -1) {
-      mockScanResultsData[taskIndex].status = 'running';
+      mockScanResultsData[taskIndex].status = '运行中';
     }
 
     // 发送状态变更事件

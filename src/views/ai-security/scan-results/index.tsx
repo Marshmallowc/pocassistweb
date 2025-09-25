@@ -224,8 +224,8 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
         pageSize
       });
       
-      if (response.code === 200) {
-        setTaskResults(response.data.results);
+      if (response.code === 1) {
+        setTaskResults(response.data.data);
         setPagination(prev => ({
           ...prev,
           total: response.data.total
@@ -245,7 +245,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     
     setTaskResults(prevTasks => {
       const newTasks = [...prevTasks];
-      const taskIndex = newTasks.findIndex(task => task.id === event.taskId);
+      const taskIndex = newTasks.findIndex(task => task.id === parseInt(event.taskId));
       
       if (taskIndex === -1) {
         return prevTasks;
@@ -255,19 +255,19 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       
       switch (event.type) {
         case 'task_progress':
-          updatedTask.progress = event.data.progress;
-          updatedTask.estimatedTime = event.data.estimatedTime || updatedTask.estimatedTime;
+          updatedTask.progress = event.data.progress.toString();
+          updatedTask.estimated_time = event.data.estimatedTime || updatedTask.estimated_time;
           updatedTask.status = event.data.status;
           break;
           
         case 'task_completed':
           updatedTask.status = event.data.status;
-          updatedTask.completedTime = event.data.completedTime;
-          updatedTask.progress = 100;
-          updatedTask.score = event.data.score || null;
-          updatedTask.vulnerabilities = event.data.vulnerabilities || null;
-          updatedTask.riskLevel = event.data.riskLevel || null;
-          updatedTask.estimatedTime = null;
+          updatedTask.completed_time = event.data.completedTime;
+          updatedTask.progress = '';
+          updatedTask.score = event.data.score ? event.data.score.toString() : '';
+          updatedTask.failed_items = event.data.vulnerabilities ? event.data.vulnerabilities.toString() : '';
+          updatedTask.risk_level = event.data.riskLevel || '';
+          updatedTask.estimated_time = '';
           break;
           
         case 'task_status_change':
@@ -575,7 +575,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
               ) : (
                 taskResults.map((task) => {
               const statusConfig = getStatusBadge(task.status);
-              const riskConfig = getRiskBadge(task.riskLevel);
+              const riskConfig = getRiskBadge(task.risk_level);
 
               return (
                 <div key={task.id} className="task-card">
@@ -586,42 +586,42 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                       {riskConfig && <Badge variant={riskConfig.variant}>{riskConfig.label}</Badge>}
                     </div>
                     <div className="task-actions">
-                      {task.status === "completed" && (
+                      {task.status === "已完成" && (
                         <>
-                          <Button variant="ghost" size="small" onClick={() => handleViewDetail(task.id)}>
+                          <Button variant="ghost" size="small" onClick={() => handleViewDetail(task.id.toString())}>
                             <EyeOutlined style={{ marginRight: 4 }} />
                             查看详情
                           </Button>
-                          <Button variant="ghost" size="small" onClick={() => handleDownloadReport(task.id)}>
+                          <Button variant="ghost" size="small" onClick={() => handleDownloadReport(task.id.toString())}>
                             <DownloadOutlined style={{ marginRight: 4 }} />
                             下载报告
                           </Button>
                         </>
                       )}
                       {/* 运行中的任务显示暂停按钮 */}
-                      {task.status === "running" && (
-                        <Button variant="ghost" size="small" onClick={() => handlePauseTask(task.id)}>
+                      {task.status === "运行中" && (
+                        <Button variant="ghost" size="small" onClick={() => handlePauseTask(task.id.toString())}>
                           <PauseCircleOutlined style={{ marginRight: 4 }} />
                           暂停
                         </Button>
                       )}
                       {/* 等待中的任务显示开始按钮 */}
-                      {task.status === "pending" && (
-                        <Button variant="ghost" size="small" onClick={() => handleStartTask(task.id)}>
+                      {task.status === "队列中" && (
+                        <Button variant="ghost" size="small" onClick={() => handleStartTask(task.id.toString())}>
                           <PlayCircleOutlined style={{ marginRight: 4 }} />
                           开始
                         </Button>
                       )}
                       {/* 已暂停的任务显示恢复按钮 */}
-                      {task.status === "paused" && (
-                        <Button variant="ghost" size="small" onClick={() => handleResumeTask(task.id)}>
+                      {task.status === "暂停" && (
+                        <Button variant="ghost" size="small" onClick={() => handleResumeTask(task.id.toString())}>
                           <PlayCircleOutlined style={{ marginRight: 4 }} />
                           恢复
                         </Button>
                       )}
                       {/* 失败的任务显示重试按钮 */}
-                      {task.status === "failed" && (
-                        <Button variant="ghost" size="small" onClick={() => handleRetryTask(task.id)}>
+                      {task.status === "失败" && (
+                        <Button variant="ghost" size="small" onClick={() => handleRetryTask(task.id.toString())}>
                           <RedoOutlined style={{ marginRight: 4 }} />
                           重试
                         </Button>
@@ -629,7 +629,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                       <Button 
                         variant="ghost" 
                         size="small"
-                        onClick={() => handleDeleteTask(task.id)}
+                        onClick={() => handleDeleteTask(task.id.toString())}
                       >
                         <DeleteOutlined />
                       </Button>
@@ -644,59 +644,60 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                     <div className="detail-item">
                       <p className="detail-label">类型</p>
                       <div className="detail-value">
-                        <TypeTagsDisplay types={task.type} />
+                        <TypeTagsDisplay types={task.tempate_type} />
                       </div>
                     </div>
                     <div className="detail-item">
                       <p className="detail-label">创建时间</p>
-                      <p className="detail-value">{task.createTime || '-'}</p>
+                      <p className="detail-value">{task.create_time || '-'}</p>
                     </div>
-                    {task.completedTime ? (
+                    {task.completed_time ? (
                       <div className="detail-item">
                         <p className="detail-label">完成时间</p>
-                        <p className="detail-value">{task.completedTime}</p>
+                        <p className="detail-value">{task.completed_time}</p>
                       </div>
                     ) : (
                       <div className="detail-item">
                         <p className="detail-label">预计耗时</p>
-                        <p className="detail-value">{task.estimatedTime || "-"}</p>
+                        <p className="detail-value">{task.estimated_time || "-"}</p>
                       </div>
                     )}
-                    {task.vulnerabilities !== null ? (
+                    {task.failed_items && task.failed_items !== "" ? (
                       <div className="detail-item">
                         <p className="detail-label">未通过测试项</p>
-                        <p className="detail-value">{task.vulnerabilities} 个</p>
+                        <p className="detail-value">{task.failed_items} 个</p>
                       </div>
                     ) : (
                       <div className="detail-item">
                         <p className="detail-label">进度</p>
-                        <p className="detail-value">{task.progress}%</p>
+                        <p className="detail-value">{task.progress || '0'}%</p>
                       </div>
                     )}
-                    {task.score !== null ? (
+                    {task.score && task.score !== "" ? (
                       <div className="detail-item">
                         <p className="detail-label">安全评分</p>
-                        <p className={`detail-value score-value ${getScoreColor(task.score)}`}>{task.score}</p>
+                        <p className={`detail-value score-value ${getScoreColor(parseInt(task.score))}`}>{task.score}</p>
                       </div>
                     ) : (
                       <div className="detail-item">
                         <p className="detail-label">状态</p>
                         <p className="detail-value">
-                          {task.status === "running" ? "执行中..." : 
-                           task.status === "paused" ? "已暂停" : 
-                           "等待执行"}
+                          {task.status === "运行中" ? "执行中..." : 
+                           task.status === "暂停" ? "已暂停" : 
+                           task.status === "队列中" ? "等待执行" :
+                           task.status}
                         </p>
                       </div>
                     )}
                   </div>
 
-                  {task.status !== "completed" && (
+                  {task.status !== "已完成" && (
                     <div className="task-summary">
                       <div className="progress-header">
                         <span className="summary-label">执行进度</span>
-                        <span className="progress-value">{task.progress}%</span>
+                        <span className="progress-value">{task.progress || '0'}%</span>
                       </div>
-                      <Progress value={task.progress} className="progress-bar" strokeColor="#4a4a4a" />
+                      <Progress value={parseInt(task.progress) || 0} className="progress-bar" strokeColor="#4a4a4a" />
                     </div>
                   )}
                 </div>
