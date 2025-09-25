@@ -204,7 +204,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
 
       // 构建API测试参数
       const testParams: ApiTestParams = {
-        type: apiFormatType as "builtin" | "custom",
+        type: apiFormatType === "custom" ? 0 : 1, // 0 - 自定义API格式, 1 - 其他内置模型
         customHeaders, // 必填字段，直接赋值
       };
 
@@ -415,7 +415,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
         description: values.description,
         targetUrl: values.targetUrl,
         apiConfig: {
-          type: apiFormatType as "builtin" | "custom", // 类型断言，因为已经通过验证
+          type: apiFormatType === "custom" ? 0 : 1, // 0 - 自定义API格式, 1 - 其他内置模型
           modelType: apiFormatType === "builtin" ? selectedBuiltinFormat : undefined,
           apiKey: apiFormatType === "builtin" ? apiKey : undefined,
           customHeaders,
