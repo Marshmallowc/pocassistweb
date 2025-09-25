@@ -264,7 +264,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
 
       const response = await saveCustomTemplate(templateData) as any;
       
-      if (response.success || response.data?.success) {
+      if (response.code === 1) {
         // 保存成功，重新获取模板列表
         const templateName = response.data?.templateName || customTemplateName.trim();
         message.success(`自定义模板"${templateName}"创建成功`);
@@ -272,7 +272,7 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
         // 重新获取模板列表以显示最新数据
         await fetchTemplates(pagination.current, pagination.pageSize);
       } else {
-        message.error(response.message || response.data?.message || "创建自定义模板失败");
+        message.error(response.message || response.msg || "创建自定义模板失败");
       }
     } catch (error) {
       const err = error as any;
@@ -342,13 +342,13 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
 
       const response = await editTemplate(editData) as any;
       
-      if (response.success || response.data?.success) {
+      if (response.code === 1) {
         message.success("模板编辑成功");
         
         // 重新获取模板列表以显示最新数据
         await fetchTemplates(pagination.current, pagination.pageSize);
       } else {
-        message.error(response.message || response.data?.message || "编辑模板失败");
+        message.error(response.message || response.msg || "编辑模板失败");
       }
     } catch (error) {
       const err = error as any;
