@@ -545,7 +545,7 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
         });
       } else {
         resolve({
-          code: 400,
+          code: 0,
           message: "保存失败: 模板名称已存在",
           success: false,
           data: {
