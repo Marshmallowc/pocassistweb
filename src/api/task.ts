@@ -395,7 +395,7 @@ const mockDeleteScanTask = (taskId: string) => {
       
       // 检查任务状态 - 正在运行的任务不能删除
       const task = mockScanResultsData[taskIndex];
-      if (task.status === 'running') {
+      if (task.status === '进行中') {
         resolve({
           data: {
             code: 400,
@@ -898,7 +898,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: 2,
     name: "电商推荐系统安全测试",
-    status: "运行中",
+    status: "进行中",
     progress: "",
     tempate_type: ["模型安全评估", "公平性测试"],
     create_time: "2025-9-7 10:30:00",
@@ -989,7 +989,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: 9,
     name: "自动驾驶AI安全性测试",
-    status: "运行中",
+    status: "进行中",
     progress: "",
     tempate_type: ["安全关键系统测试", "场景覆盖评估"],
     create_time: "2025-8-31 10:00:00",
@@ -1002,7 +1002,7 @@ let mockScanResultsData: ScanResultItem[] = [
   {
     id: 10,
     name: "金融AI模型风险评估",
-    status: "队列中",
+    status: "待开始",
     progress: "",
     tempate_type: ["金融安全检测", "公平性测试"],
     create_time: "2025-8-30 16:00:00",
@@ -1161,10 +1161,10 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const statusMap = {
-        start: { from: 'pending', to: 'running' },
-        pause: { from: 'running', to: 'paused' },
-        resume: { from: 'paused', to: 'running' },
-        retry: { from: 'failed', to: 'running' }
+        start: { from: '待开始', to: '进行中' },
+        pause: { from: '进行中', to: '暂停' },
+        resume: { from: '暂停', to: '进行中' },
+        retry: { from: '失败', to: '进行中' }
       };
       
       const statusChange = statusMap[action];
@@ -1483,9 +1483,9 @@ export class MockSSEEventGenerator {
       // 更新本地数据
       const taskIndex = mockScanResultsData.findIndex(t => t.id === parseInt(taskId));
       if (taskIndex !== -1) {
-        mockScanResultsData[taskIndex].progress = Math.round(currentProgress).toString();
+        mockScanResultsData[taskIndex].progress = Math.round(currentProgress) + '%';
         mockScanResultsData[taskIndex].estimated_time = estimatedTime;
-        mockScanResultsData[taskIndex].status = '运行中';
+        mockScanResultsData[taskIndex].status = '进行中';
       }
 
       // 发送进度事件
@@ -1495,7 +1495,7 @@ export class MockSSEEventGenerator {
         data: {
           progress: Math.round(currentProgress),
           estimatedTime,
-          status: 'running'
+          status: '进行中'
         }
       };
       this.emitEvent(progressEvent);
@@ -1543,7 +1543,7 @@ export class MockSSEEventGenerator {
       type: 'task_completed',
       taskId,
       data: {
-        status: 'completed',
+        status: '已完成',
         completedTime: new Date().toLocaleString('zh-CN'),
         score,
         vulnerabilities,
@@ -1576,8 +1576,8 @@ export class MockSSEEventGenerator {
       type: 'task_status_change',
       taskId,
       data: {
-        previousStatus: 'running',
-        currentStatus: 'paused',
+        previousStatus: '进行中',
+        currentStatus: '暂停',
         timestamp: new Date().toISOString()
       }
     };
@@ -1600,8 +1600,8 @@ export class MockSSEEventGenerator {
       type: 'task_status_change',
       taskId,
       data: {
-        previousStatus: 'paused',
-        currentStatus: 'running',
+        previousStatus: '暂停',
+        currentStatus: '进行中',
         timestamp: new Date().toISOString()
       }
     };

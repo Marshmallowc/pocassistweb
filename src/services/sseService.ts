@@ -10,7 +10,7 @@ export interface SSETaskProgressEvent {
   data: {
     progress: number;
     estimatedTime?: string;
-    status: 'running' | 'paused';
+    status: '进行中' | '暂停' | 'running' | 'paused';
   };
 }
 
@@ -18,7 +18,7 @@ export interface SSETaskCompletedEvent {
   type: 'task_completed';
   taskId: string;
   data: {
-    status: 'completed' | 'failed';
+    status: '已完成' | '失败' | 'completed' | 'failed';
     completedTime: string;
     score?: number;
     vulnerabilities?: number;

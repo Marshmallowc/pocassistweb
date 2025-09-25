@@ -635,14 +635,14 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                         </>
                       )}
                       {/* 运行中的任务显示暂停按钮 */}
-                      {task.status === "运行中" && (
+                      {task.status === "进行中" && (
                         <Button variant="ghost" size="small" onClick={() => handlePauseTask(task.id.toString())}>
                           <PauseCircleOutlined style={{ marginRight: 4 }} />
                           暂停
                         </Button>
                       )}
                       {/* 等待中的任务显示开始按钮 */}
-                      {task.status === "队列中" && (
+                      {task.status === "待开始" && (
                         <Button variant="ghost" size="small" onClick={() => handleStartTask(task.id.toString())}>
                           <PlayCircleOutlined style={{ marginRight: 4 }} />
                           开始
@@ -706,7 +706,7 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                     ) : (
                       <div className="detail-item">
                         <p className="detail-label">进度</p>
-                        <p className="detail-value">{task.progress || '0'}%</p>
+                        <p className="detail-value">{task.progress || '0'}</p>
                       </div>
                     )}
                     {task.score && task.score !== "" ? (
@@ -718,9 +718,9 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                       <div className="detail-item">
                         <p className="detail-label">状态</p>
                         <p className="detail-value">
-                          {task.status === "运行中" ? "执行中..." : 
+                          {task.status === "进行中" ? "执行中..." : 
                            task.status === "暂停" ? "已暂停" : 
-                           task.status === "队列中" ? "等待执行" :
+                           task.status === "待开始" ? "等待执行" :
                            task.status}
                         </p>
                       </div>
@@ -731,9 +731,9 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
                     <div className="task-summary">
                       <div className="progress-header">
                         <span className="summary-label">执行进度</span>
-                        <span className="progress-value">{task.progress || '0'}%</span>
+                        <span className="progress-value">{task.progress || '0'}</span>
                       </div>
-                      <Progress value={parseInt(task.progress) || 0} className="progress-bar" strokeColor="#4a4a4a" />
+                      <Progress value={parseInt(task.progress?.replace('%', '')) || 0} className="progress-bar" strokeColor="#4a4a4a" />
                     </div>
                   )}
                 </div>
