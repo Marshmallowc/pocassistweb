@@ -60,6 +60,48 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     setCurrentCustomCorpusFileName("");
     if (customCorpusRef.current) customCorpusRef.current.value = "";
   };
+
+  // 清空整个页面
+  const clearPage = () => {
+    // 重置表单
+    form.resetFields();
+    
+    // 重置API格式内容
+    setRequestContent("");
+    setResponseContent("");
+    
+    // 重置模板选择
+    setSelectedTemplates([]);
+    resetCustomTemplateForm();
+    
+    // 重置API配置
+    setApiFormatType("");
+    setSelectedBuiltinFormat("");
+    setApiKey("");
+    setCustomHeaders("");
+    setCustomHeadersObj({});
+    setApiTestResult(null);
+    setApiTestElapsedTime(null);
+    
+    // 重置字段验证状态
+    setFieldErrors({
+      taskName: false,
+      description: false,
+      targetUrl: false,
+      apiFormatType: false,
+      apiKey: false,
+      customHeaders: false,
+      requestContent: false,
+      responseContent: false,
+      selectedTemplates: false
+    });
+    
+    // 重置提交状态
+    setIsTestingApi(false);
+    setIsSubmittingTask(false);
+    
+    message.success("页面已清空，可以创建新任务");
+  };
   
   // API配置相关状态
   const [apiFormatType, setApiFormatType] = useState<"builtin" | "custom" | "">("");
@@ -492,7 +534,14 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
               </div>
             ),
             width: 500,
+            onOk: () => {
+              // 任务下发成功后清空页面
+              clearPage();
+            }
           });
+        } else {
+          // 如果没有详细数据，直接清空页面
+          clearPage();
         }
       } else {
         // 如果code不为1，说明后端返回了错误
