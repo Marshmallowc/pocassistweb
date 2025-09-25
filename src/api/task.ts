@@ -324,27 +324,21 @@ const mockTestApiConnectivity = (data: ApiTestParams) => {
         resolve({
           data: {
             code: 1,
-            message: "API连接测试成功",
-            success: true,
             data: {
-              status: "success",
-              response_time: Math.floor(Math.random() * 2000) + 500,
-              api_version: "v1"
-            }
+              elapsed_time: Math.floor(Math.random() * 1000) + 10 // 10-1010ms随机延时
+            },
+            message: ""
           },
           status: 200
         });
       } else {
         resolve({
           data: {
-            code: 400,
-            message: "API连接测试失败: 连接超时",
-            success: false,
+            code: 0,
             data: {
-              status: "failed",
-              error_type: "connection_timeout",
-              error_details: "Request timeout after 5000ms"
-            }
+              elapsed_time: Math.floor(Math.random() * 5000) + 1000 // 失败时也可能有延时
+            },
+            message: "API连接测试失败: 连接超时"
           },
           status: 400
         });
@@ -1315,7 +1309,7 @@ export const getScanResults = async (params: { page?: number; pageSize?: number;
   
   // 真实API调用
   const response = await request({
-    url: "/api/v1/ai_task/",
+    url: "/v1/ai_task/",
     method: "get",
     params
   });

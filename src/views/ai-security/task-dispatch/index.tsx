@@ -68,6 +68,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const [customHeaders, setCustomHeaders] = useState("");
   const [isTestingApi, setIsTestingApi] = useState(false);
   const [apiTestResult, setApiTestResult] = useState<"success" | "failed" | null>(null);
+  const [apiTestElapsedTime, setApiTestElapsedTime] = useState<number | null>(null);
   const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 
   // 字段验证状态
@@ -188,6 +189,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const handleApiTest = async () => {
     setIsTestingApi(true);
     setApiTestResult(null);
+    setApiTestElapsedTime(null);
 
     try {
       // 测试前先验证自定义Header的JSON格式
@@ -219,15 +221,25 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       // 调用API测试接口
       const response = await testApiConnectivity(testParams) as any;
       
-      if (response.data?.code === 1 || response.data?.success || response.status === 200) {
+      // 提取延时时间
+      const elapsedTime = response.data?.data?.elapsed_time;
+      if (elapsedTime !== undefined) {
+        setApiTestElapsedTime(elapsedTime);
+      }
+      
+      if (response.data?.code === 1) {
         setApiTestResult("success");
-        message.success("API连接测试成功");
+        const elapsedTimeText = elapsedTime !== undefined ? ` (响应时间: ${elapsedTime}ms)` : "";
+        message.success(`API连接测试成功${elapsedTimeText}`);
       } else {
         setApiTestResult("failed");
-        message.error(`API连接测试失败: ${response.data?.message || "未知错误"}`);
+        const errorMsg = response.data?.message || "未知错误";
+        const elapsedTimeText = elapsedTime !== undefined ? ` (响应时间: ${elapsedTime}ms)` : "";
+        message.error(`API连接测试失败: ${errorMsg}${elapsedTimeText}`);
       }
     } catch (error) {
       setApiTestResult("failed");
+      setApiTestElapsedTime(null);
       
       let errorMessage = "API连接测试失败";
       const err = error as any;
@@ -770,10 +782,12 @@ Content-Length: 110114
                   {apiTestResult === "success" ? (
                     <>
                       <CheckOutlined /> API连接成功
+                      {apiTestElapsedTime !== null && ` (${apiTestElapsedTime}ms)`}
                     </>
                   ) : (
                     <>
                       <CloseOutlined /> API连接失败
+                      {apiTestElapsedTime !== null && ` (${apiTestElapsedTime}ms)`}
                     </>
                   )}
                 </Tag>
