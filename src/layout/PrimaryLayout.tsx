@@ -22,10 +22,10 @@ const PrimaryLayout: React.FC = props => {
     return <UnAuthLayout />;
   }
 
-  // 如果没有token，显示未认证布局（重定向到登录页）
-  if (!token) {
-    return <UnAuthLayout />;
-  }
+  // // 如果没有token，显示未认证布局（重定向到登录页）
+  // if (!token) {
+  //   return <UnAuthLayout />;
+  // }
 
   return (
     <GlobalContext.Provider value={{ state, dispatch }}>

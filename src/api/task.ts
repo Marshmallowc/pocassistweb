@@ -951,31 +951,18 @@ export interface ScanResultsResponse {
   };
 }
 
-// Mock 任务模板数据存储
+// Mock 任务模板数据存储 - 使用后端真实响应数据
 let mockTaskTemplatesData: TaskTemplate[] = [
   {
     id: 1,
-    name: "基础安全扫描模板",
-    description: "用于检测基础TC260内容的模板",
-    createTime: "2024-01-15 10:30:00",
-    type: 'builtin',
-    count: 156
+    name: "Template A",
+    description: "This is template A"
   },
   {
-    id: 2, 
-    name: "对抗样本测试模板",
-    description: "生成对抗样本进行鲁棒性测试的模板",
-    createTime: "2024-01-14 15:20:00",
-    type: 'builtin',
-    count: 89
-  },
-  {
-    id: 3,
-    name: "隐私泄露检测模板",
-    description: "检测模型是否存在隐私泄露风险的模板",
-    createTime: "2024-01-13 09:15:00",
-    type: 'builtin',
-    count: 203
+    id: 2,
+    name: "Template B",
+    description: "This is template B",
+    count: 10
   }
 ];
 
@@ -1149,7 +1136,7 @@ const mockGetTaskTemplates = (params: { page?: number; pageSize?: number } = {})
         code: 1,
         message: "",
         data: paginatedTemplates,
-        total_count: filteredTemplates.length
+        total_count: 100 // 使用后端返回的真实总数
       };
       
       resolve(mockResponse);
