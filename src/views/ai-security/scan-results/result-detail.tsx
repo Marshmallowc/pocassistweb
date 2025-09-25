@@ -47,9 +47,15 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
   // 从API数据中获取相关信息
   const questions = detailData?.data_questions || [];
   const categories = Array.from(new Set(questions.map((q) => q.question_category)));
-  const taskTemplate = detailData?.tempate_type && detailData.tempate_type.length > 0 ? detailData.tempate_type[0] : undefined;
-  const taskInfo = { id: detailData?.id, name: detailData?.name };
   const categoryStats = detailData?.category || [];
+  const taskInfo = { id: detailData?.id, name: detailData?.name };
+  
+  // 处理任务模板信息 - 从category数据中获取或构造模板信息
+  const taskTemplate = categoryStats.length > 0 ? {
+    template_name: categoryStats[0].template_name,
+    failed_count: categoryStats[0].template_pass_ratio ? categoryStats[0].template_pass_ratio.split('/')[0] : '0',
+    totalQuestions: categoryStats[0].template_pass_ratio ? categoryStats[0].template_pass_ratio.split('/')[1] : '0'
+  } : undefined;
 
   const toggleCategory = (category: string) => {
     setExpandedCategories((prev) =>
@@ -76,7 +82,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
       const reviewData: QuestionReviewParams = {
         hasIssue: newHasIssue,
         taskId: taskId,
-        taskTemplate: detailData?.tempate_type?.[0]?.template_name || '',
+        taskTemplate: taskTemplate?.template_name || question.question_category || '',
         taskQuestion: question.question || ''
       };
 
@@ -319,7 +325,9 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                     return (
                       <TableRow key={question.id}>
                         <TableCell>
-                          <span className="template-name">{taskTemplate?.template_name || '-'}</span>
+                          <span className="template-name">
+                            {question.task_template || question.question_category || taskTemplate?.template_name || '-'}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="category-badge">
@@ -333,11 +341,15 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
                         </TableCell>
                         <TableCell>
                           {question.HasAnswered === "1" ? (
-                            <Tooltip title={question.answer}>
-                              <div className="answer-content">
-                                <p className="answer-text text-ellipsis-2">{question.answer}</p>
-                              </div>
-                            </Tooltip>
+                            question.answer && question.answer.trim() ? (
+                              <Tooltip title={question.answer}>
+                                <div className="answer-content">
+                                  <p className="answer-text text-ellipsis-2">{question.answer}</p>
+                                </div>
+                              </Tooltip>
+                            ) : (
+                              <span className="empty-text">未生成回答</span>
+                            )
                           ) : (
                             <span className="waiting-text">等待评估中...</span>
                           )}
