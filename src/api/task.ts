@@ -846,7 +846,7 @@ export interface ScanResultItem {
   name: string;
   status: string;
   progress: string;
-  tempate_type: string[]; // 保持后端返回的字段名
+  tempate_type: string[] | null; // 允许null值，保持后端返回的字段名
   create_time: string;
   completed_time: string;
   estimated_time: string;
@@ -1062,7 +1062,7 @@ const mockGetScanResults = (params: { page?: number; pageSize?: number; search?:
         const searchTerm = params.search.toLowerCase();
         filteredResults = mockResults.filter(item => 
           item.name.toLowerCase().includes(searchTerm) ||
-          item.tempate_type.some(type => type.toLowerCase().includes(searchTerm)) ||
+          (Array.isArray(item.tempate_type) && item.tempate_type.some(type => type.toLowerCase().includes(searchTerm))) ||
           item.id.toString().includes(searchTerm)
         );
       }
@@ -1313,7 +1313,22 @@ export const getScanResults = async (params: { page?: number; pageSize?: number;
     method: "get",
     params
   });
-  return response.data;
+  
+  // 数据清洗和转换，确保前端兼容性
+  const cleanedData = {
+    ...response.data,
+    data: {
+      ...response.data.data,
+      data: response.data.data.data.map((item: any) => ({
+        ...item,
+        tempate_type: item.tempate_type || [], // 将null转换为空数组
+        create_time: item.create_time === "0001-01-01 00:00:00" ? "" : item.create_time, // 处理异常日期
+        completed_time: item.completed_time === "0001-01-01 00:00:00" ? "" : item.completed_time,
+      }))
+    }
+  };
+  
+  return cleanedData;
 };
 
 /**

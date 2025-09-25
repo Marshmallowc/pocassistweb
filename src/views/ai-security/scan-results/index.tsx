@@ -35,13 +35,13 @@ import { getMockStatus } from "../../../utils/mockControl";
 import "./index.less";
 
 // 智能自适应类型标签显示组件
-const TypeTagsDisplay: React.FC<{ types: string[] }> = ({ types }) => {
+const TypeTagsDisplay: React.FC<{ types: string[] | null }> = ({ types }) => {
   const [visibleTypes, setVisibleTypes] = React.useState<string[]>([]);
   const [hiddenCount, setHiddenCount] = React.useState<number>(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const calculateVisibleTags = React.useCallback(() => {
-    if (!types || types.length === 0 || !containerRef.current) return;
+    if (!types || !Array.isArray(types) || types.length === 0 || !containerRef.current) return;
 
     // 获取容器的实际可用宽度
     const containerWidth = containerRef.current.offsetWidth;
@@ -126,7 +126,7 @@ const TypeTagsDisplay: React.FC<{ types: string[] }> = ({ types }) => {
     };
   }, [calculateVisibleTags]);
 
-  if (!types || types.length === 0) return null;
+  if (!types || !Array.isArray(types) || types.length === 0) return null;
 
   return (
     <Tooltip 
