@@ -38,7 +38,7 @@ export interface TaskDispatchParams {
   type: 0 | 1; // 0 - 自定义API格式, 1 - 其他内置模型
   modelType?: string;
   apiKey?: string;
-  customHeaders: string; // 改为必填字段
+  customHeaders: {}; // 改为对象类型
   requestContent?: string;
   responseContent?: string;
   selectedTemplates: string[];
