@@ -288,9 +288,13 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
     setSSEConnectionStatus(status);
     
     if (status === SSEConnectionStatus.ERROR && error) {
-      message.error(`实时连接失败: ${error.message}`);
+      // 为了演示需要，暂时禁用SSE错误弹窗，只在控制台输出错误信息
+      console.warn('SSE连接错误:', error.message);
+      // message.error(`实时连接失败: ${error.message}`);
     } else if (status === SSEConnectionStatus.CONNECTED) {
-      message.success('实时连接已建立');
+      // 也可以选择禁用连接成功的提示
+      console.log('SSE连接已建立');
+      // message.success('实时连接已建立');
     }
   }, []);
 
