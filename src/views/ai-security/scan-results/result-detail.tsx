@@ -47,7 +47,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
   // 从API数据中获取相关信息
   const questions = detailData?.data_questions || [];
   const categories = Array.from(new Set(questions.map((q) => q.question_category)));
-  const taskTemplate = detailData?.tempate_type?.[0];
+  const taskTemplate = detailData?.tempate_type && detailData.tempate_type.length > 0 ? detailData.tempate_type[0] : undefined;
   const taskInfo = { id: detailData?.id, name: detailData?.name };
   const categoryStats = detailData?.category || [];
 

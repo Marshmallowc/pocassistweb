@@ -48,7 +48,6 @@ export interface TaskDispatchParams {
 // 保存自定义模板请求参数接口
 export interface SaveCustomTemplateParams {
   name: string;
-  description: string;
   corpusFileName: string;
   corpusFile: File; // 改为File对象，用于FormData上传
 }
@@ -197,7 +196,7 @@ export interface ScanResultDetailResponse {
       template_name: string;
       failed_count: string;
       totalQuestions: string;
-    }>;
+    }> | null;  // 允许为 null
     category: Array<{
       template_name: string;
       template_pass_ratio: string;
@@ -359,8 +358,18 @@ export const getScanResultDetail = async (taskId: string): Promise<ScanResultDet
   const response = await request({
     url: `/v1/ai_task/${taskId}/`,
     method: "get"
-  });
-  return response.data;
+  }) as unknown as ScanResultDetailResponse;
+  
+  // 数据清洗和转换，确保前端兼容性
+  const cleanedData: ScanResultDetailResponse = {
+    ...response,
+    data: {
+      ...response.data,
+      tempate_type: response.data.tempate_type || [], // 处理 null 值，确保是数组
+    }
+  };
+  
+  return cleanedData;
 };
 
 /**
@@ -511,7 +520,6 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
           count: Math.floor(Math.random() * 200) + 50, // 生成50-250之间的随机总数
           corpusContent: JSON.stringify({
             name: data.name,
-            description: "自定义模板",
             prompts: [
               {
                 id: "prompt_1",
@@ -744,8 +752,7 @@ export const saveCustomTemplate = (data: SaveCustomTemplateParams) => {
   // 真实API调用 - 使用FormData上传文件
   const formData = new FormData();
   formData.append('name', data.name);
-  formData.append('description', data.description);
-  formData.append('json', data.corpusFile, data.corpusFileName); // 使用json作为字段名，类似yaml的示例
+  formData.append('filejson', data.corpusFile, data.corpusFileName); // 使用filejson作为字段名
   
   return request({
     url: "v1/templates/",
