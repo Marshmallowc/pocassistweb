@@ -1200,33 +1200,27 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
         }
         
         resolve({
+          code: 1,
+          message: `任务${actionNameMap[action]}成功`,
+          success: true,
           data: {
-            code: 1,
-            message: `任务${actionNameMap[action]}成功`,
-            success: true,
-            data: {
-              taskId: taskId,
-              previousStatus: statusChange.from,
-              currentStatus: statusChange.to,
-              timestamp: new Date().toISOString(),
-              estimatedTime: action === 'start' ? '预计2小时30分钟' : undefined
-            }
-          },
-          status: 200
+            taskId: taskId,
+            previousStatus: statusChange.from,
+            currentStatus: statusChange.to,
+            timestamp: new Date().toISOString(),
+            estimatedTime: action === 'start' ? '预计2小时30分钟' : undefined
+          }
         });
       } else {
         resolve({
+          code: 0,  // 统一使用code: 0表示失败
+          message: `任务${actionNameMap[action]}失败: 当前状态不允许此操作`,
+          success: false,
           data: {
-            code: 0,  // 统一使用code: 0表示失败
-            message: `任务${actionNameMap[action]}失败: 当前状态不允许此操作`,
-            success: false,
-            data: {
-              taskId: taskId,
-              error_type: "invalid_status_transition",
-              error_details: `Cannot ${action} task in current state`
-            }
-          },
-          status: 200  // HTTP状态码保持200，业务错误通过code字段区分
+            taskId: taskId,
+            error_type: "invalid_status_transition",
+            error_details: `Cannot ${action} task in current state`
+          }
         });
       }
     }, 800 + Math.random() * 700); // 0.8-1.5秒随机延迟
