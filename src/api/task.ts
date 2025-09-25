@@ -1392,7 +1392,7 @@ export const reviewQuestion = async (questionId: string, reviewData: QuestionRev
   // 真实API调用
   const response = await request({
     url: `v1/ai_task/${questionId}/review/`,
-    method: "put",
+    method: "post",
     data: reviewData
   });
   return response.data;
