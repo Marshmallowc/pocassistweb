@@ -574,11 +574,20 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
+      // 英文状态值
       running: { label: "运行中", variant: "default" as const },
       completed: { label: "已完成", variant: "secondary" as const },
       pending: { label: "等待中", variant: "outline" as const },
       paused: { label: "已暂停", variant: "outline" as const },
       failed: { label: "失败", variant: "destructive" as const },
+      // 中文状态值（后端返回的）
+      "进行中": { label: "运行中", variant: "default" as const },
+      "已完成": { label: "已完成", variant: "secondary" as const },
+      "等待中": { label: "等待中", variant: "outline" as const },
+      "待开始": { label: "等待中", variant: "outline" as const },
+      "暂停": { label: "已暂停", variant: "outline" as const },
+      "已暂停": { label: "已暂停", variant: "outline" as const },
+      "失败": { label: "失败", variant: "destructive" as const },
     };
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
   };

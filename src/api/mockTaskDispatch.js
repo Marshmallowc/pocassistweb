@@ -41,7 +41,7 @@ export const mockDispatchTask = async (data) => {
         taskName: data.taskName,
         description: data.description,
         targetUrl: data.targetUrl,
-        status: "pending",
+        status: "等待中",
         createdAt: new Date().toISOString(),
         estimatedDuration: Math.floor(Math.random() * 300) + 60, // 1-5分钟
         templateCount: data.selectedTemplates.length,
@@ -86,7 +86,7 @@ export const generateDetailedMockTask = (data) => {
     targetUrl: data.targetUrl,
     
     // 状态信息
-    status: "pending", // pending, running, completed, failed
+    status: "等待中", // 等待中, 进行中, 已完成, 失败
     progress: 0,
     createdAt: new Date().toISOString(),
     startedAt: null,
