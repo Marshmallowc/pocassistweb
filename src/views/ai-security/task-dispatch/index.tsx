@@ -66,6 +66,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
   const [selectedBuiltinFormat, setSelectedBuiltinFormat] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [customHeaders, setCustomHeaders] = useState("");
+  const [customHeadersObj, setCustomHeadersObj] = useState<{}>({});
   const [isTestingApi, setIsTestingApi] = useState(false);
   const [apiTestResult, setApiTestResult] = useState<"success" | "failed" | null>(null);
   const [apiTestElapsedTime, setApiTestElapsedTime] = useState<number | null>(null);
@@ -227,9 +228,10 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       }
 
       // 构建API测试参数
+      const parsedHeaders = parseCustomHeaders(customHeaders);
       const testParams: ApiTestParams = {
         type: apiFormatType === "custom" ? 0 : 1, // 0 - 自定义API格式, 1 - 其他内置模型
-        customHeaders, // 必填字段，直接赋值
+        customHeaders: parsedHeaders, // 传递解析后的对象
       };
 
       // 根据API格式类型添加相应参数
@@ -308,6 +310,23 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       return null;
     } catch (error) {
       return "自定义Header的JSON格式不正确，请检查语法是否有误";
+    }
+  };
+
+  // 解析自定义Header字符串为对象
+  const parseCustomHeaders = (content: string): {} => {
+    if (!content.trim()) {
+      return {};
+    }
+    
+    try {
+      const parsed = JSON.parse(content);
+      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+        return parsed;
+      }
+      return {};
+    } catch (error) {
+      return {};
     }
   };
 
@@ -434,6 +453,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       setIsSubmittingTask(true);
       
       // 构建请求参数
+      const parsedHeaders = parseCustomHeaders(customHeaders);
       const taskParams: TaskDispatchParams = {
         taskName: values.taskName,
         description: values.description,
@@ -441,7 +461,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
         type: apiFormatType === "custom" ? 0 : 1, // 0 - 自定义API格式, 1 - 其他内置模型
         modelType: apiFormatType === "builtin" ? selectedBuiltinFormat : undefined,
         apiKey: apiFormatType === "builtin" ? apiKey : undefined,
-        customHeaders,
+        customHeaders: parsedHeaders, // 传递解析后的对象
         requestContent: apiFormatType === "custom" ? requestContent : undefined,
         responseContent: apiFormatType === "custom" ? responseContent : undefined,
         selectedTemplates,
