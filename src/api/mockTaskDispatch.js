@@ -47,8 +47,8 @@ export const mockDispatchTask = async (data) => {
         templateCount: data.selectedTemplates.length,
         customFileCount: data.customCorpusFile?.length || 0,
         apiConfig: {
-          type: data.apiConfig.type,
-          modelType: data.apiConfig.modelType || data.apiConfig.type === "builtin" ? "OpenAI GPT" : "自定义格式"
+          type: data.type,
+          modelType: data.modelType || data.type === "builtin" ? "OpenAI GPT" : "自定义格式"
         }
       }
     };
@@ -94,10 +94,10 @@ export const generateDetailedMockTask = (data) => {
     
     // 配置信息
     apiConfig: {
-      type: data.apiConfig.type,
-      modelType: data.apiConfig.modelType || (data.apiConfig.type === "builtin" ? "OpenAI GPT-4" : "自定义格式"),
-      hasApiKey: !!data.apiConfig.apiKey,
-      hasCustomHeaders: !!data.apiConfig.customHeaders
+      type: data.type,
+      modelType: data.modelType || (data.type === "builtin" ? "OpenAI GPT-4" : "自定义格式"),
+      hasApiKey: !!data.apiKey,
+      hasCustomHeaders: !!data.customHeaders
     },
     
     // 模板信息

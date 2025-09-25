@@ -414,14 +414,12 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
         taskName: values.taskName,
         description: values.description,
         targetUrl: values.targetUrl,
-        apiConfig: {
-          type: apiFormatType === "custom" ? 0 : 1, // 0 - 自定义API格式, 1 - 其他内置模型
-          modelType: apiFormatType === "builtin" ? selectedBuiltinFormat : undefined,
-          apiKey: apiFormatType === "builtin" ? apiKey : undefined,
-          customHeaders,
-          requestContent: apiFormatType === "custom" ? requestContent : undefined,
-          responseContent: apiFormatType === "custom" ? responseContent : undefined,
-        },
+        type: apiFormatType === "custom" ? 0 : 1, // 0 - 自定义API格式, 1 - 其他内置模型
+        modelType: apiFormatType === "builtin" ? selectedBuiltinFormat : undefined,
+        apiKey: apiFormatType === "builtin" ? apiKey : undefined,
+        customHeaders,
+        requestContent: apiFormatType === "custom" ? requestContent : undefined,
+        responseContent: apiFormatType === "custom" ? responseContent : undefined,
         selectedTemplates,
         customCorpusFile: undefined // 任务调度中不直接使用自定义语料文件
       };

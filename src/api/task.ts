@@ -35,14 +35,12 @@ export interface TaskDispatchParams {
   taskName: string;
   description: string;
   targetUrl: string;
-  apiConfig: {
-    type: 0 | 1; // 0 - 自定义API格式, 1 - 其他内置模型
-    modelType?: string;
-    apiKey?: string;
-    customHeaders: string; // 改为必填字段
-    requestContent?: string;
-    responseContent?: string;
-  };
+  type: 0 | 1; // 0 - 自定义API格式, 1 - 其他内置模型
+  modelType?: string;
+  apiKey?: string;
+  customHeaders: string; // 改为必填字段
+  requestContent?: string;
+  responseContent?: string;
   selectedTemplates: string[];
   customCorpusFile?: string[]; // 修改为数组类型，支持多个自定义模板文件
 }
