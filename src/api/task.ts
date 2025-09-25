@@ -61,14 +61,14 @@ export interface SaveCustomTemplateResponse {
   message: string;
   success: boolean;
   data: {
-    templateId: string;
+    templateId: number;
     templateName: string;
   };
 }
 
 // 编辑模板请求参数接口
 export interface EditTemplateParams {
-  templateId: string;
+  templateId: number; // 修改为数字类型，与后端一致
   name: string;
   description: string;
   corpusFile?: File; // 改为File对象，用于FormData上传
@@ -81,7 +81,7 @@ export interface EditTemplateResponse {
   message: string;
   success: boolean;
   data: {
-    templateId: string;
+    templateId: number;
     templateName: string;
     isModified: boolean;
   };
@@ -93,7 +93,7 @@ export interface DeleteTemplateResponse {
   message: string;
   success: boolean;
   data: {
-    deletedTemplateId: string;
+    deletedTemplateId: number;
     deletedTemplateName: string;
     remainingCount: number;
   };
@@ -101,7 +101,7 @@ export interface DeleteTemplateResponse {
 
 // 任务模板接口定义
 export interface TaskTemplate {
-  id: string;
+  id: number; // 修改为数字类型，与后端一致
   name: string;
   description: string;
   createTime?: string; // 改为可选字段，支持后端不返回的情况
@@ -115,11 +115,8 @@ export interface TaskTemplate {
 export interface GetTaskTemplatesResponse {
   code: number;
   message: string;
-  success: boolean;
-  data: {
-    templates: TaskTemplate[];
-    total: number;
-  };
+  data: TaskTemplate[]; // 直接是数组，不再嵌套在templates字段中
+  total_count: number; // 与后端字段名一致
 }
 
 // API连通性测试请求参数接口
@@ -587,7 +584,7 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
       const isSuccess = Math.random() > 0.1;
       
       if (isSuccess) {
-        const templateId = `TEMPLATE-${Date.now()}`;
+        const templateId = Date.now(); // 生成数字ID
         
         // 将新模板添加到全局数据中
         const newTemplate: TaskTemplate = {
@@ -638,7 +635,7 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
           message: "保存失败: 模板名称已存在",
           success: false,
           data: {
-            templateId: "",
+            templateId: 0,
             templateName: ""
           }
         });
@@ -748,7 +745,7 @@ const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateRespons
  * 删除模板 - Mock实现
  * @param templateId 模板ID
  */
-const mockDeleteTemplate = (templateId: string): Promise<DeleteTemplateResponse> => {
+const mockDeleteTemplate = (templateId: number): Promise<DeleteTemplateResponse> => {
   
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -859,7 +856,7 @@ export const editTemplate = (data: EditTemplateParams) => {
   
   // 真实API调用 - 使用FormData上传文件
   const formData = new FormData();
-  formData.append('templateId', data.templateId);
+  formData.append('templateId', data.templateId.toString());
   formData.append('name', data.name);
   formData.append('description', data.description);
   if (data.corpusFile) {
@@ -880,7 +877,7 @@ export const editTemplate = (data: EditTemplateParams) => {
  * 删除模板
  * @param templateId 模板ID
  */
-export const deleteTemplate = (templateId: string) => {
+export const deleteTemplate = (templateId: number) => {
   const useMock = getMockEnabled();
   
   if (useMock) {
@@ -957,7 +954,7 @@ export interface ScanResultsResponse {
 // Mock 任务模板数据存储
 let mockTaskTemplatesData: TaskTemplate[] = [
   {
-    id: "1",
+    id: 1,
     name: "基础安全扫描模板",
     description: "用于检测基础TC260内容的模板",
     createTime: "2024-01-15 10:30:00",
@@ -965,7 +962,7 @@ let mockTaskTemplatesData: TaskTemplate[] = [
     count: 156
   },
   {
-    id: "2", 
+    id: 2, 
     name: "对抗样本测试模板",
     description: "生成对抗样本进行鲁棒性测试的模板",
     createTime: "2024-01-14 15:20:00",
@@ -973,7 +970,7 @@ let mockTaskTemplatesData: TaskTemplate[] = [
     count: 89
   },
   {
-    id: "3",
+    id: 3,
     name: "隐私泄露检测模板",
     description: "检测模型是否存在隐私泄露风险的模板",
     createTime: "2024-01-13 09:15:00",
@@ -1149,13 +1146,10 @@ const mockGetTaskTemplates = (params: { page?: number; pageSize?: number } = {})
       const paginatedTemplates = filteredTemplates.slice(startIndex, endIndex);
 
       const mockResponse: GetTaskTemplatesResponse = {
-        code: 200,
-        message: "获取任务模板列表成功",
-        success: true,
-        data: {
-          templates: paginatedTemplates,
-          total: filteredTemplates.length,
-        }
+        code: 1,
+        message: "",
+        data: paginatedTemplates,
+        total_count: filteredTemplates.length
       };
       
       resolve(mockResponse);

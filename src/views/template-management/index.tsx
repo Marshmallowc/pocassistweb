@@ -72,11 +72,11 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
     setLoading(true);
     try {
       const response = await getTaskTemplates({ page, pageSize });
-      if (response.success && response.data) {
-        setTemplates(response.data.templates);
+      if (response.code === 1 && response.data) {
+        setTemplates(response.data);
         setPagination(prev => ({
           ...prev,
-          total: response.data.total
+          total: response.total_count
         }));
       } else {
         message.error(response.message || "获取模板列表失败");

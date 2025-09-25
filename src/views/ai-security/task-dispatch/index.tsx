@@ -90,8 +90,8 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     setTemplatesLoading(true);
     try {
       const response = await getTaskTemplates();
-      if (response.success && response.data) {
-        setQuickTemplates(response.data.templates);
+      if (response.code === 1 && response.data) {
+        setQuickTemplates(response.data);
       } else {
         message.error(response.message || "获取模板列表失败");
       }
@@ -908,7 +908,7 @@ Content-Length: 110114
 
                   const response = await saveCustomTemplate(templateData) as any;
                   
-                  if (response.success || response.data?.success) {
+                  if (response.code === 1) {
                     // 保存成功，重新获取模板列表
                     const templateName = response.data?.templateName || customTemplateName.trim();
                     message.success(`自定义模板“${templateName}”保存成功`);
