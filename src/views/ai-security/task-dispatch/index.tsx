@@ -219,7 +219,7 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       // 调用API测试接口
       const response = await testApiConnectivity(testParams) as any;
       
-      if (response.data?.code === 200 || response.data?.success || response.status === 200) {
+      if (response.data?.code === 1 || response.data?.success || response.status === 200) {
         setApiTestResult("success");
         message.success("API连接测试成功");
       } else {

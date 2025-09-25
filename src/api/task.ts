@@ -323,7 +323,7 @@ const mockTestApiConnectivity = (data: ApiTestParams) => {
       if (isSuccess) {
         resolve({
           data: {
-            code: 200,
+            code: 1,
             message: "API连接测试成功",
             success: true,
             data: {
@@ -427,7 +427,7 @@ const mockDeleteScanTask = (taskId: string) => {
         
         resolve({
           data: {
-            code: 200,
+            code: 1,
             message: "任务删除成功",
             success: true,
             data: {
@@ -543,7 +543,7 @@ const mockSaveCustomTemplate = (data: SaveCustomTemplateParams): Promise<SaveCus
         mockTaskTemplatesData.push(newTemplate);
         
         resolve({
-          code: 200,
+          code: 1,
           message: "自定义模板保存成功",
           success: true,
           data: {
@@ -638,7 +638,7 @@ const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateRespons
         };
         
         resolve({
-          code: 200,
+          code: 1,
           message: "模板编辑成功",
           success: true,
           data: {
@@ -713,7 +713,7 @@ const mockDeleteTemplate = (templateId: number): Promise<DeleteTemplateResponse>
         const deletedTemplate = mockTaskTemplatesData.splice(templateIndex, 1)[0];
         
         resolve({
-          code: 200,
+          code: 1,
           message: "模板删除成功",
           success: true,
           data: {
@@ -1107,7 +1107,7 @@ const mockDownloadScanReport = (taskId: string) => {
         const blob = generateExcelBlob(taskId);
         
         resolve({
-          code: 200,
+          code: 1,
           message: "报告生成成功",
           success: true,
           data: {
@@ -1124,7 +1124,7 @@ const mockDownloadScanReport = (taskId: string) => {
         });
         
         resolve({
-          code: 200,
+          code: 1,
           message: "报告生成成功",
           success: true,
           data: {
@@ -1202,7 +1202,7 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
         
         resolve({
           data: {
-            code: 200,
+            code: 1,
             message: `任务${actionNameMap[action]}成功`,
             success: true,
             data: {
@@ -1342,7 +1342,7 @@ const mockReviewQuestion = (questionId: string, reviewData: QuestionReviewParams
         const originalHasIssue = Math.random() > 0.5;
         
         const mockResponse: QuestionReviewResponse = {
-          code: 200,
+          code: 1,
           message: "审核结果保存成功",
           success: true,
           data: {
