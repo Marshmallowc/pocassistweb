@@ -780,7 +780,7 @@ export const editTemplate = (data: EditTemplateParams) => {
   }
   
   return request({
-    url: "v1/template/edit",
+    url: "v1/templates/edit/",
     method: "put",
     data: formData,
     headers: {
@@ -802,7 +802,7 @@ export const deleteTemplate = (templateId: number) => {
   
   // 真实API调用
   return request({
-    url: `v1/template/${templateId}`,
+    url: `v1/templates/${templateId}/`,
     method: "delete"
   });
 };

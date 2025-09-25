@@ -356,13 +356,16 @@ const TemplateManagement: React.FC<RouteComponentProps> = () => {
           // 发送网络请求删除模板
           const response = await deleteTemplate(record.id) as any;
           
-          if (response.success || response.data?.success) {
+          const responseCode = response?.code || response?.data?.code;
+          const responseMessage = response?.message || response?.data?.message;
+          
+          if (responseCode === 1) {
             message.success("模板删除成功");
             
             // 重新获取模板列表以显示最新数据
             await fetchTemplates(pagination.current, pagination.pageSize);
           } else {
-            message.error(response.message || response.data?.message || "删除模板失败");
+            message.error(responseMessage || "删除模板失败");
           }
         } catch (error) {
           const err = error as any;
