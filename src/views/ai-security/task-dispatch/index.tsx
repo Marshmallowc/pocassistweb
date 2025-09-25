@@ -132,6 +132,32 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
     });
   };
 
+  // JSON内容验证函数 - 支持单个JSON对象和JSONL格式
+  const validateJsonContent = (content: string): boolean => {
+    const trimmedContent = content.trim();
+    if (!trimmedContent) return false;
+    
+    try {
+      // 首先尝试解析为单个JSON对象
+      JSON.parse(trimmedContent);
+      return true;
+    } catch (error) {
+      // 如果失败，尝试解析为JSONL格式（每行一个JSON对象）
+      try {
+        const lines = trimmedContent.split('\n').filter(line => line.trim());
+        if (lines.length === 0) return false;
+        
+        // 验证每一行都是有效的JSON对象
+        for (const line of lines) {
+          JSON.parse(line.trim());
+        }
+        return true;
+      } catch (jsonlError) {
+        return false;
+      }
+    }
+  };
+
   // 自定义语料上传
   const handleCustomCorpusUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -140,14 +166,12 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
-        try {
-          // 验证JSON格式
-          JSON.parse(content);
+        if (validateJsonContent(content)) {
           // 验证通过后保存File对象而非内容
           setCurrentCustomCorpusFile(file);
           setCurrentCustomCorpusFileName(file.name);
-        } catch (error) {
-          message.error("JSON文件格式不正确，请检查文件内容");
+        } else {
+          message.error("JSON文件格式不正确，请检查文件内容。支持单个JSON对象或JSONL格式（每行一个JSON对象）");
         }
       };
       reader.readAsText(file);
