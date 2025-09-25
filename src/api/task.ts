@@ -1312,16 +1312,16 @@ export const getScanResults = async (params: { page?: number; pageSize?: number;
     url: "/v1/ai_task/",
     method: "get",
     params
-  });
+  }) as unknown as ScanResultsResponse;
   
   // 数据清洗和转换，确保前端兼容性
   const cleanedData = {
-    ...response.data,
+    ...response,
     data: {
-      ...response.data.data,
-      data: response.data.data.data.map((item: any) => ({
+      ...response.data,
+      data: response.data.data.map((item: any) => ({
         ...item,
-        tempate_type: item.tempate_type || [], // 将null转换为空数组
+        tempate_type: Array.isArray(item.tempate_type) ? item.tempate_type : (item.tempate_type ? [item.tempate_type] : []), // 确保是数组
         create_time: item.create_time === "0001-01-01 00:00:00" ? "" : item.create_time, // 处理异常日期
         completed_time: item.completed_time === "0001-01-01 00:00:00" ? "" : item.completed_time,
       }))
