@@ -750,7 +750,7 @@ export const saveCustomTemplate = (data: SaveCustomTemplateParams) => {
   formData.append('json', data.corpusFile, data.corpusFileName); // 使用json作为字段名，类似yaml的示例
   
   return request({
-    url: "v1/template/custom/save",
+    url: "v1/templates/",
     method: "post",
     data: formData,
     headers: {

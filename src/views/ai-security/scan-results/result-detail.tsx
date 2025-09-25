@@ -82,7 +82,7 @@ const ResultDetail: React.FC<ResultDetailProps> = ({ taskId, onBack }) => {
 
       const response = await reviewQuestion(questionId, reviewData);
       
-      if (response.code === 1 && response.success) {
+      if (response.code === 1) {
         message.success(`审核结果已保存：${newHasIssue ? '存在问题' : '不存在问题'}`);
         
         // 可选：记录是否修改了AI的原始判断

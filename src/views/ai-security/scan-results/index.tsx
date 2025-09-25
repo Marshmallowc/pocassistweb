@@ -372,11 +372,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       onOk: async () => {
         try {
           const response: any = await deleteScanTask(taskId);
-          // 修复响应数据结构处理 - Mock API 的 success 字段在 response.data.success
-          const isSuccess = response?.success || response?.data?.success;
+          // 修复响应数据结构处理 - 根据 code===1 判断成功
+          const responseCode = response?.code || response?.data?.code;
           const responseMessage = response?.message || response?.data?.message;
           
-          if (isSuccess) {
+          if (responseCode === 1) {
             message.success(responseMessage || '任务删除成功');
             // 重新获取数据以保持同步
             fetchScanResults(pagination.current, pagination.pageSize);
@@ -398,10 +398,10 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
       
       hide();
       
-      // 统一的API响应格式处理
-      const isSuccess = response?.success;
+      // 统一的API响应格式处理 - 根据 code===1 判断成功
+      const responseCode = response?.code;
       
-      if (isSuccess) {
+      if (responseCode === 1) {
         const { blob, filename } = response.data;
         
         // 验证blob对象有效性
@@ -443,11 +443,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handleStartTask = async (taskId: string) => {
     try {
       const response: any = await startScanTask(taskId);
-      // 修复响应数据结构处理 - Mock API 的 success 字段在 response.data.success
-      const isSuccess = response?.success || response?.data?.success;
+      // 修复响应数据结构处理 - 根据 code===1 判断成功
+      const responseCode = response?.code || response?.data?.code;
       const responseMessage = response?.message || response?.data?.message;
       
-      if (isSuccess) {
+      if (responseCode === 1) {
         message.success('任务启动成功');
         refreshTaskData();
       } else {
@@ -474,11 +474,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handlePauseTask = async (taskId: string) => {
     try {
       const response: any = await pauseScanTask(taskId);
-      // 修复响应数据结构处理 - Mock API 的 success 字段在 response.data.success
-      const isSuccess = response?.success || response?.data?.success;
+      // 修复响应数据结构处理 - 根据 code===1 判断成功
+      const responseCode = response?.code || response?.data?.code;
       const responseMessage = response?.message || response?.data?.message;
       
-      if (isSuccess) {
+      if (responseCode === 1) {
         message.success('任务暂停成功');
         refreshTaskData();
       } else {
@@ -505,11 +505,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handleResumeTask = async (taskId: string) => {
     try {
       const response: any = await resumeScanTask(taskId);
-      // 修复响应数据结构处理 - Mock API 的 success 字段在 response.data.success
-      const isSuccess = response?.success || response?.data?.success;
+      // 修复响应数据结构处理 - 根据 code===1 判断成功
+      const responseCode = response?.code || response?.data?.code;
       const responseMessage = response?.message || response?.data?.message;
       
-      if (isSuccess) {
+      if (responseCode === 1) {
         message.success('任务恢复成功');
         refreshTaskData();
       } else {
@@ -536,11 +536,11 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handleRetryTask = async (taskId: string) => {
     try {
       const response: any = await retryScanTask(taskId);
-      // 修复响应数据结构处理 - Mock API 的 success 字段在 response.data.success
-      const isSuccess = response?.success || response?.data?.success;
+      // 修复响应数据结构处理 - 根据 code===1 判断成功
+      const responseCode = response?.code || response?.data?.code;
       const responseMessage = response?.message || response?.data?.message;
       
-      if (isSuccess) {
+      if (responseCode === 1) {
         message.success('任务重试成功，已重新开始执行');
         refreshTaskData();
       } else {
