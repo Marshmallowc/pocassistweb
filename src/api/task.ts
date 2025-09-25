@@ -386,7 +386,7 @@ const mockDeleteScanTask = (taskId: string) => {
       if (taskIndex === -1) {
         resolve({
           data: {
-            code: 404,
+            code: 0,  // 统一使用code: 0表示失败
             message: "删除失败: 任务不存在",
             success: false,
             data: {
@@ -395,7 +395,7 @@ const mockDeleteScanTask = (taskId: string) => {
               error_details: "Task not found"
             }
           },
-          status: 404
+          status: 200  // HTTP状态码保持200，业务错误通过code字段区分
         });
         return;
       }
@@ -405,7 +405,7 @@ const mockDeleteScanTask = (taskId: string) => {
       if (task.status === '进行中') {
         resolve({
           data: {
-            code: 400,
+            code: 0,  // 统一使用code: 0表示失败
             message: "删除失败: 任务正在执行中，无法删除",
             success: false,
             data: {
@@ -414,7 +414,7 @@ const mockDeleteScanTask = (taskId: string) => {
               error_details: "Cannot delete running task"
             }
           },
-          status: 400
+          status: 200  // HTTP状态码保持200，业务错误通过code字段区分
         });
         return;
       }
@@ -443,7 +443,7 @@ const mockDeleteScanTask = (taskId: string) => {
       } else {
         resolve({
           data: {
-            code: 500,
+            code: 0,  // 统一使用code: 0表示失败
             message: "删除失败: 服务器内部错误",
             success: false,
             data: {
@@ -452,7 +452,7 @@ const mockDeleteScanTask = (taskId: string) => {
               error_details: "Internal server error during deletion"
             }
           },
-          status: 500
+          status: 200  // HTTP状态码保持200，业务错误通过code字段区分
         });
       }
     }, 500 + Math.random() * 800); // 0.5-1.3秒随机延迟
@@ -579,7 +579,7 @@ const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateRespons
       
       if (templateIndex === -1) {
         resolve({
-          code: 404,
+          code: 0,  // 统一使用code: 0表示失败
           message: "编辑失败: 模板不存在",
           success: false,
           data: {
@@ -596,7 +596,7 @@ const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateRespons
       // 检查是否为内置模板
       if (existingTemplate.type === 'builtin') {
         resolve({
-          code: 403,
+          code: 0,  // 统一使用code: 0表示失败
           message: "编辑失败: 内置模板不允许编辑",
           success: false,
           data: {
@@ -649,7 +649,7 @@ const mockEditTemplate = (data: EditTemplateParams): Promise<EditTemplateRespons
         });
       } else {
         resolve({
-          code: 500,
+          code: 0,  // 统一使用code: 0表示失败
           message: "编辑失败: 服务器内部错误",
           success: false,
           data: {
@@ -676,7 +676,7 @@ const mockDeleteTemplate = (templateId: number): Promise<DeleteTemplateResponse>
       
       if (templateIndex === -1) {
         resolve({
-          code: 404,
+          code: 0,  // 统一使用code: 0表示失败
           message: "删除失败: 模板不存在",
           success: false,
           data: {
@@ -693,7 +693,7 @@ const mockDeleteTemplate = (templateId: number): Promise<DeleteTemplateResponse>
       // 检查是否为内置模板
       if (templateToDelete.type === 'builtin') {
         resolve({
-          code: 403,
+          code: 0,  // 统一使用code: 0表示失败
           message: "删除失败: 内置模板不允许删除",
           success: false,
           data: {
@@ -724,7 +724,7 @@ const mockDeleteTemplate = (templateId: number): Promise<DeleteTemplateResponse>
         });
       } else {
         resolve({
-          code: 500,
+          code: 0,  // 统一使用code: 0表示失败
           message: "删除失败: 服务器内部错误",
           success: false,
           data: {
@@ -1217,7 +1217,7 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
       } else {
         resolve({
           data: {
-            code: 400,
+            code: 0,  // 统一使用code: 0表示失败
             message: `任务${actionNameMap[action]}失败: 当前状态不允许此操作`,
             success: false,
             data: {
@@ -1226,7 +1226,7 @@ const mockTaskControl = (taskId: string, action: TaskControlAction) => {
               error_details: `Cannot ${action} task in current state`
             }
           },
-          status: 400
+          status: 200  // HTTP状态码保持200，业务错误通过code字段区分
         });
       }
     }, 800 + Math.random() * 700); // 0.8-1.5秒随机延迟
@@ -1367,7 +1367,7 @@ const mockReviewQuestion = (questionId: string, reviewData: QuestionReviewParams
         resolve(mockResponse);
       } else {
         resolve({
-          code: 400,
+          code: 0,  // 统一使用code: 0表示失败
           message: "保存审核结果失败: 网络异常",
           success: false,
           data: {}

@@ -471,30 +471,36 @@ const TaskDispatch: React.FC<RouteComponentProps> = () => {
       // 发送任务下发请求
       const response = await dispatchTask(taskParams);
       
-      // 成功处理
-      if (response?.data?.taskId) {
-        message.success(`任务下发成功！任务ID: ${response.data.taskId}`);
+      // 成功处理 - 根据code === 1判断成功
+      if (response?.code === 1) {
+        const taskData = response.data;
+        message.success(`任务下发成功！任务ID: ${taskData?.taskId || '已生成'}`);
         
         // 显示详细的成功信息
-        Modal.success({
-          title: '任务创建成功',
-          content: (
-            <div>
-              <p><strong>任务ID:</strong> {response.data.taskId}</p>
-              <p><strong>任务名称:</strong> {response.data.taskName}</p>
-              <p><strong>任务描述:</strong> {response.data.description}</p>
-              <p><strong>目标URL:</strong> {response.data.targetUrl}</p>
-              <p><strong>预估时长:</strong> {Math.floor(response.data.estimatedDuration / 60)}分{response.data.estimatedDuration % 60}秒</p>
-              <p><strong>模板数量:</strong> {response.data.templateCount}个</p>
-              {response.data.customFileCount > 0 && (
-                <p><strong>自定义文件:</strong> {response.data.customFileCount}个</p>
-              )}
-            </div>
-          ),
-          width: 500,
-        });
+        if (taskData?.taskId) {
+          Modal.success({
+            title: '任务创建成功',
+            content: (
+              <div>
+                <p><strong>任务ID:</strong> {taskData.taskId}</p>
+                <p><strong>任务名称:</strong> {taskData.taskName}</p>
+                <p><strong>任务描述:</strong> {taskData.description}</p>
+                <p><strong>目标URL:</strong> {taskData.targetUrl}</p>
+                <p><strong>预估时长:</strong> {Math.floor(taskData.estimatedDuration / 60)}分{taskData.estimatedDuration % 60}秒</p>
+                <p><strong>模板数量:</strong> {taskData.templateCount}个</p>
+                {taskData.customFileCount > 0 && (
+                  <p><strong>自定义文件:</strong> {taskData.customFileCount}个</p>
+                )}
+              </div>
+            ),
+            width: 500,
+          });
+        }
       } else {
-        message.success("任务下发成功！");
+        // 如果code不为1，说明后端返回了错误
+        const errorMsg = response?.msg || response?.message || "任务下发失败";
+        message.error(errorMsg);
+        return;
       }
       
       // 可选：重置表单或跳转页面

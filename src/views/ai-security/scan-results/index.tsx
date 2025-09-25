@@ -443,15 +443,14 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handleStartTask = async (taskId: string) => {
     try {
       const response: any = await startScanTask(taskId);
-      // 修复响应数据结构处理 - 根据 code===1 判断成功
-      const responseCode = response?.code || response?.data?.code;
-      const responseMessage = response?.message || response?.data?.message;
+      // 任务控制接口返回结构: { data: { code: 1/0, message: "...", ... }, status: 200 }
       
-      if (responseCode === 1) {
+      if (response?.data?.code === 1) {
         message.success('任务启动成功');
         refreshTaskData();
       } else {
-        message.error(responseMessage || '启动失败');
+        const errorMsg = response?.data?.message || '启动失败';
+        message.error(errorMsg);
       }
     } catch (error) {
       const err = error as any;
@@ -474,15 +473,14 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handlePauseTask = async (taskId: string) => {
     try {
       const response: any = await pauseScanTask(taskId);
-      // 修复响应数据结构处理 - 根据 code===1 判断成功
-      const responseCode = response?.code || response?.data?.code;
-      const responseMessage = response?.message || response?.data?.message;
+      // 任务控制接口返回结构: { data: { code: 1/0, message: "...", ... }, status: 200 }
       
-      if (responseCode === 1) {
+      if (response?.data?.code === 1) {
         message.success('任务暂停成功');
         refreshTaskData();
       } else {
-        message.error(responseMessage || '暂停失败');
+        const errorMsg = response?.data?.message || '暂停失败';
+        message.error(errorMsg);
       }
     } catch (error) {
       const err = error as any;
@@ -505,15 +503,14 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handleResumeTask = async (taskId: string) => {
     try {
       const response: any = await resumeScanTask(taskId);
-      // 修复响应数据结构处理 - 根据 code===1 判断成功
-      const responseCode = response?.code || response?.data?.code;
-      const responseMessage = response?.message || response?.data?.message;
+      // 任务控制接口返回结构: { data: { code: 1/0, message: "...", ... }, status: 200 }
       
-      if (responseCode === 1) {
+      if (response?.data?.code === 1) {
         message.success('任务恢复成功');
         refreshTaskData();
       } else {
-        message.error(responseMessage || '恢复失败');
+        const errorMsg = response?.data?.message || '恢复失败';
+        message.error(errorMsg);
       }
     } catch (error) {
       const err = error as any;
@@ -536,15 +533,14 @@ const ScanResults: React.FC<RouteComponentProps> = () => {
   const handleRetryTask = async (taskId: string) => {
     try {
       const response: any = await retryScanTask(taskId);
-      // 修复响应数据结构处理 - 根据 code===1 判断成功
-      const responseCode = response?.code || response?.data?.code;
-      const responseMessage = response?.message || response?.data?.message;
+      // 任务控制接口返回结构: { data: { code: 1/0, message: "...", ... }, status: 200 }
       
-      if (responseCode === 1) {
+      if (response?.data?.code === 1) {
         message.success('任务重试成功，已重新开始执行');
         refreshTaskData();
       } else {
-        message.error(responseMessage || '重试失败');
+        const errorMsg = response?.data?.message || '重试失败';
+        message.error(errorMsg);
       }
     } catch (error) {
       message.error((error as any)?.response?.data?.message || '重试任务时发生错误');
